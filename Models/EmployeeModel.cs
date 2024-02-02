@@ -9,7 +9,7 @@ namespace TaskManangerSystem.Models
         /// 对应数据库的真实数据，无加密和遮蔽
         /// </summary>
         [Table("employee_system_account_table")]
-        public class EmployeeSystemAccount : AEmployeeToAlias, IEmployee
+        public class EmployeeSystemAccount :  IEmployee
         {
                 [Key, Column("employee_electronic_account_id")]
                 public Guid EmployeeId { get; set; }
@@ -39,13 +39,14 @@ namespace TaskManangerSystem.Models
                         this.AccountPermission = obj.AccountPermission;
                 }
 
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-                public EmployeeSystemAccount() { }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
-                // [Obsolete("该方法会暴露真实数据，请谨慎使用")]
-                public override AliasEmployeeSystemAccount ToAlias() => new AliasEmployeeSystemAccount(this);
-                public override AliasEmployeeSystemAccount ToAlias(char cr) => new AliasEmployeeSystemAccount(this, cr);
+                public EmployeeSystemAccount() { }
+
+
+                [Obsolete("该方法会暴露真实数据，请谨慎使用")]
+                public AliasEmployeeSystemAccount ToAlias() => new (this);
+                
+                
         }
 
         [Table("employee_real_info_table")]
@@ -53,15 +54,15 @@ namespace TaskManangerSystem.Models
         {
                 [Key]
                 public Guid EmployeeElectronicAccountId { get; set; }
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-                public string EmployeeName { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-                public string EmployeeContactWay { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+                public string EmployeeName { get; set; }
+
+
+                public string EmployeeContactWay { get; set; }
+
+
+
                 public EmployeeSystemAccount EmployeeSystemAccount { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+
         }
 }

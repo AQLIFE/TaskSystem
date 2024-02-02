@@ -7,7 +7,7 @@ namespace TaskManangerSystem.Models
     /// <summary>
     /// 用于返回脱敏数据
     /// </summary>
-    public class AliasEmployeeSystemAccount : IAlias
+    public class AliasEmployeeSystemAccount
     {
 
 
@@ -38,7 +38,7 @@ namespace TaskManangerSystem.Models
         /// 返回加密数据
         /// </summary>
         /// <param name="obj"></param>
-        public AliasEmployeeSystemAccount(AliasMd5 obj)
+        public AliasEmployeeSystemAccount(EncryptEmployeeSystemAccount obj)
         {
 
             this.EmployeeAlias = obj.EmployeeAlias;
@@ -57,7 +57,7 @@ namespace TaskManangerSystem.Models
             this.AccountPermission = obj.AccountPermission;
         }
 
-        public AliasEmployeeSystemAccount(AliasMd5 obj, char cr)
+        public AliasEmployeeSystemAccount(EncryptEmployeeSystemAccount obj, char cr)
         {
             this.EmployeeAlias = obj.EmployeeAlias;
             this.EmployeePwd = new string(cr == default ? '*' : cr, 10);

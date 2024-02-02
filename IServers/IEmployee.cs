@@ -21,12 +21,12 @@ namespace TaskManangerSystem.IServer
     /// <summary>
     /// 脱敏数据转换抽象类
     /// </summary>
-    public abstract class AEmployeeToAlias
-    {
+    // public abstract class AEmployeeToAlias
+    // {
 
-        public abstract AliasEmployeeSystemAccount ToAlias();
-        public abstract AliasEmployeeSystemAccount ToAlias(char cr);
-    }
+    //     public abstract AliasEmployeeSystemAccount ToAlias();
+    //     public abstract AliasEmployeeSystemAccount ToAlias(char cr);
+    // }
 
     // abstract class AliasEmployeeToAlias :IAlias {
     //     public string EmployeeAlias{get;set;}
