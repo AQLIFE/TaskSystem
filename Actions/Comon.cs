@@ -7,6 +7,7 @@ namespace TaskManangerSystem.Actions
 {
     public static class Comon
     {
+        [Obsolete("该加密可信度偏低")]
         public static string GetMD5(string myString)
         {
             MD5 md5 = new MD5CryptoServiceProvider();
