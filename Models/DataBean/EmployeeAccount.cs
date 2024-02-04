@@ -10,7 +10,7 @@ namespace TaskManangerSystem.Models.DataBean
         /// 对应数据库的真实数据，无加密和遮蔽
         /// </summary>
         [Table("employee_system_account_table")]
-        public class EmployeeAccount : BaseEmployee
+        public class EmployeeAccount : BaseEmployee,IEmployee
         {
                 [Key, Column("employee_electronic_account_id")]
                 public new Guid EmployeeId { get; set; }
@@ -24,7 +24,8 @@ namespace TaskManangerSystem.Models.DataBean
                 [Column("account_permission")]
                 public new int AccountPermission { get; set; }
 
-                public EmployeeAccount() { }
+                public EmployeeAccount() { 
+                }
 
                 public EmployeeAccount(AliasAccount obj, Guid id)
                 {
@@ -33,8 +34,6 @@ namespace TaskManangerSystem.Models.DataBean
                         this.EmployeePwd = obj.EmployeePwd;
                         this.AccountPermission = obj.AccountPermission;
                 }
-
-                
         }
 
         [Table("employee_real_info_table")]

@@ -1,11 +1,11 @@
-using TaskManangerSystem.Models;
+using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.IServices.SystemServices
 {
     interface IComon{
         public string GetMD5(string info);
         public string GetAES(string info);
-        public AliasEmployeeSystemAccount ToAlias(Object obj);
-        public AliasEmployeeSystemAccount ToAlias(Object obj,char cr);
+        public AliasAccount ToAlias(Object obj);
+        public AliasAccount ToAlias(Object obj,char cr);
     }
 }

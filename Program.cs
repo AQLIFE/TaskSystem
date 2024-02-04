@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.IServer;
+using TaskManangerSystem.IServices.SystemServices;
 
 
 var builder = WebApplication.CreateBuilder(args);

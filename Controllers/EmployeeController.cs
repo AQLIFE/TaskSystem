@@ -28,10 +28,10 @@ namespace TaskManangerSystem.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AliasAccount>>> GetEmployeeSystemAccounts()
         {
-            return await _context.employees.Select(x=>x.ToAliasAccount(true,default)).ToListAsync<AliasAccount>();
+            return await _context.employees.Select(x=>x.ToAliasAccount(default,default)).ToListAsync();
 
             // var obj = await _context.employees.ToListAsync();
-            // return Comon.ToListAlias<EmployeeAccount>(obj,default);
+            // return obj.Select(e=>e.ToAliasAccount()).ToList();
         }
 
         // GET: api/EmployeeSystemAccounts/md5-string
@@ -47,7 +47,6 @@ namespace TaskManangerSystem.Controllers
         {
             if (!EmployeeSystemAccountExists(id))
             {
-                Console.WriteLine(EmployeeSystemAccountExists(id));
                 return BadRequest();
             }
 
@@ -61,7 +60,6 @@ namespace TaskManangerSystem.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                Console.WriteLine(employeeSystemAccount.ToEmployeeAccount().EmployeeAlias);
                 return NotFound("数据已被锁定，请稍后再试");
             }
 

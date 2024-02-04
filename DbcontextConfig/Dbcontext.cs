@@ -8,7 +8,7 @@ namespace TaskManangerSystem.DbContextConfg
     {
         public DbSet<EmployeeAccount> employees { get; set; }
 
-        public DbSet<EncryptEmployeeSystemAccount> encrypts{set;get;}
+        public DbSet<EncryptAccount> encrypts{set;get;}
         public DbSet<EmployeeRealInfo> realInfos { get; set; }
         public DbSet<Category> categories { get; set; }
         public DbSet<InventoryInfo> inventoryInfos { get; set; }
@@ -21,8 +21,7 @@ namespace TaskManangerSystem.DbContextConfg
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<EncryptEmployeeSystemAccount>().ToView("alias_md5");
-            modelBuilder.Entity<EncryptEmployeeSystemAccount>().HasNoKey();
+            modelBuilder.Entity<EncryptAccount>().HasNoKey().ToView("alias_md5");
         }
 
     }

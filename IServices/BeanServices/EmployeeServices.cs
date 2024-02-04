@@ -31,7 +31,7 @@ namespace TaskManangerSystem.IServices.BeanServices
         public Guid EmployeeId { get; set; }
 
         public AliasAccount ToAliasAccount(bool ss = false, char cr = '*')
-            => new(this, ss, cr);
+            => new(this, ss==default?false:true, cr==default?'*':cr);
     }
 
     public interface IEncrypt : IEmployee

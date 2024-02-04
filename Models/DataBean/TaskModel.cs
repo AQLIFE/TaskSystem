@@ -34,7 +34,7 @@ namespace TaskManangerSystem.Models.DataBean
         public TaskCustomer TaskCustomer { get; set; }
 
 
-        public EmployeeSystemAccount EmployeeSystemAccount { get; set; }
+        public EmployeeAccount EmployeeAccount { get; set; }
 
     }
 
@@ -52,10 +52,10 @@ namespace TaskManangerSystem.Models.DataBean
 
 
 
-        public Task Task { get; set; }
+        public TaskAffair Task { get; set; }
 
 
-        public EmployeeSystemAccount EmployeeSystemAccount { get; set; }
+        public EmployeeAccount EmployeeAccount { get; set; }
 
     }
 }

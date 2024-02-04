@@ -8,7 +8,8 @@ namespace TaskManangerSystem.Models.DataBean
         /// 返回加密视图的数据，仅用于浏览，不可对其进行修改和提交数据
         /// </summary>
         
-        public class EncryptAccount : BaseEncrypt
+        [Table("alias_md5")]
+        public class EncryptAccount : BaseEncrypt,IEncrypt
         {
                 [Column("id")]
                 public new Guid EmployeeId{get;set;}

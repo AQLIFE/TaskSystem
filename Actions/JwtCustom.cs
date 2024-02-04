@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TaskManangerSystem.IServer;
+using TaskManangerSystem.IServices.SystemServices;
 using TaskManangerSystem.Models;
 
 
@@ -85,7 +85,7 @@ namespace TaskManangerSystem.Actions
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.WriteAsJsonAsync(
-                    new ReturnInfo{status=false,data="无权访问"}
+                    new ReturnInfo<string>{status=false,data="无权访问"}
                     
                 );
                 return System.Threading.Tasks.Task.FromResult(0);
