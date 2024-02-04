@@ -28,28 +28,15 @@ namespace TaskManangerSystem.Controllers
         {
             // return await _context.EmployeeSystemAccounts.Select(x=>x.ToAlias(default)).ToListAsync<AliasEmployeeSystemAccount>();
 
-            var obj = _context.EmployeeSystemAccounts.ToList();
-            List<AliasEmployeeSystemAccount> list = new ();
-            foreach (var item in obj)
-            {
-                list.Add( Comon.ToAlias(item));
-            }
-            // return await obj.ToListAsync();
-            // return await _context.EmployeeSystemAccounts.ToListAsync();
+            var obj = await _context.employees.ToListAsync();
+            return Comon.ToListAlias<EmployeeSystemAccount>(obj,default);
         }
 
         // GET: api/EmployeeSystemAccounts/md5-string
         [HttpGet("{id}")]//查看用户
-        public async Task<ActionResult<AliasMd5>> GetEmployeeSystemAccount(string id)
+        public async Task<ActionResult<EncryptEmployeeSystemAccount>> GetEmployeeSystemAccount(string id)
         {
-            var employeeSystemAccount = await _context.AliasMds.Where(x => x.EncryptionId == id).FirstAsync();
-
-            if (employeeSystemAccount == null)
-            {
-                return NotFound();
-            }
-
-            return employeeSystemAccount;
+            return await _context.encrypts.Where(x => x.EncryptionId == id).FirstAsync();
         }
 
         // PUT: api/EmployeeSystemAccounts/5
@@ -62,14 +49,13 @@ namespace TaskManangerSystem.Controllers
                 return BadRequest();
             }
 
-            Guid ids = _context.AliasMds.Where(e => e.EncryptionId == id).First().Id;
+            Guid ids = _context.encrypts.Where(e => e.EncryptionId == id).First().Id;
             // var obj = ;
             _context.Entry<EmployeeSystemAccount>(employeeSystemAccount.ToEmployeeSystemAccount(ids)).State = EntityState.Modified;
 
             try
             {
                 await _context.SaveChangesAsync();
-
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -82,11 +68,11 @@ namespace TaskManangerSystem.Controllers
 
         // POST: api/EmployeeSystemAccounts
         [HttpPost]//增加
-        public async Task<ActionResult<AliasMd5>> PostEmployeeSystemAccount(AliasEmployeeSystemAccount employeeSystemAccount)
+        public async Task<ActionResult<EncryptEmployeeSystemAccount>> PostEmployeeSystemAccount(AliasEmployeeSystemAccount employeeSystemAccount)
         {
             EmployeeSystemAccount part = employeeSystemAccount.ToEmployeeSystemAccount();
 
-            _context.EmployeeSystemAccounts.Add(part);
+            _context.employees.Add(part);
             await _context.SaveChangesAsync();
 
             return await GetEmployeeSystemAccount(Comon.GetMD5(part.EmployeeId.ToString()));
@@ -97,14 +83,14 @@ namespace TaskManangerSystem.Controllers
         [HttpDelete("{id}")]//删除
         public async Task<IActionResult> DeleteEmployeeSystemAccount(string id)
         {
-            Guid ida = _context.AliasMds.Where(e => e.EncryptionId == id).First().Id;
-            var employeeSystemAccount = await _context.EmployeeSystemAccounts.Where(x => x.EmployeeId == ida).FirstAsync();
+            Guid ida = _context.encrypts.Where(e => e.EncryptionId == id).First().Id;
+            var employeeSystemAccount = await _context.employees.Where(x => x.EmployeeId == ida).FirstAsync();
             if (employeeSystemAccount == null)
             {
                 return NotFound();
             }
 
-            _context.EmployeeSystemAccounts.Remove(employeeSystemAccount);
+            _context.employees.Remove(employeeSystemAccount);
             await _context.SaveChangesAsync();
 
             return Ok("已删除" + id);
@@ -114,7 +100,7 @@ namespace TaskManangerSystem.Controllers
 
         private bool EmployeeSystemAccountExists(string id)
         {
-            return _context.AliasMds.Any(e => e.EncryptionId == id);
+            return _context.encrypts.Any(e => e.EncryptionId == id);
         }
     }
 }

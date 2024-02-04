@@ -15,10 +15,10 @@ namespace TaskManangerSystem.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> AuthLogin(AliasEmployeeSystemAccount account){
-            if(_context.AliasMds.Find(x => x. ) )
-        }
+        // [HttpGet]
+        // public async Task<IActionResult> AuthLogin(AliasEmployeeSystemAccount account){
+        //     if(_context.AliasMds.Find(x => x. ) )
+        // }
     }
 
 }
