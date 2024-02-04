@@ -1,5 +1,4 @@
-﻿using TaskManangerSystem.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TaskManangerSystem.DbContextConfg;
 
 namespace TaskManangerSystem.Controllers

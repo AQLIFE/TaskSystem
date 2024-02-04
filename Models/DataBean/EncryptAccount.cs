@@ -7,24 +7,24 @@ namespace TaskManangerSystem.Models.DataBean
         /// 员工加密数据视图
         /// 返回加密视图的数据，仅用于浏览，不可对其进行修改和提交数据
         /// </summary>
-        [Table("alias_md5")]
-        public class EncryptEmployeeSystemAccount : IEncrypt
+        
+        public class EncryptAccount : BaseEncrypt
         {
                 [Column("id")]
-                public Guid EmployeeId{get;set;}
+                public new Guid EmployeeId{get;set;}
 
                 [Column("encryption_id")]
-                public string EncryptionId{ get; set; }
+                public new string EncryptionId{ get; set; }
 
 
                 [Column("alias")]
-                public string EmployeeAlias { get; set; }
+                public new string EmployeeAlias { get; set; }
 
                 [Column("pwd")]
-                public string EmployeePwd { get; set; }
+                public new string EmployeePwd { get; set; }
 
 
                 [Column("account_permission")]
-                public int AccountPermission { get; set; }
+                public new int AccountPermission { get; set; }
         }
 }

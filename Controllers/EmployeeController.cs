@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.DbContextConfg;
-using TaskManangerSystem.Models;
+using TaskManangerSystem.Models.DataBean;
+using TaskManangerSystem.Models.SystemBean;
+
 using TaskManangerSystem.Actions;
 
 namespace TaskManangerSystem.Controllers
@@ -24,24 +26,24 @@ namespace TaskManangerSystem.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AliasEmployeeSystemAccount>>> GetEmployeeSystemAccounts()
+        public async Task<ActionResult<IEnumerable<AliasAccount>>> GetEmployeeSystemAccounts()
         {
-            // return await _context.EmployeeSystemAccounts.Select(x=>x.ToAlias(default)).ToListAsync<AliasEmployeeSystemAccount>();
+            return await _context.employees.Select(x=>x.ToAliasAccount(true,default)).ToListAsync<AliasAccount>();
 
-            var obj = await _context.employees.ToListAsync();
-            return Comon.ToListAlias<EmployeeSystemAccount>(obj,default);
+            // var obj = await _context.employees.ToListAsync();
+            // return Comon.ToListAlias<EmployeeAccount>(obj,default);
         }
 
         // GET: api/EmployeeSystemAccounts/md5-string
         [HttpGet("{id}")]//查看用户
-        public async Task<ActionResult<EncryptEmployeeSystemAccount>> GetEmployeeSystemAccount(string id)
+        public async Task<ActionResult<EncryptAccount>> GetEmployeeSystemAccount(string id)
         {
             return await _context.encrypts.Where(x => x.EncryptionId == id).FirstAsync();
         }
 
         // PUT: api/EmployeeSystemAccounts/5
         [HttpPut("{id}")]// 更新指定用户
-        public async Task<IActionResult> PutEmployeeSystemAccount(string id, AliasEmployeeSystemAccount employeeSystemAccount)
+        public async Task<IActionResult> PutEmployeeSystemAccount(string id, AliasAccount employeeSystemAccount)
         {
             if (!EmployeeSystemAccountExists(id))
             {
@@ -49,9 +51,9 @@ namespace TaskManangerSystem.Controllers
                 return BadRequest();
             }
 
-            Guid ids = _context.encrypts.Where(e => e.EncryptionId == id).First().Id;
+            Guid ids = _context.encrypts.Where(e => e.EncryptionId == id).First().EmployeeId;
             // var obj = ;
-            _context.Entry<EmployeeSystemAccount>(employeeSystemAccount.ToEmployeeSystemAccount(ids)).State = EntityState.Modified;
+            _context.Entry<EmployeeAccount>(employeeSystemAccount.ToEmployeeAccount(ids)).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +61,7 @@ namespace TaskManangerSystem.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                Console.WriteLine(employeeSystemAccount.ToEmployeeSystemAccount().EmployeeAlias);
+                Console.WriteLine(employeeSystemAccount.ToEmployeeAccount().EmployeeAlias);
                 return NotFound("数据已被锁定，请稍后再试");
             }
 
@@ -68,9 +70,9 @@ namespace TaskManangerSystem.Controllers
 
         // POST: api/EmployeeSystemAccounts
         [HttpPost]//增加
-        public async Task<ActionResult<EncryptEmployeeSystemAccount>> PostEmployeeSystemAccount(AliasEmployeeSystemAccount employeeSystemAccount)
+        public async Task<ActionResult<EncryptAccount>> PostEmployeeSystemAccount(AliasAccount employeeSystemAccount)
         {
-            EmployeeSystemAccount part = employeeSystemAccount.ToEmployeeSystemAccount();
+            EmployeeAccount part = employeeSystemAccount.ToEmployeeAccount();
 
             _context.employees.Add(part);
             await _context.SaveChangesAsync();
@@ -83,7 +85,7 @@ namespace TaskManangerSystem.Controllers
         [HttpDelete("{id}")]//删除
         public async Task<IActionResult> DeleteEmployeeSystemAccount(string id)
         {
-            Guid ida = _context.encrypts.Where(e => e.EncryptionId == id).First().Id;
+            Guid ida = _context.encrypts.Where(e => e.EncryptionId == id).First().EmployeeId;
             var employeeSystemAccount = await _context.employees.Where(x => x.EmployeeId == ida).FirstAsync();
             if (employeeSystemAccount == null)
             {

@@ -18,7 +18,7 @@ namespace TaskManangerSystem.Models.DataBean
     }
 
     [Table("task_table")]
-    public class Task
+    public class TaskAffair
     {
         [Key]
         public Guid TaskId { get; set; }

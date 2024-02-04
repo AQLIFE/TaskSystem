@@ -10,21 +10,23 @@ namespace TaskManangerSystem.Models.DataBean
         /// 对应数据库的真实数据，无加密和遮蔽
         /// </summary>
         [Table("employee_system_account_table")]
-        public class EmployeeSystemAccount :  IEmployee
+        public class EmployeeAccount : BaseEmployee
         {
                 [Key, Column("employee_electronic_account_id")]
-                public Guid EmployeeId { get; set; }
+                public new Guid EmployeeId { get; set; }
 
                 [Column("alias"), Required]
-                public string EmployeeAlias { get; set; }
+                public new string EmployeeAlias { get; set; }
 
                 [Column("employee_pwd"), Required]
-                public string EmployeePwd { get; set; }
+                public new string EmployeePwd { get; set; }
 
                 [Column("account_permission")]
-                public int AccountPermission { get; set; }
+                public new int AccountPermission { get; set; }
 
-                public EmployeeSystemAccount(AliasEmployeeSystemAccount obj,Guid id)
+                public EmployeeAccount() { }
+
+                public EmployeeAccount(AliasAccount obj, Guid id)
                 {
                         this.EmployeeId = id;
                         this.EmployeeAlias = obj.EmployeeAlias;
@@ -32,8 +34,7 @@ namespace TaskManangerSystem.Models.DataBean
                         this.AccountPermission = obj.AccountPermission;
                 }
 
-
-                public EmployeeSystemAccount() { }
+                
         }
 
         [Table("employee_real_info_table")]
@@ -43,6 +44,6 @@ namespace TaskManangerSystem.Models.DataBean
                 public Guid EmployeeElectronicAccountId { get; set; }
                 public string EmployeeName { get; set; }
                 public string EmployeeContactWay { get; set; }
-                public EmployeeSystemAccount EmployeeSystemAccount { get; set; }
+                public EmployeeAccount EmployeeSystemAccount { get; set; }
         }
 }
