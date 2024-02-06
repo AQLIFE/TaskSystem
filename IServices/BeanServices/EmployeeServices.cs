@@ -3,10 +3,21 @@ using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.IServices.BeanServices
 {
-    public interface IAlias
+    public interface IPart
     {
         public string EmployeeAlias { get; set; }
         public string EmployeePwd { get; set; }
+    }
+
+    public class Part
+    {
+        public string EmployeeAlias { get; set; }
+        public string EmployeePwd { get; set; }
+    }
+    public interface IAlias : IPart
+    {
+        // public string EmployeeAlias { get; set; }
+        // public string EmployeePwd { get; set; }
         public int AccountPermission { get; set; }
     }
     public abstract class BaseAlias : IAlias
@@ -31,7 +42,7 @@ namespace TaskManangerSystem.IServices.BeanServices
         public Guid EmployeeId { get; set; }
 
         public AliasAccount ToAliasAccount(bool ss = false, char cr = '*')
-            => new(this, ss==default?false:true, cr==default?'*':cr);
+            => new(this, ss == default ? false : true, cr == default ? '*' : cr);
     }
 
     public interface IEncrypt : IEmployee

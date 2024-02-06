@@ -1,15 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.DbContextConfg;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 
-using TaskManangerSystem.Actions;
-
 namespace TaskManangerSystem.Controllers
 {
 
-    [ApiController]
+    [ApiController,Authorize]
     [Route("api/[controller]")]
     public class EmployeeController : ControllerBase
     {
@@ -28,7 +27,7 @@ namespace TaskManangerSystem.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AliasAccount>>> GetEmployeeSystemAccounts()
         {
-            return await _context.employees.Select(x=>x.ToAliasAccount(default,default)).ToListAsync();
+            return await _context.employees.Select(x => x.ToAliasAccount(default, default)).ToListAsync();
 
             // var obj = await _context.employees.ToListAsync();
             // return obj.Select(e=>e.ToAliasAccount()).ToList();
@@ -41,6 +40,7 @@ namespace TaskManangerSystem.Controllers
             return await _context.encrypts.Where(x => x.EncryptionId == id).FirstAsync();
         }
 
+        // 大写
         // PUT: api/EmployeeSystemAccounts/5
         [HttpPut("{id}")]// 更新指定用户
         public async Task<IActionResult> PutEmployeeSystemAccount(string id, AliasAccount employeeSystemAccount)
@@ -75,7 +75,7 @@ namespace TaskManangerSystem.Controllers
             _context.employees.Add(part);
             await _context.SaveChangesAsync();
 
-            return await GetEmployeeSystemAccount(Comon.GetMD5(part.EmployeeId.ToString()));
+            return await GetEmployeeSystemAccount(part.EmployeeAlias);
             // return CreatedAtAction("GetEmployeeSystemAccount", new { id = part.EmployeeId });
         }
 
@@ -99,8 +99,6 @@ namespace TaskManangerSystem.Controllers
         //查找指定用户是否存在
 
         private bool EmployeeSystemAccountExists(string id)
-        {
-            return _context.encrypts.Any(e => e.EncryptionId == id);
-        }
+            => _context.encrypts.Any(e => e.EncryptionId == id);
     }
 }

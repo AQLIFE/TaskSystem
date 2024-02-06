@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TaskManangerSystem.IServices.SystemServices;
-using TaskManangerSystem.Models;
+using TaskManangerSystem.Models.SystemBean;
 
 
 namespace TaskManangerSystem.Actions
@@ -46,7 +46,8 @@ namespace TaskManangerSystem.Actions
                 new Claim(ClaimTypes.Role,role),
                 new  Claim(ClaimTypes.Name,name),
             ];
-            this.token = new JwtSecurityToken(issuer: issuer, claims: claims, expires: DateTime.Now.AddDays(7), signingCredentials: signing);
+            // Console.WriteLine($"Create => {audience}");
+            this.token = new (issuer: issuer, audience:audience, claims: claims, expires: DateTime.Now.AddDays(7), signingCredentials: signing);
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
@@ -63,6 +64,7 @@ namespace TaskManangerSystem.Actions
         public JsonWebTokenOption(IConfiguration configuration)
         {
             _configuration = configuration;
+            // Console.WriteLine($"Vaildate => {_configuration["Authentication:Audience"]}");
 
 
             string apiKey = _configuration["TaskManangerSystem:ServiceApiKey"] ?? throw new Exception("Program Error:Missing Key");
@@ -83,10 +85,9 @@ namespace TaskManangerSystem.Actions
             {
                 context.HandleResponse();
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                // context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.WriteAsJsonAsync(
-                    new ReturnInfo<string>{status=false,data="无权访问"}
-                    
+                    new Result<string>(){status=false,data="无权访问"}
                 );
                 return System.Threading.Tasks.Task.FromResult(0);
 

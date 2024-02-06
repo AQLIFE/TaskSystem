@@ -1,10 +1,25 @@
-﻿namespace TaskManangerSystem.Models
+﻿using System.Text.Json.Serialization;
+
+namespace TaskManangerSystem.Models.SystemBean
 {
 
-    public class ReturnInfo<T>
+    public class Result<T>
     {
-        public bool status;
-        public T data;
+        [JsonInclude]
+        public  bool status;
+        [JsonInclude]
+        public  T data;
+
+        // public ReturnInfo(bool bl,T obj){
+        //     status = bl;
+        //     data = obj;
+        // }
+        public Result(){}
+
+        public Result(bool bl,T obj){
+            this.status = bl;
+            this.data = obj;
+        }
     }
 
 }
