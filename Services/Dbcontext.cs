@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.Models.DataBean;
 
-namespace TaskManangerSystem.DbContextConfg
+namespace TaskManangerSystem.Services
 {
 
     public class ManagementSystemContext : DbContext
@@ -21,7 +21,7 @@ namespace TaskManangerSystem.DbContextConfg
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<EncryptAccount>().HasNoKey().ToView("alias_md5");
+            modelBuilder.Entity<EncryptAccount>().HasNoKey().ToView("encryption");
         }
 
     }

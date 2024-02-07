@@ -8,7 +8,7 @@ using TaskManangerSystem.IServices.SystemServices;
 using TaskManangerSystem.Models.SystemBean;
 
 
-namespace TaskManangerSystem.Actions
+namespace TaskManangerSystem.Services
 {
     public class JsonWebTokenInfo : ICustom
     {

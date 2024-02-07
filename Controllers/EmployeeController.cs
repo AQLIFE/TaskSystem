@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TaskManangerSystem.DbContextConfg;
+using TaskManangerSystem.Services;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 
@@ -97,7 +97,6 @@ namespace TaskManangerSystem.Controllers
         }
 
         //查找指定用户是否存在
-
         private bool EmployeeSystemAccountExists(string id)
             => _context.encrypts.Any(e => e.EncryptionId == id);
     }

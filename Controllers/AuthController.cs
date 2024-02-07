@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.DbContextConfg;
+using TaskManangerSystem.Services;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.SystemBean;
 
@@ -11,13 +11,11 @@ namespace TaskManangerSystem.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ManagementSystemContext _context;
-        // private readonly IConfiguration _configuration;
         private JsonWebTokenInfo Jwt;
 
         public AuthController(ManagementSystemContext context, IConfiguration configuration)
         {
             _context = context;
-            // _configuration = configuration;
             Jwt = new (configuration);
         }
 

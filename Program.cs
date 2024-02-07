@@ -1,4 +1,4 @@
-using TaskManangerSystem.DbContextConfg;
+using TaskManangerSystem.Services;
 using Microsoft.EntityFrameworkCore;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,8 +22,6 @@ builder.Services.AddControllers(options =>
 
 if (builder.Environment.IsDevelopment())
 {
-
-
     // string? issuer = builder.Configuration["Authentication:Schemes:Bearer:SigningKeys:0:Issuer"];
     string? str = builder.Configuration["TaskManangerSystem:ConnectionStrings:MysqlSource"];
     if (str != null)
@@ -59,8 +57,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthentication();// 授权
+app.UseAuthorization(); // 鉴权
 
 app.MapControllers();
 

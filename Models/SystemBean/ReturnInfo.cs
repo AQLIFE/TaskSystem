@@ -6,9 +6,9 @@ namespace TaskManangerSystem.Models.SystemBean
     public class Result<T>
     {
         [JsonInclude]
-        public  bool status;
+        public  bool status = false;
         [JsonInclude]
-        public  T data;
+        public  T? data;
 
         // public ReturnInfo(bool bl,T obj){
         //     status = bl;

@@ -1,6 +1,6 @@
 ﻿namespace TaskManangerSystem.IServices.SystemServices
 {
-     public class TokenOption
+    public class TokenOption
     {
         public string? Audience { get; set; }
 
