@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TaskManangerSystem.Models.SystemBean
 {
@@ -19,6 +20,10 @@ namespace TaskManangerSystem.Models.SystemBean
         public Result(bool bl,T obj){
             this.status = bl;
             this.data = obj;
+        }
+
+        public ObjectResult ToObjectResult(){
+            return new ObjectResult(this);
         }
     }
 

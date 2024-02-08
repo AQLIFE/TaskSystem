@@ -3,6 +3,12 @@ using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.IServices.BeanServices
 {
+    public interface IAuth{
+        public string EncryptionId { get; set; }
+        public string EmployeeAlias { get; set; }
+        public int AccountPermission { get; set; }
+    }
+
     public interface IPart
     {
         public string EmployeeAlias { get; set; }

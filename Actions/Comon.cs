@@ -25,24 +25,6 @@ namespace TaskManangerSystem.Actions
         }
     }
 
-    public class AppFilter : IActionFilter
-    {
-        public void OnActionExecuting(ActionExecutingContext action){}
-        
-        public void OnActionExecuted(ActionExecutedContext action){
-            HttpRequest obj = action.HttpContext.Request;
-            ObjectResult item = action.Result as ObjectResult ?? throw new Exception("没有这个类型");
-            action.Result = new ObjectResult(new Result<Object?>(!(action.Exception!=null || item.Value==null),item.Value));
-             // if(action.Exception!=null || item.Value==null ){
-            //     action.Result = new ObjectResult(new Result<string>(false,"请求失败"));
-            // }
-            // else {
-            //     action.Result =  new ObjectResult(new Result<object>(true,item.Value));
-            // }
-        }
-    }
-
-
     [Obsolete("尚未开发完成")]
     public class ActionTypeExtension : Exception{
         public string message {set;get;}

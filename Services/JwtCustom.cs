@@ -4,12 +4,19 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.IServices.SystemServices;
+using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 
 
 namespace TaskManangerSystem.Services
 {
+    public interface ICustom
+    {
+        public string CreateToken(IAuth auth);
+    }
+
     public class JsonWebTokenInfo : ICustom
     {
         private readonly IConfiguration _configuration;
@@ -39,12 +46,24 @@ namespace TaskManangerSystem.Services
             signing = new SigningCredentials(this.key, SecurityAlgorithms.HmacSha256);
         }
 
-        public string CreateToken(string name, string role = "default")
+        public string CreateToken(EncryptAccount encrypt){
+             this.claims = [
+                // new Claim(ClaimTypes.Role,encrypt.AccountPermission.ToString()),
+                new  Claim(ClaimTypes.Name,encrypt.EmployeeAlias),
+                new Claim(ClaimTypes.Authentication,encrypt.EncryptionId)
+            ];
+            // Console.WriteLine($"Create => {audience}");
+            this.token = new (issuer: issuer, audience:audience, claims: claims, expires: DateTime.Now.AddDays(7), signingCredentials: signing);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        [Obsolete("缺少合适的应用")]
+        public string CreateToken(IAuth auth)
         {
             this.claims = [
-                new Claim(ClaimTypes.NameIdentifier,audience),
-                new Claim(ClaimTypes.Role,role),
-                new  Claim(ClaimTypes.Name,name),
+                new Claim(ClaimTypes.Role,auth.AccountPermission.ToString()),
+                new  Claim(ClaimTypes.Name,auth.EmployeeAlias),
+                new Claim(ClaimTypes.Authentication,auth.EncryptionId)
             ];
             // Console.WriteLine($"Create => {audience}");
             this.token = new (issuer: issuer, audience:audience, claims: claims, expires: DateTime.Now.AddDays(7), signingCredentials: signing);

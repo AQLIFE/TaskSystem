@@ -33,11 +33,11 @@ namespace TaskManangerSystem.Controllers
             // return obj.Select(e=>e.ToAliasAccount()).ToList();
         }
 
-        // GET: api/EmployeeSystemAccounts/md5-string
+        // GET: api/EmployeeSystemAccounts/SHA256-string
         [HttpGet("{id}")]//查看用户
-        public async Task<ActionResult<EncryptAccount>> GetEmployeeSystemAccount(string id)
+        public async Task<ActionResult<EncryptAccount?>> GetEmployeeSystemAccount(string id)
         {
-            return await _context.encrypts.Where(x => x.EncryptionId == id).FirstAsync();
+            return await _context.encrypts.Where(x => x.EncryptionId == id).FirstOrDefaultAsync();
         }
 
         // 大写
@@ -79,12 +79,12 @@ namespace TaskManangerSystem.Controllers
             // return CreatedAtAction("GetEmployeeSystemAccount", new { id = part.EmployeeId });
         }
 
-        // DELETE: api/EmployeeSystemAccounts/md5-string
+        // DELETE: api/EmployeeSystemAccounts/SHA256-string
         [HttpDelete("{id}")]//删除
         public async Task<IActionResult> DeleteEmployeeSystemAccount(string id)
         {
             Guid ida = _context.encrypts.Where(e => e.EncryptionId == id).First().EmployeeId;
-            var employeeSystemAccount = await _context.employees.Where(x => x.EmployeeId == ida).FirstAsync();
+            var employeeSystemAccount = await _context.employees.Where(x => x.EmployeeId == ida).FirstOrDefaultAsync();
             if (employeeSystemAccount == null)
             {
                 return NotFound();
@@ -99,5 +99,7 @@ namespace TaskManangerSystem.Controllers
         //查找指定用户是否存在
         private bool EmployeeSystemAccountExists(string id)
             => _context.encrypts.Any(e => e.EncryptionId == id);
+
+        // private string FindEmployeeSystemAccountId()
     }
 }

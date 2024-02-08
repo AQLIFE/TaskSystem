@@ -3,6 +3,7 @@ using TaskManangerSystem.Actions;
 using TaskManangerSystem.Services;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.Models.DataBean;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -16,17 +17,22 @@ namespace TaskManangerSystem.Controllers
         public AuthController(ManagementSystemContext context, IConfiguration configuration)
         {
             _context = context;
-            Jwt = new (configuration);
+            Jwt = new(configuration);
         }
 
         [HttpPost]
         public ActionResult<string?> AuthLogin(Part account)
         {
-            return EmployeeAccountExists(account)?Jwt.CreateToken(account.EmployeeAlias):null;
+            return EmployeeAccountExists(account) ? Jwt.CreateToken(GetEncryptAccount(account)) : null;
         }
 
         private bool EmployeeAccountExists(Part account)
-            => _context.employees.Any(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd);
+        => _context.encrypts.Any(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd);
+        private string FindEncryptAccountId(Part account)
+        => _context.encrypts.Where(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd).ToList().First().EncryptionId;
+
+        private EncryptAccount GetEncryptAccount(Part account)
+        => _context.encrypts.Where(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd).ToList().First();
     }
 
 }
