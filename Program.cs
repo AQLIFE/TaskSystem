@@ -11,12 +11,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers(options =>
     options.Filters.Add<AppFilter>());
+
+
 if (builder.Environment.IsDevelopment())
 {
     // string? issuer = builder.Configuration["Authentication:Schemes:Bearer:SigningKeys:0:Issuer"];
     string? str = builder.Configuration["TaskManangerSystem:ConnectionStrings:MysqlLocal"];
     if (str != null)
         builder.Services.AddDbContext<ManagementSystemContext>(options => options.UseMySQL(str));//添加数据库链接上下文
+
+
     TokenOption tokenOption = new();
     builder.Configuration.Bind("Authentication", tokenOption);//绑定配置数据至对象
     builder.Services.AddScoped<ICustom, JsonWebTokenInfo>();

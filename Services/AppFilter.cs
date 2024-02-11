@@ -33,7 +33,7 @@ namespace TaskManangerSystem.Services
         public AppFilter(ManagementSystemContext context)
         {
             _context = context;
-            _logger = 
+            // _logger = 
         }
 
         public void OnActionExecuting(ActionExecutingContext action)
@@ -73,7 +73,7 @@ namespace TaskManangerSystem.Services
                     if (obj != null)
                         if (action.ActionArguments.ContainsKey("id") && action.ActionArguments["id"]?.ToString() != obj?.EncryptionId && obj?.AccountPermission < 90)
                         {
-                            _logger.LogInformation()
+                            // _logger.LogInformation()
                             action.ActionArguments["id"] = obj?.EncryptionId;
                         }
                     if (action.ActionArguments.ContainsKey("employeeSystemAccount"))
