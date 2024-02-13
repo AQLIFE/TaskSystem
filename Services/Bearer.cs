@@ -10,13 +10,13 @@ using TaskManangerSystem.IServices.SystemServices;
 namespace TaskManangerSystem.Services
 {
     
-    public class JsonWebTokenInfo : ComonJWT, ICustom
+    public class BearerInfo : BearerBase, IBearer
     {
         private Claim[]? claims;//客户端信息
 
         private JwtSecurityToken? token;
 
-        public JsonWebTokenInfo(){}
+        public BearerInfo(){}
 
         public string CreateToken(EncryptAccount encrypt)
         {
@@ -29,12 +29,12 @@ namespace TaskManangerSystem.Services
         }
     }
 
-    public class JsonWebTokenOption : ComonJWT
+    public class BearerConfig : BearerBase
     {
         public JwtBearerEvents bearerEvents = new JwtBearerEvents();
         public TokenValidationParameters tokenValidation;
 
-        public JsonWebTokenOption()
+        public BearerConfig()
         {
             tokenValidation = new TokenValidationParameters
             {
@@ -51,10 +51,20 @@ namespace TaskManangerSystem.Services
             bearerEvents.OnChallenge = context =>
             {
                 context.HandleResponse();
-                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.WriteAsJsonAsync(GlobalResult.NotAccess);
                 return Task.FromResult(0);
             };
+
+            bearerEvents.OnForbidden = context =>
+            {
+                // context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.WriteAsJsonAsync(GlobalResult.LimitedAuthority);
+                return Task.FromResult(0);
+            };
+
+            // bearerEvents.Forbidden = 
         }
     }
 

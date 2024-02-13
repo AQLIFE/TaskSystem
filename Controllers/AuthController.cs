@@ -12,7 +12,7 @@ namespace TaskManangerSystem.Controllers
         [HttpPost]
         public ActionResult<string?> AuthLogin(Part account)
         {
-            return EmployeeAccountExists(account) ? new JsonWebTokenInfo().CreateToken(GetEncryptAccount(account)) : null;
+            return EmployeeAccountExists(account) ? new BearerInfo().CreateToken(GetEncryptAccount(account)) : null;
         }
 
         private bool EmployeeAccountExists(Part account)

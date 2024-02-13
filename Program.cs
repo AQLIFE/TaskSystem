@@ -1,16 +1,16 @@
 using TaskManangerSystem.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices.SystemServices;
 using Microsoft.IdentityModel.Tokens;
+using TaskManangerSystem.Services.Filters;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 builder.Services
-    .AddScoped<ICustom, JsonWebTokenInfo>()
+    .AddScoped<IBearer, BearerInfo>()
     .AddControllers(options => options.Filters.Add<AppFilter>());
 
 
@@ -29,7 +29,7 @@ if (builder.Environment.IsDevelopment())
     TokenOption tokenOption = new();
     builder.Configuration.Bind("Authentication", tokenOption);//绑定配置数据至对象
 
-    JsonWebTokenOption obj = new();
+    BearerConfig obj = new();
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(option =>{

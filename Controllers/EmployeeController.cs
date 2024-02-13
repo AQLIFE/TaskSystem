@@ -4,11 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.Services;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.IServices.BeanServices;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace TaskManangerSystem.Controllers
 {
 
-    [ApiController,Authorize]
+    [ApiController, Authorize]
     [Route("api/[controller]")]
     public class EmployeeController(ManagementSystemContext context) : ControllerBase
     {
@@ -19,6 +22,7 @@ namespace TaskManangerSystem.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [Authorize(Roles = "99")]
         public async Task<ActionResult<IEnumerable<AliasAccount>>> GetEmployeeSystemAccounts()
         {
             return await context.employees.Select(x => x.ToAliasAccount(default, default)).ToListAsync();
@@ -34,63 +38,69 @@ namespace TaskManangerSystem.Controllers
         // 大写
         // PUT: api/EmployeeSystemAccounts/5
         [HttpPut("{id}")]// 更新指定用户
-        public async Task<IActionResult> PutEmployeeSystemAccount(string id, AliasAccount employeeSystemAccount)
+        public async Task<string?> PutEmployeeSystemAccount(string id, AliasAccount employeeSystemAccount)
         {
-            if (!EmployeeSystemAccountExists(id))
-            {
-                return BadRequest();
-            }
-
             Guid ids = context.encrypts.Where(e => e.EncryptionId == id).First().EmployeeId;
-            // var obj = ;
+
             context.Entry<EmployeeAccount>(employeeSystemAccount.ToEmployeeAccount(ids)).State = EntityState.Modified;
 
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return NotFound("数据已被锁定，请稍后再试");
-            }
+            await context.SaveChangesAsync();
 
-            return Ok("已更新" + employeeSystemAccount.EmployeeAlias);
+            return employeeSystemAccount.EmployeeAlias;
         }
 
         // POST: api/EmployeeSystemAccounts
         [HttpPost]//增加
-        public async Task<ActionResult<EncryptAccount>> PostEmployeeSystemAccount(AliasAccount employeeSystemAccount)
+        public async Task<string?> PostEmployeeSystemAccount(Part employeeSystemAccount)
         {
+            if (EmployeeSystemAccountExists(employeeSystemAccount.EmployeeAlias)) return "名称已存在";
             EmployeeAccount part = employeeSystemAccount.ToEmployeeAccount();
 
             context.employees.Add(part);
             await context.SaveChangesAsync();
 
-            return await GetEmployeeSystemAccount(part.EmployeeAlias);
-            // return CreatedAtAction("GetEmployeeSystemAccount", new { id = part.EmployeeId });
+            return GetEmployeeSystemAccount(ComputeSHA256Hash(part.EmployeeId.ToString()))!.Result?.Value?.EmployeeAlias;
         }
 
         // DELETE: api/EmployeeSystemAccounts/SHA256-string
         [HttpDelete("{id}")]//删除
-        public async Task<IActionResult> DeleteEmployeeSystemAccount(string id)
+        public async Task<string> DeleteEmployeeSystemAccount(string id)
         {
             Guid ida = context.encrypts.Where(e => e.EncryptionId == id).First().EmployeeId;
             var employeeSystemAccount = await context.employees.Where(x => x.EmployeeId == ida).FirstOrDefaultAsync();
-            if (employeeSystemAccount == null)
-            {
-                return NotFound();
-            }
+            if (employeeSystemAccount == null)return "不存在这个账户";
 
             context.employees.Remove(employeeSystemAccount);
             await context.SaveChangesAsync();
-
-            return Ok("已删除" + id);
+            string str = $"已删除 {id}";
+            return str;
         }
 
         //查找指定用户是否存在
-        private bool EmployeeSystemAccountExists(string id)
-            => context.encrypts.Any(e => e.EncryptionId == id);
+        private bool EmployeeSystemAccountExists(string name)
+            => context.encrypts.Any(e => e.EmployeeAlias == name);
 
-        // private string FindEmployeeSystemAccountId()
+
+        private string ComputeSHA256Hash(string input)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                // Convert the input string to a byte array
+                byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+
+                // Compute the hash value
+                byte[] hashBytes = sha256.ComputeHash(inputBytes);
+
+                // Convert the hash bytes to a hexadecimal string
+                StringBuilder sb = new StringBuilder();
+                foreach (byte b in hashBytes)
+                {
+                    sb.Append(b.ToString("x2"));
+                }
+
+                return sb.ToString();
+            }
+            // private string FindEmployeeSystemAccountId()
+        }
     }
 }

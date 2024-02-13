@@ -34,6 +34,13 @@ namespace TaskManangerSystem.Models.DataBean
                         this.EmployeePwd = obj.EmployeePwd;
                         this.AccountPermission = obj.AccountPermission;
                 }
+
+                public EmployeeAccount(Part obj,Guid id){
+                         this.EmployeeId = id;
+                        this.EmployeeAlias = obj.EmployeeAlias;
+                        this.EmployeePwd = obj.EmployeePwd;
+                        this.AccountPermission = 1;
+                }
         }
 
         [Table("employee_real_info_table")]

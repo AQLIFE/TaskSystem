@@ -1,9 +1,11 @@
 using TaskManangerSystem.Actions;
+using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.IServices.BeanServices
 {
-    public interface IAuth{
+    public interface IAuth
+    {
         public string EncryptionId { get; set; }
         public string EmployeeAlias { get; set; }
         public int AccountPermission { get; set; }
@@ -19,6 +21,10 @@ namespace TaskManangerSystem.IServices.BeanServices
     {
         public string EmployeeAlias { get; set; }
         public string EmployeePwd { get; set; }
+
+
+        public EmployeeAccount ToEmployeeAccount(Guid? id = null)
+        => new(this, id ?? Guid.NewGuid());
     }
     public interface IAlias : IPart
     {

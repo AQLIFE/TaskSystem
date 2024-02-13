@@ -1,38 +1,18 @@
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using TaskManangerSystem.Models.DataBean;
-
-namespace TaskManangerSystem.IServices.SystemServices
+﻿namespace TaskManangerSystem.IServices.SystemServices
 {
-    public interface ICustom
+    public class TokenOption
     {
-        public string CreateToken(EncryptAccount encrypt);
-    }
+        public string Audience { get;private  set; }
 
-    public abstract class ComonJWT : TokenOption
-    {
-        public byte[] secretByte
+        public string Issuer { get;private  set; }
+
+        public string SecurityKey { get;private  set; }
+
+        public TokenOption()
         {
-            get
-            {
-                return Encoding.UTF8.GetBytes(SecurityKey);
-            }
+            this.SecurityKey = Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception("Program Error:Missing Key");
+            this.Issuer = Environment.GetEnvironmentVariable("ISSUER") ?? throw new Exception("Program Error:Misssing Issuer");
+            this.Audience = Environment.GetEnvironmentVariable("AUDIENCE") ?? throw new Exception("Program Error:Misssing Audience");
         }
-        public SecurityKey key
-        {
-            get
-            {
-                return new SymmetricSecurityKey(secretByte);
-            }
-        }//加密密钥
-
-        public SigningCredentials signing
-        {
-            get
-            {
-                return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            }
-        }//加密后密钥
     }
-
 }

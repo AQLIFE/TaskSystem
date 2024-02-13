@@ -24,11 +24,15 @@ namespace TaskManangerSystem.Models.SystemBean
     }
 
     public static class GlobalResult{
-        public static ObjectResult InvalidParameter = new Result<string>(false, "请求拒绝").ToObjectResult();
+        public static ObjectResult InvalidParameter = new Result<string>(false, "请求拒绝").ToObjectResult();//无效参数
 
-        public static ObjectResult NoAccess = new Result<string>(false, "访问无效，请重新登陆").ToObjectResult();
-        public static Result<string> NotAccess = new Result<string>(false, "访问无效，请重新登陆");
+        public static ObjectResult NoData = new Result<string>(false,"数据不存在").ToObjectResult();
 
+        public static ObjectResult NoAccess = new Result<string>(false, "访问无效").ToObjectResult();
+        public static Result<string> NotAccess = new Result<string>(false, "访问无效");
+
+        public static Result<string> LimitedAuthority = new Result<string>(false,"权限不足");
+        public static ObjectResult LimitAuth = new Result<string>(false,"权限不足").ToObjectResult();
 
     }
 
