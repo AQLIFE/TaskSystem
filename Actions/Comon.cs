@@ -1,10 +1,4 @@
-using System.Reflection;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using TaskManangerSystem.IServices.BeanServices;
-using TaskManangerSystem.Models.DataBean;
-using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Actions
 {
@@ -26,11 +20,26 @@ namespace TaskManangerSystem.Actions
     }
 
     [Obsolete("尚未开发完成")]
-    public class ActionTypeExtension : Exception{
-        public string message {set;get;}
+    public class ActionTypeExtension : Exception
+    {
+        public string message { set; get; }
 
-        public ActionTypeExtension(string str){
+        public ActionTypeExtension(string str)
+        {
             this.message = str;
-        }        
+        }
+    }
+
+
+    partial class ExampleHandler(ILogger<ExampleHandler> logger)
+    {
+        public string HandleRequest()
+        {
+            LogHandleRequest(logger);
+            return "Hello World";
+        }
+
+        [LoggerMessage(LogLevel.Information, "ExampleHandler.HandleRequest was called")]
+        public static partial void LogHandleRequest(ILogger logger);
     }
 }

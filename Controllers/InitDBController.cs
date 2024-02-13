@@ -8,16 +8,10 @@ using TaskManangerSystem.Services;
 namespace InitDb
 {
     [ApiController,Route("api/[controller]")]
-    public class InitDBController :ControllerBase
+    public class InitDBController(ManagementSystemContext context) :ControllerBase
     {
-        private readonly ManagementSystemContext _context;
-        public InitDBController(ManagementSystemContext context)
-        {
-            this._context = context;
-        }
-
         [HttpGet("status")]
-        public bool ExitsEmplyee() => _context.employees.ToList().IsNullOrEmpty();
+        public bool ExitsEmplyee() => context.employees.ToList().IsNullOrEmpty();
 
         [HttpGet("execute")]
         public int InitEmplyee()
@@ -36,11 +30,11 @@ namespace InitDb
                 AccountPermission = 99
             };
 
-            _context.Entry<EmployeeAccount>(admin).State = EntityState.Added;
-            return _context.SaveChanges();
+            context.Entry<EmployeeAccount>(admin).State = EntityState.Added;
+            return context.SaveChanges();
         }
-        // public bool  Exits()=>_context.encrypts.ToList() is null;
-        // public bool  ExitsEmplyee()=>_context.tasks.ToList() is null;
-        // public bool  ExitsEmplyee()=>_context.employees.ToList() is null;
+        // public bool  Exits()=>context.encrypts.ToList() is null;
+        // public bool  ExitsEmplyee()=>context.tasks.ToList() is null;
+        // public bool  ExitsEmplyee()=>context.employees.ToList() is null;
     }
 }
