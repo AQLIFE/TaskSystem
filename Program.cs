@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using TaskManangerSystem.IServices.SystemServices;
 using Microsoft.IdentityModel.Tokens;
-using TaskManangerSystem.Services.Filters;
+using TaskManangerSystem.Services;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 

@@ -4,6 +4,15 @@ using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.IServices.BeanServices
 {
+
+    public class Info{
+        public string EmployeeAlias { get; set; }
+        public int AccountPermission { get; set; }
+
+        public EmployeeAccount ToEmployeeAccount(string pwd,Guid? id =null)
+        =>new(this,id??Guid.NewGuid(),pwd);
+    }
+
     public interface IAuth
     {
         public string EncryptionId { get; set; }

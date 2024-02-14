@@ -28,27 +28,6 @@ namespace TaskManangerSystem.Controllers
             return await context.employees.Select(x => x.ToAliasAccount(default, default)).ToListAsync();
         }
 
-        // GET: api/EmployeeSystemAccounts/SHA256-string
-        [HttpGet("{id}")]//查看用户
-        public async Task<ActionResult<EncryptAccount?>> GetEmployeeSystemAccount(string id)
-        {
-            return await context.encrypts.Where(x => x.EncryptionId == id).FirstOrDefaultAsync();
-        }
-
-        // 大写
-        // PUT: api/EmployeeSystemAccounts/5
-        [HttpPut("{id}")]// 更新指定用户
-        public async Task<string?> PutEmployeeSystemAccount(string id, AliasAccount employeeSystemAccount)
-        {
-            Guid ids = context.encrypts.Where(e => e.EncryptionId == id).First().EmployeeId;
-
-            context.Entry<EmployeeAccount>(employeeSystemAccount.ToEmployeeAccount(ids)).State = EntityState.Modified;
-
-            await context.SaveChangesAsync();
-
-            return employeeSystemAccount.EmployeeAlias;
-        }
-
         // POST: api/EmployeeSystemAccounts
         [HttpPost]//增加
         public async Task<string?> PostEmployeeSystemAccount(Part employeeSystemAccount)
@@ -59,9 +38,32 @@ namespace TaskManangerSystem.Controllers
             context.employees.Add(part);
             await context.SaveChangesAsync();
 
-            return GetEmployeeSystemAccount(ComputeSHA256Hash(part.EmployeeId.ToString()))!.Result?.Value?.EmployeeAlias;
+            return GetEmployeeSystemAccount(ComputeSHA256Hash(part.EmployeeId.ToString()))?.Result?.EmployeeAlias;
         }
 
+        // GET: api/EmployeeSystemAccounts/SHA256-string
+        [HttpGet("{id}")]//查看用户
+        public async Task<Info?> GetEmployeeSystemAccount(string id)
+        {
+            EncryptAccount? encrypt = await context.encrypts.Where(x => x.EncryptionId == id).FirstOrDefaultAsync();
+            return encrypt!=null ?new Info(){
+                AccountPermission = encrypt.AccountPermission,
+                EmployeeAlias = encrypt.EmployeeAlias
+            }:null;
+        }
+
+        // 大写
+        // PUT: api/EmployeeSystemAccounts/5
+        [HttpPut("{id}")]// 更新指定用户
+        public async Task<string?> PutEmployeeSystemAccount(string id, Info employeeSystemAccount)
+        {
+            EncryptAccount objs = context.encrypts.Where(e => e.EncryptionId == id).First();
+            context.Entry<EmployeeAccount>(employeeSystemAccount.ToEmployeeAccount(objs.EmployeePwd,objs.EmployeeId)).State = EntityState.Modified;
+            await context.SaveChangesAsync();
+            return employeeSystemAccount.EmployeeAlias;
+        }
+
+        
         // DELETE: api/EmployeeSystemAccounts/SHA256-string
         [HttpDelete("{id}")]//删除
         public async Task<string> DeleteEmployeeSystemAccount(string id)
@@ -100,7 +102,6 @@ namespace TaskManangerSystem.Controllers
 
                 return sb.ToString();
             }
-            // private string FindEmployeeSystemAccountId()
         }
     }
 }

@@ -27,6 +27,13 @@ namespace TaskManangerSystem.Models.DataBean
                 public EmployeeAccount() { 
                 }
 
+                public EmployeeAccount(Info obj,Guid id,string pwd) {
+                        this.EmployeeId = id;
+                        this.EmployeeAlias = obj.EmployeeAlias;
+                        this.EmployeePwd = pwd;
+                        this.AccountPermission = obj.AccountPermission;
+                }
+
                 public EmployeeAccount(AliasAccount obj, Guid id)
                 {
                         this.EmployeeId = id;

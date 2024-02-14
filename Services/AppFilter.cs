@@ -8,7 +8,7 @@ using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 
-namespace TaskManangerSystem.Services.Filters
+namespace TaskManangerSystem.Services
 {
     partial class AppFilter(ManagementSystemContext context, ILogger<AppFilter> logger) : IActionFilter
     {
@@ -19,11 +19,13 @@ namespace TaskManangerSystem.Services.Filters
                 string id = GetIdByClaims(action.HttpContext.User.Claims!)!;
                 EncryptAccount? obj = GetEncryptAccount(id!);
                 if (obj != null) VerifyPart(obj, action);
-                else action.Result = GlobalResult.NoData;
+                else action.Result = GlobalResult.Cancelled;
             }
         }
 
         private EncryptAccount? GetEncryptAccount(string id) => context.encrypts.Where(e => e.EncryptionId == id).FirstOrDefault();
+
+        private bool EmployeeSystemAccountExists(string name)=>context.encrypts.Any(e=>e.EmployeeAlias==name);
 
         private string? GetIdByClaims(IEnumerable<Claim> claims)
             => (from item in claims where item.ToString() == ClaimTypes.Authentication + ": " + item.Value select item.Value).FirstOrDefault();
@@ -32,15 +34,15 @@ namespace TaskManangerSystem.Services.Filters
         {
             if (action.ActionArguments.ContainsKey("id") &&
                 obj!.AccountPermission < 90)
-            // 方法需要ID 且 请求ID和用户ID不一致 且 用户权限不足
+            // 方法需要ID 且 用户权限不足90
             {
-                if (action.ActionArguments.ContainsKey("employeeSystemAccount") && action.ActionArguments["employeeSystemAccount"] is AliasAccount part)
-                {
-
+                if (action.ActionArguments.ContainsKey("employeeSystemAccount") && action.ActionArguments["employeeSystemAccount"] is Info part)
                     if (part.AccountPermission >= 90) action.Result = GlobalResult.LimitAuth; //无权
-                }
+                    else if( EmployeeSystemAccountExists(part.EmployeeAlias) )action.Result = GlobalResult.Repetition(part.EmployeeAlias);
+                    // else if( context.encrypts.Any(e=>e.EmployeePwd!=part.EmployeePwd))action.Result = GlobalResult.PWDError;
 
-                if(obj!.EncryptionId!=action.ActionArguments["id"]!.ToString())action.Result = GlobalResult.InvalidParameter;// 返回错误参数
+                // 请求ID和用户ID不一致
+                if (obj!.EncryptionId != action.ActionArguments["id"]!.ToString()) action.Result = GlobalResult.InvalidParameter;// 错误参数
             }
             var oj = action.ActionDescriptor as ControllerActionDescriptor;
 
