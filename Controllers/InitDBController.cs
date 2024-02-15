@@ -7,8 +7,8 @@ using TaskManangerSystem.Services;
 
 namespace InitDb
 {
-    [ApiController,Route("api/[controller]")]
-    public class InitDBController(ManagementSystemContext context) :ControllerBase
+    [ApiController, Route("api/[controller]")]
+    public class InitDBController(ManagementSystemContext context) : ControllerBase
     {
         [HttpGet("status")]
         public bool ExitsEmplyee() => context.employees.ToList().IsNullOrEmpty();
@@ -23,7 +23,8 @@ namespace InitDb
 
         private int AddAdminAccount()
         {
-            var admin = new EmployeeAccount(){
+            var admin = new EmployeeAccount()
+            {
                 EmployeeId = Guid.NewGuid(),
                 EmployeeAlias = "admin",
                 EmployeePwd = "admin@123",

@@ -22,7 +22,8 @@ namespace TaskManangerSystem.Services
         {
             this.claims = [
                 new Claim(ClaimTypes.Name,encrypt.EmployeeAlias),
-                new Claim(ClaimTypes.Authentication,encrypt.EncryptionId)
+                new Claim(ClaimTypes.Authentication,encrypt.EncryptionId),
+                new Claim(ClaimTypes.Role,encrypt.AccountPermission.ToString())
            ];
             this.token = new(issuer: Issuer, audience: Audience, claims: claims, expires: DateTime.Now.AddDays(7), signingCredentials: signing);
             return new JwtSecurityTokenHandler().WriteToken(token);

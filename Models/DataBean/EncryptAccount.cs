@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using TaskManangerSystem.IServices.BeanServices;
+using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Models.DataBean
 {
@@ -27,5 +28,7 @@ namespace TaskManangerSystem.Models.DataBean
 
                 [Column("account_permission")]
                 public new int AccountPermission { get; set; }
+
+                public new PartInfo ToPartInfo()=>new PartInfo(this);
         }
 }

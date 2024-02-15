@@ -36,11 +36,12 @@ namespace TaskManangerSystem.Services
                 obj!.AccountPermission < 90)
             // 方法需要ID 且 用户权限不足90
             {
-                if (action.ActionArguments.ContainsKey("employeeSystemAccount") && action.ActionArguments["employeeSystemAccount"] is Info part)
+                if (action.ActionArguments.ContainsKey("employeeSystemAccount") && action.ActionArguments["employeeSystemAccount"] is PartInfo part)
+                {
                     if (part.AccountPermission >= 90) action.Result = GlobalResult.LimitAuth; //无权
                     else if( EmployeeSystemAccountExists(part.EmployeeAlias) )action.Result = GlobalResult.Repetition(part.EmployeeAlias);
                     // else if( context.encrypts.Any(e=>e.EmployeePwd!=part.EmployeePwd))action.Result = GlobalResult.PWDError;
-
+                }
                 // 请求ID和用户ID不一致
                 if (obj!.EncryptionId != action.ActionArguments["id"]!.ToString()) action.Result = GlobalResult.InvalidParameter;// 错误参数
             }
@@ -53,7 +54,7 @@ namespace TaskManangerSystem.Services
         {
             HttpRequest obj = action.HttpContext.Request;
             ObjectResult item = action.Result as ObjectResult ?? throw new Exception("没有这个类型");
-            action.Result = new Result<Object?>(!(action.Exception != null || item.Value == null), item.Value).ToObjectResult();
+            action.Result = new Result<Object?>(item.Value,!(action.Exception != null || item.Value == null)).ToObjectResult();
         }
     }
 }

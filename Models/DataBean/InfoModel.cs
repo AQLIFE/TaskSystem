@@ -1,9 +1,10 @@
 
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TaskManangerSystem.Models.DataBean
 {
- 
+    [Table("category_table")]
     public class Category
     {
         [Key]
@@ -15,8 +16,6 @@ namespace TaskManangerSystem.Models.DataBean
         public int CategoryLevel { get; set; }
 
         public string Remark { get; set; }
-
-
 
         public Category ParentCategory { get; set; }
 

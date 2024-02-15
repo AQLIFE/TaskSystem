@@ -2,6 +2,8 @@
 using TaskManangerSystem.Services;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
+using TaskManangerSystem.Actions;
+using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -9,19 +11,13 @@ namespace TaskManangerSystem.Controllers
     [ApiController]
     public class AuthController(ManagementSystemContext context) : ControllerBase
     {
+        private EmployeeActions employee = new EmployeeActions(context);
+        
         [HttpPost]
         public ActionResult<string?> AuthLogin(Part account)
-        {
-            return EmployeeAccountExists(account) ? new BearerInfo().CreateToken(GetEncryptAccount(account)) : null;
-        }
-
-        private bool EmployeeAccountExists(Part account)
-        => context.encrypts.Any(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd);
-        private string FindEncryptAccountId(Part account)
-        => context.encrypts.Where(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd).ToList().First().EncryptionId;
-
-        private EncryptAccount GetEncryptAccount(Part account)
-        => context.encrypts.Where(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd).ToList().First();
+            => employee.LoginCheck(account) ?
+             new BearerInfo().CreateToken(employee.GetEncryptsByName(account.EmployeeAlias)!) :
+              "登录校验不通过";
     }
 
 }
