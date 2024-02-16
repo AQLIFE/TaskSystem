@@ -17,11 +17,35 @@ namespace TaskManangerSystem.IServices.BeanServices
     public interface IEmployee : IPart,IPartInfo
     {
         public Guid EmployeeId { get; set; }
-        // public AliasAccount ToAliasAccount(bool ss = false, char cr = '*');
     }
 
     public interface IEncrypt : IEmployee
     {
         public string EncryptionId { get; set; }
+    }
+
+
+    public interface ICategory{
+        public Guid CategoryId { get; set; }
+        public Guid? ParentCategoryId { get; set; }
+
+        public int SortSerial{set;get;}
+
+        public string CategoryName { get; set; }
+
+        public int CategoryLevel { get; set; }
+
+        public string Remark { get; set; }
+    }
+
+    public interface ICateInfo{
+        public int SortSerial{set;get;}
+        public int ParentSortSerial{set;get;}
+
+        public string CategoryName { get; set; }
+
+        public int CategoryLevel { get; set; }
+
+        public string Remark { get; set; }
     }
 }

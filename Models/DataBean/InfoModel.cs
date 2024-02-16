@@ -1,23 +1,40 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TaskManangerSystem.IServices.BeanServices;
+using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Models.DataBean
 {
     [Table("category_table")]
-    public class Category
+    public class Category : BaseCategory
     {
-        [Key]
-        public Guid CategoryId { get; set; }
-        public Guid? ParentCategoryId { get; set; }
+        [Key, Column("category_id")]
+        public override Guid CategoryId { get; set; }
+        [Column("parent_category_id")]
+        public override Guid? ParentCategoryId { get; set; }
 
-        public string CategoryName { get; set; }
 
-        public int CategoryLevel { get; set; }
+        [Column("sort_serial")]
+        public override int SortSerial { set; get; }
 
-        public string Remark { get; set; }
+        [Column("category_name")]
+        public override string CategoryName { get; set; }
+
+        [Column("category_level")]
+        public override int CategoryLevel { get; set; }
+
+        public override string Remark { get; set; }
 
         public Category ParentCategory { get; set; }
+
+        public Category(){}
+
+        public Category(ICateInfo? cateInfo, Guid id, Guid? parId):base(cateInfo,id,parId){
+            // Console.WriteLine($"{id},{cateInfo.CategoryLevel},{cateInfo.CategoryName},{parId},{cateInfo.SortSerial}");
+        }
+        
+        public BaseCateInfo ToCateInfo(int parId) => new BaseCateInfo(this, parId);
 
     }
 

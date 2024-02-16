@@ -20,7 +20,7 @@ namespace TaskManangerSystem.Actions
         public EmployeeAccount? GetEmployee(string id) => context.employees.Find(GetEncrypts(id)?.EmployeeId.ToString());
         public EmployeeAccount? GetEmployeeByName(string name) => context.employees.Find(GetEncryptsByName(name)?.EmployeeId.ToString());
         // public async Task<EmployeeAccount?> GetEmployeeAsync(string id) => await context.employees.FindAsync(GetEncryptsAsync(id)?.Result?.EmployeeId);
-        
+
         /// <summary>
         /// 查询加密信息
         /// </summary>
@@ -32,6 +32,25 @@ namespace TaskManangerSystem.Actions
 
         public bool LoginCheck(Part account)
        => context.encrypts.Any(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd);
-        // public EmployeeAccount GetEmployeeByEncrypts()
+    }
+
+    public class CategoryActions(ManagementSystemContext context)
+    {
+
+        public bool ExitsCategoryBySerial(int serial) => context.categories.Any(e => e.SortSerial == serial);
+
+        public Category? GetCategoryBySerial(int serial) => context.categories.Where(e => e.SortSerial == serial).FirstOrDefault();
+
+        public List<Category> GetCategoryListByParentSerial(int serial) => context.categories.Where(e => e.ParentCategoryId == GetCategoryBySerial(serial).CategoryId).ToList();
+
+
+        public bool ExitsCategory(Guid id)=>context.categories.Any(e=>e.CategoryId==id);
+
+        public Category? GetCategory(Guid? id)=>id!=null?context.categories.Find(id):null;
+
+        public Guid? GetParentId(int id)=>id==0?null:GetCategoryBySerial(id)?.CategoryId;
+        public int GetParentSort(Guid? id)=>id!=null?GetCategory(id)!.SortSerial:0;
+
+
     }
 }

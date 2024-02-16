@@ -5,7 +5,7 @@ using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Controllers
 {
-    [ApiController, Authorize, Route("api/[controller]")]
+    // [ApiController, Authorize, Route("api/[controller]")]
     public class DBInfoController(ManagementSystemContext systemContext) : ControllerBase
     {
         public DBInfo GetInfoByEmployee() => new(systemContext.employees.Count());
