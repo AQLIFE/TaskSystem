@@ -24,7 +24,7 @@ namespace TaskManangerSystem.Models.DataBean
         [Column("category_level")]
         public override int CategoryLevel { get; set; }
 
-        public override string Remark { get; set; }
+        public override string? Remark { get; set; }
 
         public Category ParentCategory { get; set; }
 

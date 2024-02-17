@@ -16,15 +16,31 @@ namespace TaskManangerSystem.Controllers
 
         [HttpGet]
         public async Task<IEnumerable<BaseCateInfo?>> GetCategory(int page = 1, int pageSize = 120)
-        // => await context.categories.OrderBy(c => c.CategoryLevel).Skip((page - 1) * pageSize).Take(pageSize).Select(e=>e.ToCateInfo(action.GetCategory(e.ParentCategoryId)!.SortSerial)).ToListAsync();
-        => await context.categories.OrderBy(c => c.CategoryLevel).OrderBy(c=>c.SortSerial).Skip((page - 1) * pageSize).Take(pageSize).Select(e=>e.ToCateInfo(action.GetParentSort(e.ParentCategoryId))).ToListAsync();
+        // => await context.categories.OrderBy(c => c.CategoryLevel).Skip((page - 1) * pageSize).Take(pageSize).Select(e=>e.ToCateInfo(action.GetCategory((Guid)e.ParentCategoryId!)!.SortSerial)).ToListAsync();
+        => await context.categories.OrderBy(c => c.CategoryLevel).OrderBy(c => c.SortSerial)
+        .Skip((page - 1) * pageSize).Take(pageSize)
+        .Select(  e =>  e.ToCateInfo(  action.GetParentSort((Guid)e.ParentCategoryId!).Result)).ToListAsync();
+
+        // [HttpGet("level")]
+        // public async Task<IEnumerable<BaseCateInfo?>> GetCategory(int level = 1, int page = 1, int pageSize = 120)
+        // {
+        //     Console.WriteLine(level);
+        //     return await context.categories
+        //     .Where(e => e.CategoryLevel == level)
+        //     .OrderBy(c => c.SortSerial)
+        //     .Skip((page - 1) * pageSize).Take(pageSize)
+        //     .Select(e => e.ToCateInfo(action.GetParentSort((Guid)e.ParentCategoryId!))).ToListAsync();
+
+        // }
 
         [HttpPost]
         public async Task<ActionResult<string>> PostCategory(CateInfo category)
         {
-            // Console.WriteLine($"{category.CategoryName}");
-            if(action.ExitsCategoryBySerial(category.SortSerial))return "已存在同序列分类";
-            Category obj= category.ToCategory(Guid.NewGuid(),action.GetParentId(category.ParentSortSerial));
+            // if (action.ExitsCategoryBySerial(category.SortSerial)) return "已存在同序列分类";
+            // else if( category.ParentSortSerial !=0 && !action.ExitsCategoryBySerial(category.ParentSortSerial))return "父分类序列号不存在";
+            if (!action.Validate(category)) return action.ValidateMessage;
+
+            Category obj = category.ToCategory(Guid.NewGuid(), action.GetParentId(category.ParentSortSerial));
 
             // Console.WriteLine($"{obj.CategoryId},{obj.CategoryLevel},{obj.CategoryName},{obj.ParentCategoryId},{obj.SortSerial}");
 
@@ -36,7 +52,7 @@ namespace TaskManangerSystem.Controllers
 
         [HttpGet("{id}")]
         public ActionResult<BaseCateInfo?> GetCategoryById(int id)
-            =>  action.GetCategoryBySerial(id)!.ToCateInfo(id);
+            => action.GetCategoryBySerial(id)?.ToCateInfo(id);
 
         // POST: api/categories  
 

@@ -34,7 +34,6 @@ namespace TaskManangerSystem.Models.SystemBean
         public CateInfo() {}
         public override Category ToCategory(Guid Id, Guid? ParId)
             => new Category(this, Id, ParId);
-            
 
     }
 

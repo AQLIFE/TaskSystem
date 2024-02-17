@@ -70,7 +70,7 @@ namespace TaskManangerSystem.Models.SystemBean
         public virtual int ParentSortSerial { set; get; }
         public virtual string CategoryName { get; set; }
         public virtual int CategoryLevel { get; set; }
-        public virtual string Remark { get; set; }
+        public virtual string? Remark { get; set; }
 
         public BaseCateInfo() { }
         public BaseCateInfo(ICategory category, int parId)
@@ -93,7 +93,7 @@ namespace TaskManangerSystem.Models.SystemBean
         public virtual int SortSerial { set; get; } /* = cateInfo.SortSerial; */
         public virtual string CategoryName { get; set; } /* = cateInfo.CategoryName; */
         public virtual int CategoryLevel { get; set; } /* = cateInfo.CategoryLevel; */
-        public virtual string Remark { get; set; }/*  = cateInfo.Remark; */
+        public virtual string? Remark { get; set; }/*  = cateInfo.Remark; */
         public BaseCategory() /* : this(null, Guid.NewGuid(), Guid.NewGuid()) */ { }
         public BaseCategory(ICateInfo? cateInfo, Guid id, Guid? parId)
         {

@@ -35,7 +35,7 @@ namespace TaskManangerSystem.IServices.BeanServices
 
         public int CategoryLevel { get; set; }
 
-        public string Remark { get; set; }
+        public string? Remark { get; set; }
     }
 
     public interface ICateInfo{

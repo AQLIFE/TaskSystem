@@ -37,20 +37,41 @@ namespace TaskManangerSystem.Actions
     public class CategoryActions(ManagementSystemContext context)
     {
 
-        public bool ExitsCategoryBySerial(int serial) => context.categories.Any(e => e.SortSerial == serial);
+        public bool ExistsCategoryBySerial(int serial) => context.categories.Any(e => e.SortSerial == serial);
 
-        public Category? GetCategoryBySerial(int serial) => context.categories.Where(e => e.SortSerial == serial).FirstOrDefault();
+        public Category? GetCategoryBySerial(int serial) => ExistsCategoryBySerial(serial) ? context.categories.Where(e => e.SortSerial == serial).FirstOrDefault() : null;
 
-        public List<Category> GetCategoryListByParentSerial(int serial) => context.categories.Where(e => e.ParentCategoryId == GetCategoryBySerial(serial).CategoryId).ToList();
+        public List<Category>? GetCategoryListByParentSerial(int parSerial) => ExistsCategoryBySerial(parSerial) ? context.categories.Where(e => e.ParentCategoryId == GetCategoryBySerial(parSerial)!.CategoryId).ToList() : null;
+
+        public bool ExistsCategoryByName(string name) => context.categories.Any(e => e.CategoryName == name);
+        public Category? GetCategoryByName(string name) => ExistsCategoryByName(name) ? context.categories.Where(e => e.CategoryName == name).FirstOrDefault() : null;
 
 
-        public bool ExitsCategory(Guid id)=>context.categories.Any(e=>e.CategoryId==id);
 
-        public Category? GetCategory(Guid? id)=>id!=null?context.categories.Find(id):null;
 
-        public Guid? GetParentId(int id)=>id==0?null:GetCategoryBySerial(id)?.CategoryId;
-        public int GetParentSort(Guid? id)=>id!=null?GetCategory(id)!.SortSerial:0;
+        // public bool ExistsCategory(Guid id) => context.categories.Any(e => e.CategoryId == id);
+        public async Task<bool> ExistsCategory(Guid id){
+            Console.WriteLine(id);
+            return await context.categories.AnyAsync(e => e.CategoryId == id);}
 
+        // public Category? GetCategory(Guid id) =>context.categories.Find(id);
+        public async Task<Category?> GetCategory(Guid id){
+            Console.WriteLine(id);return await context.categories.FindAsync(id);}
+
+        public Guid? GetParentId(int id) => id == 0 && !ExistsCategoryBySerial(id)? null : GetCategoryBySerial(id)!.CategoryId;
+        public async Task<int> GetParentSort(Guid id)
+        {
+            Console.WriteLine("id= "+id);
+            return await ExistsCategory(id)? GetCategory(id).Result!.SortSerial : 0;}
+
+        public string ValidateMessage = "";
+        public bool Validate(CateInfo obj)
+        {
+            if (ExistsCategoryBySerial(obj.SortSerial)) { ValidateMessage = "已存在相同序列号"; return false; }
+            if (obj.ParentSortSerial != 0 && !ExistsCategoryBySerial(obj.ParentSortSerial)) { ValidateMessage = "父分类序列号不存在"; return false; }
+            if (obj.CategoryName != null && ExistsCategoryByName(obj.CategoryName)) { ValidateMessage = "分类名称已存在"; return false; }
+            return true;
+        }
 
     }
 }
