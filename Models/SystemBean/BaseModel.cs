@@ -105,6 +105,15 @@ namespace TaskManangerSystem.Models.SystemBean
             Remark = cateInfo.Remark;
         }
 
+        public BaseCategory(CaInfo ca,Guid id,Guid? parId,int sort,int level){
+            CategoryId = id;
+            ParentCategoryId = parId;
+            SortSerial = sort;
+            CategoryName =  ca.CategoryName;
+            CategoryLevel = level;
+            Remark =        ca.Remark;
+        } 
+
 
         // public virtual ICateInfo ToCateInfo(ManagementSystemContext context) => new BaseCateInfo(this, context.categories.Find(this.ParentCategoryId).SortSerial);
     }

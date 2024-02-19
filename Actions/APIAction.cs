@@ -49,29 +49,70 @@ namespace TaskManangerSystem.Actions
 
 
 
-        // public bool ExistsCategory(Guid id) => context.categories.Any(e => e.CategoryId == id);
-        public async Task<bool> ExistsCategory(Guid id){
-            Console.WriteLine(id);
-            return await context.categories.AnyAsync(e => e.CategoryId == id);}
+        public bool ExistsCategory(Guid id) => context.categories.Any(e => e.CategoryId == id);
 
-        // public Category? GetCategory(Guid id) =>context.categories.Find(id);
-        public async Task<Category?> GetCategory(Guid id){
-            Console.WriteLine(id);return await context.categories.FindAsync(id);}
+        public Category? GetCategory(Guid id) => context.categories.Find(id);
+        public Category? GetCategoryByParId(Guid parId) => context.categories.Where(e => e.CategoryId == parId).FirstOrDefault();
 
-        public Guid? GetParentId(int id) => id == 0 && !ExistsCategoryBySerial(id)? null : GetCategoryBySerial(id)!.CategoryId;
-        public async Task<int> GetParentSort(Guid id)
-        {
-            Console.WriteLine("id= "+id);
-            return await ExistsCategory(id)? GetCategory(id).Result!.SortSerial : 0;}
+        public Guid? GetParentId(int id) => id == 0 && !ExistsCategoryBySerial(id) ? Guid.NewGuid() : GetCategoryBySerial(id)!.CategoryId;
+        public int GetParentSort(Guid id)
+            => ExistsCategory(id) ? GetCategory(id)!.SortSerial : 0;
+
+
 
         public string ValidateMessage = "";
-        public bool Validate(CateInfo obj)
+        public bool Validate(CaInfo obj)
         {
-            if (ExistsCategoryBySerial(obj.SortSerial)) { ValidateMessage = "已存在相同序列号"; return false; }
+            // if (ExistsCategoryBySerial(obj.SortSerial) ) { ValidateMessage = "已存在相同序列号"; return false; }
             if (obj.ParentSortSerial != 0 && !ExistsCategoryBySerial(obj.ParentSortSerial)) { ValidateMessage = "父分类序列号不存在"; return false; }
             if (obj.CategoryName != null && ExistsCategoryByName(obj.CategoryName)) { ValidateMessage = "分类名称已存在"; return false; }
             return true;
         }
 
+        public IEnumerable<BaseCateInfo?> GetCategoryList(int page = 1, int pageSize = 120)
+        => context.categories.OrderBy(c => c.CategoryLevel).OrderBy(c => c.SortSerial)
+        .Skip((page - 1) * pageSize).Take(pageSize)
+        .ToList().Select(e => e.ToCateInfo(GetParentSort(e.ParentCategoryId != null ? (Guid)e.ParentCategoryId : Guid.NewGuid())));
+
+
+        public IEnumerable<BaseCateInfo?> GetCategoryListByLevel(int level = 1, int page = 1, int pageSize = 120)
+        => context.categories
+            .Where(e => e.CategoryLevel == level)
+            .OrderBy(c => c.SortSerial)
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .ToList()
+            .Select(e => e.ToCateInfo(GetParentSort(e.ParentCategoryId != null ? (Guid)e.ParentCategoryId : Guid.NewGuid())));
+
+
+        public IEnumerable<BaseCateInfo?> GetCategoryListByParId(int parId = 100, int page = 1, int pageSize = 120)
+        => context.categories
+            .Where(e => e.ParentCategoryId == GetCategoryBySerial(parId)!.CategoryId)
+            .OrderBy(c => c.SortSerial)
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .ToList()
+            .Select(e => e.ToCateInfo(GetParentSort(e.ParentCategoryId != null ? (Guid)e.ParentCategoryId : Guid.NewGuid())));
+
+
+        public int GetLevelByParId(Guid parId)
+        {
+            var obj = GetCategoryByParId(parId);
+            return obj?.ParentCategoryId == null || obj?.ParentCategoryId == Guid.Empty
+            ? obj!.CategoryLevel
+            : GetLevelByParId((Guid)obj!.ParentCategoryId) + 1;
+        }
+
+        public int GetLevelById(int parId) => parId == 0 ? 1 : (ExistsCategoryBySerial(parId) ? GetLevelByParId((Guid)GetCategoryBySerial(parId)!.ParentCategoryId!) + 1 : 1);
+
+        public int GetLastId() => context.categories.OrderBy(e => e.SortSerial).LastOrDefault()?.SortSerial ?? 100;
+
+
+        /// <summary>
+        /// 获得父分类的序列号
+        /// </summary>
+        /// <param name="serial">子序列号</param>
+        /// <returns></returns>
+        public int GetParIdBySerial(int serial) {
+            Guid? obj = GetCategoryBySerial(serial)?.ParentCategoryId;
+            return obj == null || obj== Guid.Empty ? 0 : GetCategory((Guid)obj!)!.SortSerial; }
     }
 }

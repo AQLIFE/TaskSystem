@@ -37,4 +37,15 @@ namespace TaskManangerSystem.Models.SystemBean
 
     }
 
+    public class CaInfo:BaseCateInfo{
+        public override int ParentSortSerial { set; get; }
+        public override string CategoryName { get; set; }
+        public override string Remark { get; set; }
+
+        public CaInfo(){}
+
+        public Category ToCategory(Guid Id, Guid? ParId,int sort,int level)
+        =>new Category(this, Id, ParId,sort,level);
+    }
+
 }

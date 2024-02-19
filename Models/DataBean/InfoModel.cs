@@ -14,7 +14,6 @@ namespace TaskManangerSystem.Models.DataBean
         [Column("parent_category_id")]
         public override Guid? ParentCategoryId { get; set; }
 
-
         [Column("sort_serial")]
         public override int SortSerial { set; get; }
 
@@ -30,9 +29,8 @@ namespace TaskManangerSystem.Models.DataBean
 
         public Category(){}
 
-        public Category(ICateInfo? cateInfo, Guid id, Guid? parId):base(cateInfo,id,parId){
-            // Console.WriteLine($"{id},{cateInfo.CategoryLevel},{cateInfo.CategoryName},{parId},{cateInfo.SortSerial}");
-        }
+        public Category(ICateInfo? cateInfo, Guid id, Guid? parId):base(cateInfo,id,parId){}
+        public Category(CaInfo? cateInfo, Guid id, Guid? parId,int sort,int level):base(cateInfo,id,parId,sort,level){}
         
         public BaseCateInfo ToCateInfo(int parId) => new BaseCateInfo(this, parId);
 
