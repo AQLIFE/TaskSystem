@@ -29,7 +29,7 @@ namespace TaskManangerSystem.Models.DataBean
 
                 public EmployeeAccount(){}
 
-                public  BasePartInfo ToBasePartInfo()=>new BasePartInfo(this);
+                public override BasePartInfo ToBasePartInfo()=>new BasePartInfo(this);
 
                 // public EmployeeAccount(Info obj, Guid id, string pwd)
                 // {

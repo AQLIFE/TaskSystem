@@ -3,18 +3,21 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TaskManangerSystem.Models.DataBean
 {
+    [Table("task_customer_table")]
     public class TaskCustomer
     {
-        [Key]
+        [Key, Column("customer_id")]
         public Guid CustomerId { get; set; }
-
+        [Column("customer_name")]
         public string CustomerName { get; set; }
-
-        public string ?CustomerContactWay { get; set; }
-        public string ?CustomerAddress { get; set; }
+        [Column("customer_contact_way")]
+        public string? CustomerContactWay { get; set; }
+        [Column("customer_address")]
+        public string? CustomerAddress { get; set; }
+        [Column("customer_type"),ForeignKey("Category")]
         public Guid CustomerType { get; set; }
 
-        public Category ?Category { get; set; }
+        public Category? Category { get; set; }
     }
 
     [Table("task_table")]
@@ -23,6 +26,7 @@ namespace TaskManangerSystem.Models.DataBean
         [Key]
         public Guid TaskId { get; set; }
         public DateTime Time { get; set; }
+        [ForeignKey("TaskCustomer"),Column("customer_id")]
         public Guid? CustomerId { get; set; }
 
         public string Content { get; set; }
@@ -40,7 +44,7 @@ namespace TaskManangerSystem.Models.DataBean
 
     public class TaskStatusTrack
     {
-        [Key,Column("task_id")]
+        [Key, Column("task_id")]
         public Guid TaskSatusId { get; set; }
 
         public string TaskStatus { get; set; }

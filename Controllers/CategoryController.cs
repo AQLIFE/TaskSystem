@@ -56,12 +56,6 @@ namespace TaskManangerSystem.Controllers
         {
             if (id <= 0 || !action.ExistsCategoryBySerial(id)) return "不存在信息";
 
-            // Guid? iss = action.GetParentId(category.ParentSortSerial);
-            // int isd = action.GetLastId() + 1;
-            // int level = action.GetLevelByParId((Guid)iss!)+1;
-            
-            // Console.WriteLine(level);
-
             Category? obj = action.GetCategoryBySerial(id);
 
             obj!.CategoryName = obj.CategoryName != category.CategoryName ? category.CategoryName : obj.CategoryName;
@@ -80,7 +74,7 @@ namespace TaskManangerSystem.Controllers
         [HttpDelete("{id}")]
         public async Task<string?> DeleteCategory(int id)
         {
-            var category = await context.categories.Where(e => e.SortSerial == id).FirstOrDefaultAsync();
+            var category = action.GetCategoryBySerial(id);
             if (category == null) return "不存在信息";
 
             context.categories.Remove(category);

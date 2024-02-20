@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.IdentityModel.Tokens;
-using TaskManangerSystem.Models.DataBean;
+using TaskManangerSystem.Actions;
+using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
 
 namespace InitDb
@@ -10,32 +8,18 @@ namespace InitDb
     [ApiController, Route("api/[controller]")]
     public class InitDBController(ManagementSystemContext context) : ControllerBase
     {
+        private DBAction action = new(context);
+        private DBStatus status;
         [HttpGet("status")]
-        public bool ExitsEmplyee() => context.employees.ToList().IsNullOrEmpty();
+        public DBStatus ExistsDb() => status = new(context);
 
         [HttpGet("execute")]
-        public int InitEmplyee()
+        public int InitEmplyee() => status switch
         {
-            if (ExitsEmplyee())
-                return AddAdminAccount();
-            return 0;
-        }
-
-        private int AddAdminAccount()
-        {
-            var admin = new EmployeeAccount()
-            {
-                EmployeeId = Guid.NewGuid(),
-                EmployeeAlias = "admin",
-                EmployeePwd = "admin@123",
-                AccountPermission = 99
-            };
-
-            context.Entry<EmployeeAccount>(admin).State = EntityState.Added;
-            return context.SaveChanges();
-        }
-        // public bool  Exits()=>context.encrypts.ToList() is null;
-        // public bool  ExitsEmplyee()=>context.tasks.ToList() is null;
-        // public bool  ExitsEmplyee()=>context.employees.ToList() is null;
+            { EmployeesStatus: true } => action.AddAdminAccount(),
+            { CatrgoryStatus: true } => action.AddCategory(),
+            { TaskCustomerStatus: true } => action.AddCustomer(),
+            _ => 0
+        };
     }
 }

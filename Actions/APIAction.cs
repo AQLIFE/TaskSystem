@@ -6,9 +6,51 @@ using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Actions
 {
+
+    public class DBAction(ManagementSystemContext context){
+        public int AddAdminAccount()
+        {
+            var admin = new EmployeeAccount()
+            {
+                EmployeeId = Guid.NewGuid(),
+                EmployeeAlias = "admin",
+                EmployeePwd = "admin@123",
+                AccountPermission = 99
+            };
+
+            context.Entry<EmployeeAccount>(admin).State = EntityState.Added;
+            return context.SaveChanges();
+        }
+
+        public int AddCategory()
+        {
+            Category[] categories = [
+                new Category(){CategoryId=Guid.NewGuid(),CategoryName="库存分类",CategoryLevel=1,ParentCategoryId=Guid.Empty,SortSerial=100,Remark="用于对产品进行分类"},
+                new Category(){CategoryId=Guid.NewGuid(),CategoryName="客户分类",CategoryLevel=1,ParentCategoryId=Guid.Empty,SortSerial=101,Remark="用于对客户进行分类"},
+                new Category(){CategoryId=Guid.NewGuid(),CategoryName="任务分类",CategoryLevel=1,ParentCategoryId=Guid.Empty,SortSerial=102,Remark="用于对任务进行分类"},
+            ];
+
+            foreach (var item in categories)
+                context.Entry<Category>(item).State = EntityState.Added;
+            return context.SaveChanges();
+        }
+
+        public int AddCustomer(){
+            CategoryActions actions = new(context);
+            Category category = new Category(){CategoryId=Guid.NewGuid(),CategoryName="管理员所属公司",CategoryLevel=1,ParentCategoryId=actions.GetCategoryBySerial(101)?.CategoryId,SortSerial=103,Remark="管理员所属公司"};
+
+            context.Entry<Category>(category).State = EntityState.Added;
+            context.SaveChanges();
+            
+            TaskCustomer customers = new TaskCustomer(){CustomerId=Guid.NewGuid(),CustomerName="张三",CustomerContactWay="13212345678",CustomerAddress="本公司",CustomerType=category.CategoryId};
+            context.Entry<TaskCustomer>(customers).State = EntityState.Added;
+            return context.SaveChanges();
+        }
+    }
     public class EmployeeActions(ManagementSystemContext context)
     {
-        public bool ExistsEncrypts(string name) => context.encrypts.Any(e => e.EmployeeAlias == name);
+        public bool ExistsEncryptsByName(string name) => context.encrypts.Any(e => e.EmployeeAlias == name);
+        public bool ExistsEncrypts(string id) => context.encrypts.Any(e => e.EncryptionId == id);
         public bool ExistsEncrypts(Guid id) => context.encrypts.Any(e => e.EmployeeId == id);
 
 

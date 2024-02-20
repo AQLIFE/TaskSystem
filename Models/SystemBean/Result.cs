@@ -14,18 +14,18 @@ namespace TaskManangerSystem.Models.SystemBean
         public ObjectResult ToObjectResult() => new ObjectResult(this);
     }
 
-    public class DBInfo(int count=1,int pageSize=120)
-    {
-            public int Page => (int)Math.Ceiling((double)count / pageSize);// 总页数
-    }
-    public class CompleteInformation<T>(T values,int currentPage = 1):DBInfo
-    {
-        // public int Page => (int)Math.Ceiling((double)count / pageSize);// 总页数
+    // public class DBInfo(int count = 1, int pageSize = 120)
+    // {
+    //     public int Page => (int)Math.Ceiling((double)count / pageSize);// 总页数
+    // }
+    // public class CompleteInformation<T>(T values, int currentPage = 1) : DBInfo
+    // {
+    //     // public int Page => (int)Math.Ceiling((double)count / pageSize);// 总页数
 
-        public int CurrentPage = currentPage;
+    //     public int CurrentPage = currentPage;
 
-        public T? Values = values;
-    }
+    //     public T? Values = values;
+    // }
 
     public static class GlobalResult
     {
@@ -44,5 +44,4 @@ namespace TaskManangerSystem.Models.SystemBean
 
         public static ObjectResult PWDError = new Result<string>("旧密码错误").ToObjectResult();
     }
-
 }

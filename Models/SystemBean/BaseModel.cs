@@ -14,12 +14,17 @@ namespace TaskManangerSystem.Models.SystemBean
         public virtual IEmployee ToEmployee() => new BaseEmployee(this);
     }
 
-    public class BasePartInfo(IEmployee? employee) : IPartInfo
+    public class BasePartInfo : IPartInfo
     {
-        public virtual string EmployeeAlias { get; set; } = ((IPart)employee!).EmployeeAlias;
-        public virtual int AccountPermission { get; set; } = employee.AccountPermission;
+        public virtual string EmployeeAlias { get; set; } /* = employee.EmployeeAlias; */
+        public virtual int AccountPermission { get; set; }/*  = employee.AccountPermission; */
 
-        public BasePartInfo() : this(null) { }
+        public BasePartInfo() { }
+        public BasePartInfo(IPartInfo employee)
+        {
+            EmployeeAlias  = employee.EmployeeAlias;
+            AccountPermission  = employee.AccountPermission;
+        }
         public virtual IEmployee ToEmployee(string pwd, Guid id) => new BaseEmployee(this, pwd, id);
     }
 
@@ -105,14 +110,15 @@ namespace TaskManangerSystem.Models.SystemBean
             Remark = cateInfo.Remark;
         }
 
-        public BaseCategory(CaInfo ca,Guid id,Guid? parId,int sort,int level){
+        public BaseCategory(CaInfo ca, Guid id, Guid? parId, int sort, int level)
+        {
             CategoryId = id;
             ParentCategoryId = parId;
             SortSerial = sort;
-            CategoryName =  ca.CategoryName;
+            CategoryName = ca.CategoryName;
             CategoryLevel = level;
-            Remark =        ca.Remark;
-        } 
+            Remark = ca.Remark;
+        }
 
 
         // public virtual ICateInfo ToCateInfo(ManagementSystemContext context) => new BaseCateInfo(this, context.categories.Find(this.ParentCategoryId).SortSerial);
