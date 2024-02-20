@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 
@@ -19,8 +18,6 @@ namespace TaskManangerSystem.Models.SystemBean
 
     public class PartInfo : BasePartInfo
     {
-        // public override string EmployeeAlias { get; set; }
-        // public override int AccountPermission { get; set; }
         public PartInfo(IEmployee employee) : base(employee) { }
         public PartInfo(){ }
         public override EmployeeAccount ToEmployee(string pwd, Guid id) => new EmployeeAccount(this, pwd, id);

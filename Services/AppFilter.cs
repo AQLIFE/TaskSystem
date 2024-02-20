@@ -1,10 +1,6 @@
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.IdentityModel.Tokens;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Services
@@ -17,7 +13,7 @@ namespace TaskManangerSystem.Services
         public void OnActionExecuting(ActionExecutingContext action)
         {
             filter.Cauth(action);
-            Console.WriteLine("Filter 正常");
+            // Console.WriteLine("Filter 正常");
         }
 
         public void OnActionExecuted(ActionExecutedContext action)
