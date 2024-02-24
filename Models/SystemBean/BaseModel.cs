@@ -20,8 +20,8 @@ namespace TaskManangerSystem.Models.SystemBean
         public BasePartInfo() { }
         public BasePartInfo(IPartInfo employee)
         {
-            EmployeeAlias  = employee.EmployeeAlias;
-            AccountPermission  = employee.AccountPermission;
+            EmployeeAlias = employee.EmployeeAlias;
+            AccountPermission = employee.AccountPermission;
         }
         public virtual IEmployee ToEmployee(string pwd, Guid id) => new BaseEmployee(this, pwd, id);
     }
@@ -120,6 +120,54 @@ namespace TaskManangerSystem.Models.SystemBean
 
 
         // public virtual ICateInfo ToCateInfo(ManagementSystemContext context) => new BaseCateInfo(this, context.categories.Find(this.ParentCategoryId).SortSerial);
+    }
+
+
+    public class BaseCustomer : ICustomer
+    {
+        public virtual Guid CustomerId { get; set; }
+        public virtual string CustomerName { get; set; }
+        public virtual string? CustomerContactWay { get; set; }
+        public virtual string? CustomerAddress { get; set; }
+        public virtual Guid CustomerType { get; set; }
+        public virtual int ClientGrade { get; set; }
+        public virtual DateTime AddTime { get; set; }
+
+        public BaseCustomer(){}
+
+        public BaseCustomer(ICustomerInfo customer,Guid cateId,int defaultLevel=1)
+        {
+            CustomerId = Guid.NewGuid();
+            CustomerName = customer.CustomerName;
+            CustomerContactWay = customer.CustomerContactWay;
+            CustomerAddress = customer.CustomerAddress;
+            ClientGrade = defaultLevel;
+            AddTime = DateTime.Now;
+            CustomerType = cateId;
+        }
+        public ICustomerInfo ToCustomerInfo() 
+            => new BaseCustomerInfo(this);
+    }
+
+
+    public class BaseCustomerInfo :ICustomerInfo{
+        public virtual string CustomerName { get; set; }
+        public virtual string? CustomerContactWay { get; set; }
+        public virtual string? CustomerAddress { get; set; }
+        public virtual int Serial { get; set; }
+
+        public BaseCustomerInfo() { }
+
+        public BaseCustomerInfo(ICustomer customer,int serial)
+        {
+            CustomerName = customer.CustomerName;
+            CustomerContactWay = customer.CustomerContactWay;
+            CustomerAddress = customer.CustomerAddress;
+            this.Serial = serial;
+        }
+
+        public BaseCustomer ToCustomer(Guid cateId)
+            => new BaseCustomer(this,cateId);
     }
 
 }

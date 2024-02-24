@@ -30,19 +30,17 @@ namespace TaskManangerSystem.Actions
 
         public void VerifyPart(EncryptAccount obj, ActionExecutingContext action)
         {
-            if (action.ActionArguments.ContainsKey("id") &&
-                obj!.AccountPermission < 90)
+            if (action.ActionArguments.ContainsKey("id"))
             // 方法需要ID 且 用户权限不足90
             {
-                if (action.ActionArguments.ContainsKey("employeeSystemAccount") && action.ActionArguments["employeeSystemAccount"] is PartInfo part)
-                {
-                    if (part.AccountPermission >= 90) action.Result = GlobalResult.LimitAuth;//无权
-                    else if (actions.ExistsEncrypts(part.EmployeeAlias)) action.Result = GlobalResult.Repetition(part.EmployeeAlias);//重复
-                    // else if( context.encrypts.Any(e=>e.EmployeePwd!=part.EmployeePwd))action.Result = GlobalResult.PWDError;
+                if (obj!.AccountPermission < 90 ){
+                    if( action.ActionArguments.ContainsKey("employeeSystemAccount") && action.ActionArguments["employeeSystemAccount"] is PartInfo part && part.AccountPermission >= 90)
+                        action.Result = GlobalResult.LimitAuth;//无权
+
+                    if (obj!.EncryptionId != action.ActionArguments["id"]!.ToString())
+                    action.Result = GlobalResult.InvalidParameter;// 错误参数
                 }
-                // 请求ID和用户ID不一致
-                if (obj!.EncryptionId != action.ActionArguments["id"]!.ToString()) action.Result = GlobalResult.InvalidParameter;// 错误参数
-            }
+            }                                                                                                                      // 请求ID和用户ID不一
             status = true;
 
         }

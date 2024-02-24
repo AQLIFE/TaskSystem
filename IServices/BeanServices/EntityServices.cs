@@ -14,7 +14,7 @@ namespace TaskManangerSystem.IServices.BeanServices
         public int AccountPermission { get; set; }
     }
 
-    public interface IEmployee : IPart,IPartInfo
+    public interface IEmployee : IPart, IPartInfo
     {
         public Guid EmployeeId { get; set; }
     }
@@ -25,11 +25,12 @@ namespace TaskManangerSystem.IServices.BeanServices
     }
 
 
-    public interface ICategory{
+    public interface ICategory
+    {
         public Guid CategoryId { get; set; }
         public Guid? ParentCategoryId { get; set; }
 
-        public int SortSerial{set;get;}
+        public int SortSerial { set; get; }
 
         public string CategoryName { get; set; }
 
@@ -38,14 +39,34 @@ namespace TaskManangerSystem.IServices.BeanServices
         public string? Remark { get; set; }
     }
 
-    public interface ICateInfo{
-        public int SortSerial{set;get;}
-        public int ParentSortSerial{set;get;}
+    public interface ICateInfo
+    {
+        public int SortSerial { set; get; }
+        public int ParentSortSerial { set; get; }
 
         public string CategoryName { get; set; }
 
         public int CategoryLevel { get; set; }
 
         public string Remark { get; set; }
+    }
+
+    public interface ICustomerInfo
+    {
+        public string CustomerName { get; set; }
+        public string? CustomerContactWay { get; set; }
+        public string? CustomerAddress { get; set; }
+    }
+
+
+    public interface ICustomer : ICustomerInfo
+    {
+        public Guid CustomerId { get; set; }
+        // public string CustomerName { get; set; }
+        // public string? CustomerContactWay { get; set; }
+        // public string? CustomerAddress { get; set; }
+        public Guid CustomerType { get; set; }
+        public int ClientGrade { get; set; }
+        public DateTime AddTime { get; set; }
     }
 }

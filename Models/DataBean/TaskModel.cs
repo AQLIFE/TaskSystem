@@ -1,23 +1,45 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TaskManangerSystem.IServices.BeanServices;
+using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Models.DataBean
 {
     [Table("task_customer_table")]
-    public class TaskCustomer
+    public class TaskCustomer :BaseCustomer
     {
         [Key, Column("customer_id")]
-        public Guid CustomerId { get; set; }
+        public override Guid CustomerId { get; set; }
         [Column("customer_name")]
-        public string CustomerName { get; set; }
+        public override string CustomerName { get; set; }
         [Column("customer_contact_way")]
-        public string? CustomerContactWay { get; set; }
+        public override string? CustomerContactWay { get; set; }
         [Column("customer_address")]
-        public string? CustomerAddress { get; set; }
-        [Column("customer_type"),ForeignKey("Category")]
-        public Guid CustomerType { get; set; }
+        public override string? CustomerAddress { get; set; }
+        [Column("customer_type"), ForeignKey("Category")]
+        public override Guid CustomerType { get; set; }
+        
+        [Column("client_grade")]
+        public override int ClientGrade { get; set; }
+
+        [Column("add_time")]
+        public override DateTime AddTime { get; set; }
 
         public Category? Category { get; set; }
+
+        public TaskCustomer() { }
+
+        public TaskCustomer(ICustomer customer,Guid cateId):base(customer,cateId){}
+
+        public TaskCustomer(BaseCustomer customer){
+            this.CustomerId = customer.CustomerId;
+            this.CustomerName = customer.CustomerName;
+            this.CustomerContactWay = customer.CustomerContactWay;
+            this.CustomerAddress = customer.CustomerAddress;
+            this.CustomerType = customer.CustomerType;
+            this.ClientGrade = customer.ClientGrade;
+            this.AddTime = customer.AddTime;
+        }
     }
 
     [Table("task_table")]
@@ -26,7 +48,7 @@ namespace TaskManangerSystem.Models.DataBean
         [Key]
         public Guid TaskId { get; set; }
         public DateTime Time { get; set; }
-        [ForeignKey("TaskCustomer"),Column("customer_id")]
+        [ForeignKey("TaskCustomer"), Column("customer_id")]
         public Guid? CustomerId { get; set; }
 
         public string Content { get; set; }

@@ -50,13 +50,26 @@ namespace TaskManangerSystem.Controllers
         [HttpPut("{id}")]// 更新指定用户
         public async Task<string?> PutEmployeeSystemAccount(string id, PartInfo employeeSystemAccount)
         {
-            if(id==String.Empty||id==null||!action.ExistsEncrypts(id))return "不存在这个账户";
-            Console.WriteLine("在方法内");
-            if(employeeSystemAccount!=null){EmployeeAccount? objs = action.GetEmployee(id);
+            if (id == String.Empty || id == null || action.ExistsEncrypts(id)) return "不存在这个账户";
+            else if (action.ExistsEncryptsByName(employeeSystemAccount.EmployeeAlias)) return "账户名重复";
+
+            // Console.WriteLine("在方法内");
+            EmployeeAccount? objs = action.GetEmployee(id);
             context.Entry<EmployeeAccount>(employeeSystemAccount.ToEmployee(objs!.EmployeePwd, objs.EmployeeId)).State = EntityState.Modified;
             await context.SaveChangesAsync();
-            return employeeSystemAccount.EmployeeAlias;}
-            return "无更新内容";
+            return employeeSystemAccount.EmployeeAlias;
+        }
+
+
+        [HttpPut("{id}/pwd")]
+        public async Task<string> PutEmployeeSystemAccountPwd(string id, string pwd)
+        {
+            EmployeeAccount? employeeAccount = action.GetEmployee(id);
+            if (employeeAccount == null) return "不存在这个账户";
+            employeeAccount.EmployeePwd = pwd;
+            context.Entry<EmployeeAccount>(employeeAccount).State = EntityState.Modified;
+            await context.SaveChangesAsync();
+            return $"已更新 {id}";
         }
 
 
