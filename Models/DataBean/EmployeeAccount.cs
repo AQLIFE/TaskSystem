@@ -28,6 +28,12 @@ namespace TaskManangerSystem.Models.DataBean
                 public EmployeeAccount(IPartInfo obj,string pwd,Guid id):base(obj,pwd,id){}
 
                 public EmployeeAccount(){}
+                public EmployeeAccount(string name,string pwd,int ap=1){
+                        EmployeeId = Guid.NewGuid();
+                        EmployeeAlias = name;
+                        EmployeePwd = pwd;
+                        AccountPermission = ap;
+                }
 
                 public override BasePartInfo ToBasePartInfo()=>new BasePartInfo(this);
 

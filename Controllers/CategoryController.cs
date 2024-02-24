@@ -8,14 +8,14 @@ using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Controllers
 {
-    [ApiController, Route("api/[controller]"), Authorize]
+    [ApiController, Route("api/[controller]"), Authorize(Roles ="99")]
     public class CategoryController(ManagementSystemContext context) : ControllerBase
     {
         private CategoryActions action = new(context);
         public enum CategoryType { all, level, parId }
 
         [HttpGet]
-        public IEnumerable<BaseCateInfo?>? GetCategory(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
+        public IEnumerable<BaseCateInfo?>? GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
         => select switch { CategoryType.all => action.GetCategoryList(page, pageSize), CategoryType.level => action.GetCategoryListByLevel(obj, page, pageSize), CategoryType.parId => action.GetCategoryListByParId(obj, page, pageSize), _ => null };
 
         [HttpPost]
@@ -39,7 +39,7 @@ namespace TaskManangerSystem.Controllers
         // public ActionResult<int> GetLevel(int id) =>action.GetLevelById(id);
 
         [HttpGet("{id}")]
-        public ActionResult<BaseCateInfo?> GetCategoryById(int id)
+        public ActionResult<BaseCateInfo?> GetCategory(int id)
         {
             var obj = action.GetCategoryBySerial(id);
             return obj?.ToCateInfo(action.GetParIdBySerial(id));
@@ -79,8 +79,6 @@ namespace TaskManangerSystem.Controllers
             await context.SaveChangesAsync();
 
             return "删除成功";
-
-
         }
     }
 }

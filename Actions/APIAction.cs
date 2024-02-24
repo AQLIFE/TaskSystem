@@ -7,43 +7,46 @@ using TaskManangerSystem.Services;
 namespace TaskManangerSystem.Actions
 {
 
-    public class DBAction(ManagementSystemContext context){
+    public class DBAction(ManagementSystemContext context)
+    {
+
+        private EmployeeAccount admin = new("admin", "admin@123", 99);
+
+        private Category[] categories = [
+            new("库存分类",100,"用于对产品进行分类"),
+            new("客户分类",101,"用于对客户进行分类"),
+            new("任务分类",102,"用于对任务进行分类"),
+        ];
+
         public int AddAdminAccount()
         {
-            var admin = new EmployeeAccount()
-            {
-                EmployeeId = Guid.NewGuid(),
-                EmployeeAlias = "admin",
-                EmployeePwd = "admin@123",
-                AccountPermission = 99
-            };
-
             context.Entry<EmployeeAccount>(admin).State = EntityState.Added;
+            Console.WriteLine("添加角色");
             return context.SaveChanges();
         }
 
         public int AddCategory()
         {
-            Category[] categories = [
-                new Category(){CategoryId=Guid.NewGuid(),CategoryName="库存分类",CategoryLevel=1,ParentCategoryId=Guid.Empty,SortSerial=100,Remark="用于对产品进行分类"},
-                new Category(){CategoryId=Guid.NewGuid(),CategoryName="客户分类",CategoryLevel=1,ParentCategoryId=Guid.Empty,SortSerial=101,Remark="用于对客户进行分类"},
-                new Category(){CategoryId=Guid.NewGuid(),CategoryName="任务分类",CategoryLevel=1,ParentCategoryId=Guid.Empty,SortSerial=102,Remark="用于对任务进行分类"},
-            ];
-
             foreach (var item in categories)
                 context.Entry<Category>(item).State = EntityState.Added;
+            Console.WriteLine("添加分类");
             return context.SaveChanges();
         }
 
-        public int AddCustomer(){
+        public int AddCustomer()
+        {
             CategoryActions actions = new(context);
-            Category category = new Category(){CategoryId=Guid.NewGuid(),CategoryName="管理员所属公司",CategoryLevel=1,ParentCategoryId=actions.GetCategoryBySerial(101)?.CategoryId,SortSerial=103,Remark="管理员所属公司"};
+            Category category;
+            if (!actions.ExistsCategoryBySerial(103))
+            {
+                category = new("本公司", 103, "管理员所属公司", 2, actions.GetCategoryBySerial(101)?.CategoryId);
+                context.Entry<Category>(category).State = EntityState.Added;
+                context.SaveChanges();
+            }else category = actions.GetCategoryBySerial(103)!;
 
-            context.Entry<Category>(category).State = EntityState.Added;
-            context.SaveChanges();
-            
-            TaskCustomer customers = new TaskCustomer(){CustomerId=Guid.NewGuid(),CustomerName="张三",CustomerContactWay="13212345678",CustomerAddress="本公司",CustomerType=category.CategoryId};
+            TaskCustomer customers = new("管理员", category.CategoryId, 1, "13212345678", "本公司");
             context.Entry<TaskCustomer>(customers).State = EntityState.Added;
+            Console.WriteLine("添加客户");
             return context.SaveChanges();
         }
     }
@@ -153,8 +156,16 @@ namespace TaskManangerSystem.Actions
         /// </summary>
         /// <param name="serial">子序列号</param>
         /// <returns></returns>
-        public int GetParIdBySerial(int serial) {
+        public int GetParIdBySerial(int serial)
+        {
             Guid? obj = GetCategoryBySerial(serial)?.ParentCategoryId;
-            return obj == null || obj== Guid.Empty ? 0 : GetCategory((Guid)obj!)!.SortSerial; }
+            return obj == null || obj == Guid.Empty ? 0 : GetCategory((Guid)obj!)!.SortSerial;
+        }
+    }
+
+    public class CustomerActions(ManagementSystemContext context){
+        public bool ExistsCustomerByName(string name)=>context.customers.Any(e=>e.CustomerName==name);
+        public TaskCustomer? GetCustomerByName(string name)=>context.customers.Where(e=>e.CustomerName==name).FirstOrDefault();
+        // public ICustomerInfo? GetCustomerInfoByName(string name)=>context.customers.Where(e=>e.CustomerName==name).Select(e=>e.ToCustomerInfo(e.CustomerType));
     }
 }

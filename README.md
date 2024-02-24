@@ -5,6 +5,18 @@
  项目机密信息，如数据库连接字符串和密钥使用`dotnet user-secrets` 保存于开发机。
 数据库使用Mysql 8.x 版本。
 
+
+项目目标需求：
+- 环境变量
+    - DB_LINK ：数据库连接字符串
+    - API_KEY ：一个密钥，用于JWT验证
+    - ISSUER  ：JWT 验证项
+    - AUDIENCE：JWT 验证项
+- SDK
+    - NET 8 SDK
+- 数据库
+    - Mysql 8.X 
+
 预期设计接口：
 
 - 系统账户

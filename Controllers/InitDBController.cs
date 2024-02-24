@@ -14,11 +14,11 @@ namespace InitDb
         public DBStatus ExistsDb() => status = new(context);
 
         [HttpGet("execute")]
-        public int InitEmplyee() => status switch
+        public int InitEmplyee() => ExistsDb() switch
         {
-            { EmployeesStatus: true } => action.AddAdminAccount(),
-            { CatrgoryStatus: true } => action.AddCategory(),
-            { TaskCustomerStatus: true } => action.AddCustomer(),
+            DBStatus s when s.EmployeesStatus    => action.AddAdminAccount(),
+            DBStatus s when s.CatrgoryStatus     => action.AddCategory(),
+            DBStatus s when s.TaskCustomerStatus => action.AddCustomer(),
             _ => 0
         };
     }

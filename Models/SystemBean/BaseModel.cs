@@ -133,9 +133,9 @@ namespace TaskManangerSystem.Models.SystemBean
         public virtual int ClientGrade { get; set; }
         public virtual DateTime AddTime { get; set; }
 
-        public BaseCustomer(){}
+        public BaseCustomer() { }
 
-        public BaseCustomer(ICustomerInfo customer,Guid cateId,int defaultLevel=1)
+        public BaseCustomer(ICustomerInfo customer, Guid cateId, int defaultLevel = 1)
         {
             CustomerId = Guid.NewGuid();
             CustomerName = customer.CustomerName;
@@ -145,12 +145,13 @@ namespace TaskManangerSystem.Models.SystemBean
             AddTime = DateTime.Now;
             CustomerType = cateId;
         }
-        public ICustomerInfo ToCustomerInfo() 
-            => new BaseCustomerInfo(this);
+        public ICustomerInfo ToCustomerInfo(int serial = 100)
+            => new BaseCustomerInfo(this, serial);
     }
 
 
-    public class BaseCustomerInfo :ICustomerInfo{
+    public class BaseCustomerInfo : ICustomerInfo
+    {
         public virtual string CustomerName { get; set; }
         public virtual string? CustomerContactWay { get; set; }
         public virtual string? CustomerAddress { get; set; }
@@ -158,7 +159,7 @@ namespace TaskManangerSystem.Models.SystemBean
 
         public BaseCustomerInfo() { }
 
-        public BaseCustomerInfo(ICustomer customer,int serial)
+        public BaseCustomerInfo(ICustomer customer, int serial)
         {
             CustomerName = customer.CustomerName;
             CustomerContactWay = customer.CustomerContactWay;
@@ -166,8 +167,11 @@ namespace TaskManangerSystem.Models.SystemBean
             this.Serial = serial;
         }
 
-        public BaseCustomer ToCustomer(Guid cateId)
-            => new BaseCustomer(this,cateId);
+        public BaseCustomer ToBaseCustomer(Guid cateId)
+            => new BaseCustomer(this, cateId);
+
+        public TaskCustomer ToCustomer(Guid cateId)
+            => new TaskCustomer(this, cateId);
     }
 
 }

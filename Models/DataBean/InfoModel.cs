@@ -32,6 +32,14 @@ namespace TaskManangerSystem.Models.DataBean
         public Category(ICateInfo? cateInfo, Guid id, Guid? parId):base(cateInfo,id,parId){}
         public Category(CaInfo? cateInfo, Guid id, Guid? parId,int sort,int level):base(cateInfo,id,parId,sort,level){}
         
+        public Category(string name,int serial=100,string? remark=null,int level=1,Guid? parId=null){
+            CategoryId = Guid.NewGuid();
+            CategoryName = name;
+            SortSerial = serial;
+            ParentCategoryId = parId;
+            CategoryLevel=level;
+            Remark = remark;
+        }
         public BaseCateInfo ToCateInfo(int parId) => new BaseCateInfo(this, parId);
 
     }

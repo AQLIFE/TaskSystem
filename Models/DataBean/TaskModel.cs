@@ -29,7 +29,7 @@ namespace TaskManangerSystem.Models.DataBean
 
         public TaskCustomer() { }
 
-        public TaskCustomer(ICustomer customer,Guid cateId):base(customer,cateId){}
+        public TaskCustomer(ICustomerInfo customer,Guid cateId):base(customer,cateId){}
 
         public TaskCustomer(BaseCustomer customer){
             this.CustomerId = customer.CustomerId;
@@ -39,6 +39,22 @@ namespace TaskManangerSystem.Models.DataBean
             this.CustomerType = customer.CustomerType;
             this.ClientGrade = customer.ClientGrade;
             this.AddTime = customer.AddTime;
+        }
+
+        public TaskCustomer(string name,Guid cateId,int level=1,string? conway=null,string? add=null){
+            CustomerId = Guid.NewGuid();
+            CustomerName = name;
+            CustomerContactWay = conway;
+            CustomerAddress = add;
+            CustomerType = cateId;
+            ClientGrade = level;
+            AddTime = DateTime.Now;
+
+        }
+
+        public void update(BaseCustomerInfo info){
+            CustomerAddress = info.CustomerAddress;
+            CustomerContactWay = info.CustomerContactWay;
         }
     }
 
