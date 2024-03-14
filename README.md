@@ -1,61 +1,72 @@
-# 项目介绍
+# Project Introduction
 
-这是一个预期设计为任务管理系统和库存管理系统集成的项目，使用NET 8 SDK 开发
+This is a cross-platform project that is intended to be designed to integrate with task management systems and inventory management systems, with the goal of implementing functionality using the most up-to-date syntax possible.
 
- 项目机密信息，如数据库连接字符串和密钥使用`dotnet user-secrets` 保存于开发机。
-数据库使用Mysql 8.x 版本。
+## There is a problem with the project
+
+- If the database foreign key binding is too deep, it may not be possible to migrate from Mysql to other databases
+> Thinking about implementing data validation from the application layer?
+
+## The next goal of the project
+
+- Add GlobbalErrorCapture
+- Decouple the functions of the filter
+
+## Project Info
+
+The project uses environment variables to read confidential information, which is currently the most secure cross-platform implementation for a standalone system.
+
+### Requirements for the project development environment
+
+<table>
+<tr>
+<th>Environment variable</th><th>Project SDK</th><th>DataBase</th>
+</tr>
+<tr>
+<td>
+    DB_LINK ,
+    API_KEY ,
+    ISSUER  ,
+    AUDIENCE 
+    </td>
+<td>NET 8</td>
+<td>MYSQL 8.X</td>
+</tr>
+</table>
+
+#### Environment variable
+- DB_LINK ：数据库连接字符串
+- API_KEY ：一个密钥，用于JWT验证
+- ISSUER  ：JWT 验证项
+- AUDIENCE：JWT 验证项
 
 
-项目目标需求：
-- 环境变量
-    - DB_LINK ：数据库连接字符串
-    - API_KEY ：一个密钥，用于JWT验证
-    - ISSUER  ：JWT 验证项
-    - AUDIENCE：JWT 验证项
-- SDK
-    - NET 8 SDK
-- 数据库
-    - Mysql 8.X 
+### 项目开发预期设计
 
-预期设计接口：
+```mermaid
+mindmap
+    root(TaskSystem)
+        Controllers
+            DbControllers
+                TaskInfoController ✔
+                CustomerController 
+                EmployeeController ✔
+                CategoryController ✔
+                OutboundController
+                InboundController
+                InventoryInformationController
+            FunctionControllers
+                AuthController ✔
+                InitDbController ✔
+        ComonFunction
+            GlobalReturnInfo ✔
+            GlobbalErrorCapture
+            ApiLog OnConsole
 
-- 系统账户
-    - CURD
-    - Certification/Authentication
 
-- 任务
-    - 客户
-    - 任务状态
-    - 任务材料清单
-    - 任务列表
-
-- 库存
-    - 库存登记
-    - 出入库
-
-- 分类
-    - 客户分类
-    - 任务分类
-    - 库存分类
-
-- 数据库接口
-    - 初始化
-        - 客户初始化
-        - 账户初始化
-        - 分类初始化
-        
-    - 重置
-    - 检查
+```
 
 ## 备忘录
-
-下一个目标：
-
-- 重写所有api逻辑
-
-- 实现全局异常捕获
-
-- 对鉴权进行优化，目前无法识别是否为有效用户
 
 已完成目标：
 
