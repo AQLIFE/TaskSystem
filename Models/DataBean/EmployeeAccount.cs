@@ -1,29 +1,29 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Models.DataBean
 {
-        /// <summary>
-        /// 员工电子账户表
-        /// 对应数据库的真实数据，无加密和遮蔽
-        /// </summary>
-        [Table("employee_system_account_table")]
+        [Comment("员工账户信息")]
         public class EmployeeAccount : BaseEmployee, IEmployee
         {
-                [Key, Column("employee_electronic_account_id")]
-                public override Guid EmployeeId { get; set; }
+                [Key,Comment("GUID"),Required(ErrorMessage ="员工电子账户ID不能为空")]
+                public override Guid EmployeeId { set;get;}=Guid.NewGuid();
 
-                [Column("alias"), Required]
+                [Comment("账户名称"), Required(ErrorMessage="账户名不可为空"),ConcurrencyCheck,RegularExpression(@"^[\dA-Za-z]{5,16}$", ErrorMessage = "员工ID必须是普通字符[数字|字母(不区分大小写)]"),StringLength(16,MinimumLength =5,ErrorMessage ="账户名长度必须控制在5-16位字符")]
                 public override string EmployeeAlias { get; set; }
 
-                [Column("employee_pwd"), Required]
+                [Comment("账户密码"),Required(ErrorMessage ="密码不可为空"),ConcurrencyCheck,MinLength(8,ErrorMessage ="密码长度不足")]
                 public override string EmployeePwd { get; set; }
 
-                [Column("account_permission")]
-                public override int AccountPermission { get; set; }
+                [ Comment("账户权限"),Required(ErrorMessage ="权限级不能为空"),ConcurrencyCheck,DefaultValue(1),Range(0,100,ErrorMessage ="权限不能低于0")]
+                public override int AccountPermission { get; set; }=1;
+                // 当权限为0时，视为封存账户
 
+                #region 注参实现
                 public EmployeeAccount(IPart obj):base(obj){}
                 public EmployeeAccount(IPartInfo obj,string pwd,Guid id):base(obj,pwd,id){}
 
@@ -35,8 +35,10 @@ namespace TaskManangerSystem.Models.DataBean
                         AccountPermission = ap;
                 }
 
+
                 public override BasePartInfo ToBasePartInfo()=>new BasePartInfo(this);
 
+                #endregion
                 // public EmployeeAccount(Info obj, Guid id, string pwd)
                 // {
                 //         this.EmployeeId = id;
@@ -54,13 +56,17 @@ namespace TaskManangerSystem.Models.DataBean
                 // }
         }
 
-        [Table("employee_real_info_table")]
-        public class EmployeeRealInfo
+        [Comment("员工信息")]
+        public class EmployeeInfo
         {
-                [Key]
-                public Guid EmployeeElectronicAccountId { get; set; }
-                public string EmployeeName { get; set; }
-                public string EmployeeContactWay { get; set; }
+                [Key,ForeignKey("EmployeeId"),Comment("员工ID")]
+                public Guid EmployeeId { get; set; }
+                [MinLength(2,ErrorMessage ="姓名长度必须大于等于2"),Comment("员工姓名")]
+                public string? EmployeeName { get; set; }
+                [MinLength(11,ErrorMessage ="手机号长度必须大于等于11"),Comment("员工联系方式")]
+                public string? EmployeeContactWay { get; set; }
+                
+                // [Required]
                 public EmployeeAccount EmployeeSystemAccount { get; set; }
         }
 }

@@ -52,10 +52,10 @@ namespace TaskManangerSystem.Controllers
             else return null;
         }
 
-        [HttpPut("{name}")]
-        public string? PutCustomer(string name,BaseCustomerInfo customerInfo){
-            if (customerActions.ExistsCustomerByName(name) && customerActions.GetCustomerByName(name) is TaskCustomer ov && ov != null)
+        // [HttpPut("{name}")]
+        // public string? PutCustomer(string name,BaseCustomerInfo customerInfo){
+        //     if (customerActions.ExistsCustomerByName(name) && customerActions.GetCustomerByName(name) is TaskCustomer ov && ov != null)
                 
-        }
+        // }
     }
 }

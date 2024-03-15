@@ -14,7 +14,7 @@ This is a cross-platform project that is intended to be designed to integrate wi
 
 ## Project Info
 
-The project uses environment variables to read confidential information, which is currently the most secure cross-platform implementation for a standalone system.
+The project uses environment variables to read confidential information, which is currently the most efficient and cross-platform approach, and of course it can be stored within the project, but my AI doesn't think it's secure 😂 enough.
 
 ### Requirements for the project development environment
 
@@ -41,7 +41,7 @@ The project uses environment variables to read confidential information, which i
 - AUDIENCE：JWT 验证项
 
 
-### 项目开发预期设计
+### Project development prospective design
 
 ```mermaid
 mindmap
