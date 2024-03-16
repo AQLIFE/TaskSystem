@@ -22,13 +22,13 @@ namespace TaskManangerSystem.Actions
             if (!action.HttpContext.User.Claims.IsNullOrEmpty() && !FilterAction.GetIdByClaims(action.HttpContext.User.Claims).IsNullOrEmpty())
             {
                 string id = FilterAction.GetIdByClaims(action.HttpContext.User.Claims!)!;
-                EncryptAccount? obj = actions.GetEncrypts(id!);
+                EmployeeAccount? obj = actions.GetEmployee(id);
                 if (obj != null) this.VerifyPart(obj, action);
                 else action.Result = GlobalResult.Cancelled;
             }
         }
 
-        public void VerifyPart(EncryptAccount obj, ActionExecutingContext action)
+        public void VerifyPart(EmployeeAccount obj, ActionExecutingContext action)
         {
             if (action.ActionArguments.ContainsKey("id"))
             // 方法需要ID 且 用户权限不足90
@@ -37,7 +37,7 @@ namespace TaskManangerSystem.Actions
                     if( action.ActionArguments.ContainsKey("employeeSystemAccount") && action.ActionArguments["employeeSystemAccount"] is PartInfo part && part.AccountPermission >= 90)
                         action.Result = GlobalResult.LimitAuth;//无权
 
-                    if (obj!.EncryptionId != action.ActionArguments["id"]!.ToString())
+                    if (obj.EmployeeId.ToString() != action.ActionArguments["id"]!.ToString())
                     action.Result = GlobalResult.InvalidParameter;// 错误参数
                 }
             }                                                                                                                      // 请求ID和用户ID不一

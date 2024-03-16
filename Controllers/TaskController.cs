@@ -25,31 +25,33 @@ namespace TaskManangerSystem.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<ICustomerInfo>> GetCustomers(int page = 1, int pageSize = 120)
             => context.customers.OrderByDescending(e => e.AddTime)
-            .Skip((page - 1) * pageSize).Take(pageSize).ToList().Select(e => e.ToCustomerInfo()).ToList();
+            .Skip((page - 1) * pageSize).Take(pageSize).ToList().Select(e => e as ICustomerInfo).ToList();
 
 
         [HttpPost]
-        public async Task<string?> PostCustomer(BaseCustomerInfo customer)
+        public async Task<string?> PostCustomer(CustomerInfo info,int serial=101)
         {
-            var obj = categoryActions.GetCategoryBySerial(customer.Serial) ?? categoryActions.GetCategoryBySerial(101);
-            TaskCustomer ls = customer.ToCustomer(obj!.CategoryId);
-            if (ls != null)
+            if (customerActions.ExistsCustomerByName(info.CustomerName)) return "客户已存在";
+            else if(!categoryActions.ExistsCategoryBySerial(serial))return "序列号不存在";
+            
+            Category? obj = categoryActions.GetCategoryBySerial(serial);
+            Customer? ls = info.ToCustomer(obj!.CategoryId) as Customer;
+
+            if (ls is not null)
             {
                 context.customers.Add(ls);
                 await context.SaveChangesAsync();
-                return customer.CustomerName;
+                return info.CustomerName;
             }
-            return "失败";
+            return "添加失败";
         }
 
         [HttpGet("{name}")]
         public ICustomerInfo? GetCustomer(string name)
         {
-            if (customerActions.ExistsCustomerByName(name) && customerActions.GetCustomerByName(name) is TaskCustomer ov && ov != null)
-                // TaskCustomer? ov = customerActions.GetCustomerByName(name);
-                // if (ov != null)
-                return ov.ToCustomerInfo(categoryActions.GetCategory(ov.CustomerType)!.SortSerial);
-            else return null;
+
+            if(!customerActions.ExistsCustomerByName(name))return null;
+            else return customerActions.GetCustomerByName(name);
         }
 
         // [HttpPut("{name}")]

@@ -6,7 +6,7 @@ namespace TaskManangerSystem.IServices.SystemServices
 {
     public interface IBearer
     {
-        public string CreateToken(EncryptAccount encrypt);
+        public string CreateToken(EmployeeAccount employee);
     }
 
     public abstract class BearerBase : TokenOption

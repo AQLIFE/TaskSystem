@@ -5,6 +5,7 @@ using TaskManangerSystem.Services;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Actions;
+using TaskManangerSystem.IServices.BeanServices;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -21,41 +22,44 @@ namespace TaskManangerSystem.Controllers
         /// <returns></returns>
         [HttpGet]
         [Authorize(Roles = "99")]
-        public async Task<ActionResult<IEnumerable<BasePartInfo>>> GetEmployeeSystemAccounts(int page = 1, int pageSize = 120)
+        public async Task<ActionResult<IEnumerable<IPartInfo>>> GetEmployeeSystemAccounts(int page = 1, int pageSize = 120)
             => await context.employees.OrderByDescending(e => e.AccountPermission)
-            .Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.ToBasePartInfo()).ToListAsync();
+            .Skip((page - 1) * pageSize).Take(pageSize).Select(x => x as IPartInfo).ToListAsync();
 
 
         // POST: api/EmployeeSystemAccounts
         [HttpPost]//增加
         public async Task<string?> PostEmployeeSystemAccount(Part employeeSystemAccount)
         {
-            if (action.ExistsEncrypts(employeeSystemAccount.EmployeeAlias)) return "名称已存在";
+            if (action.ExistsEmployeeByName(employeeSystemAccount.EmployeeAlias)) return "名称已存在";
 
-            EmployeeAccount part = employeeSystemAccount.ToEmployee();
+            EmployeeAccount part = (EmployeeAccount)employeeSystemAccount.ToEmployee();
 
             context.employees.Add(part);
             await context.SaveChangesAsync();
 
-            return GetEmployeeSystemAccount(GlobalActions.ComputeSHA256Hash(part.EmployeeId.ToString()))?.EmployeeAlias;
+            ShaEncrypted encrypted = part.EmployeeId.ToString();
+            return GetEmployeeSystemAccount(encrypted.ComputeSHA512Hash())?.EmployeeAlias;
         }
 
-        // GET: api/EmployeeSystemAccounts/SHA256-string
+        // GET: api/EmployeeSystemAccounts/SHA512-string
         [HttpGet("{id}")]//查看用户 公开信息
-        public PartInfo? GetEmployeeSystemAccount(string id)
-        => action.GetEncrypts(id)?.ToPartInfo();
+        public IPartInfo? GetEmployeeSystemAccount(string id)=> action.GetEmployee(id);
 
         // 大写
         // PUT: api/EmployeeSystemAccounts/5
         [HttpPut("{id}")]// 更新指定用户
         public async Task<string?> PutEmployeeSystemAccount(string id, PartInfo employeeSystemAccount)
         {
-            if (id == String.Empty || id == null || action.ExistsEncrypts(id)) return "不存在这个账户";
-            else if (action.ExistsEncryptsByName(employeeSystemAccount.EmployeeAlias)) return "账户名重复";
+            if (id == String.Empty || id == null || action.ExistsEmployee(id)) return "不存在这个账户";
+            else if (action.ExistsEmployeeByName(employeeSystemAccount.EmployeeAlias)) return "账户名重复";
 
             // Console.WriteLine("在方法内");
             EmployeeAccount? objs = action.GetEmployee(id);
-            context.Entry<EmployeeAccount>(employeeSystemAccount.ToEmployee(objs!.EmployeePwd, objs.EmployeeId)).State = EntityState.Modified;
+            objs!.AccountPermission = employeeSystemAccount.AccountPermission;
+            objs!.EmployeeAlias = employeeSystemAccount.EmployeeAlias;
+
+            context.Entry<EmployeeAccount>(objs).State = EntityState.Modified;
             await context.SaveChangesAsync();
             return employeeSystemAccount.EmployeeAlias;
         }

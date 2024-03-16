@@ -16,7 +16,7 @@ namespace TaskManangerSystem.Controllers
         [HttpPost]
         public ActionResult<string?> AuthLogin(Part account)
             => employee.LoginCheck(account) ?
-             new BearerInfo().CreateToken(employee.GetEncryptsByName(account.EmployeeAlias)!) :
+             new BearerInfo().CreateToken(employee.GetEmployeeByName(account.EmployeeAlias)!) :
               "登录校验不通过";
     }
 

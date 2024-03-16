@@ -3,6 +3,7 @@ using System.Text;
 
 namespace TaskManangerSystem.Actions
 {
+    [Obsolete("请使用ShaEncrypted类")]
     public class GlobalActions
     {
         public static string ComputeSHA256Hash(string input)
@@ -25,8 +26,6 @@ namespace TaskManangerSystem.Actions
                 return sb.ToString();
             }
         }
-        
-        [Obsolete]
         public static string GetMD5(string myString)
         {
             MD5 md5 = new MD5CryptoServiceProvider();
@@ -40,6 +39,22 @@ namespace TaskManangerSystem.Actions
             return byte2String;
         }
     }
+
+    public class ShaEncrypted(string str)
+    {
+        private readonly string _encryptedValue = str;
+        private readonly Encoding _encoding = Encoding.UTF8;
+
+        public static implicit operator ShaEncrypted(string plainText) => new ShaEncrypted(plainText);
+
+        private string ComputeHash(Func<byte[], byte[]> hashAlgorithmFunc)
+           =>string.Join("", hashAlgorithmFunc(_encoding.GetBytes(_encryptedValue)).Select(b => b.ToString("x2")));
+        
+        public string ComputeSHA256Hash()=> ComputeHash(data => SHA256.HashData(data));
+        public string ComputeSHA384Hash()=> ComputeHash(data => SHA384.HashData(data));
+        public string ComputeSHA512Hash()=> ComputeHash(data => SHA512.HashData(data));
+    }
+
     public class SymmetricEncryption
     {
         public static byte[] Encrypt(string plainText, byte[] Key, byte[] IV)

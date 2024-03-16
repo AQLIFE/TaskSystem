@@ -19,17 +19,26 @@ namespace TaskManangerSystem.IServices.BeanServices
         public Guid EmployeeId { get; set; }
     }
 
+    public interface IEmployeeConverter
+    {
+        public IEmployee ToEmployee();
+    }
+
+    public interface IEmployeeConverter<T> where T : IPartInfo
+    {
+        public IEmployee ToEmployee(string pwd, Guid id);
+    }
+
+    [Obsolete("该接口将移除，使用IEmployee")]
     public interface IEncrypt : IEmployee
     {
         public string EncryptionId { get; set; }
     }
 
 
-    public interface ICategory
-    {
-        public Guid CategoryId { get; set; }
-        public Guid? ParentCategoryId { get; set; }
 
+    public interface ICategoryInfo
+    {
         public int SortSerial { set; get; }
 
         public string CategoryName { get; set; }
@@ -39,17 +48,32 @@ namespace TaskManangerSystem.IServices.BeanServices
         public string? Remark { get; set; }
     }
 
-    public interface ICateInfo
+
+    public interface ICategory : ICategoryInfo
     {
-        public int SortSerial { set; get; }
-        public int ParentSortSerial { set; get; }
+        public Guid CategoryId { get; set; }
+        public Guid? ParentCategoryId { get; set; }
 
-        public string CategoryName { get; set; }
+        // public int SortSerial { set; get; }
 
-        public int CategoryLevel { get; set; }
+        // public string CategoryName { get; set; }
 
-        public string Remark { get; set; }
+        // public int CategoryLevel { get; set; }
+
+        // public string? Remark { get; set; }
     }
+
+    // public interface ICateInfo
+    // {
+    //     public int SortSerial { set; get; }
+    //     public int ParentSortSerial { set; get; }
+
+    //     public string CategoryName { get; set; }
+
+    //     public int CategoryLevel { get; set; }
+
+    //     public string? Remark { get; set; }
+    // }
 
     public interface ICustomerInfo
     {

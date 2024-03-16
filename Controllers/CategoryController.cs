@@ -2,32 +2,33 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.Actions;
+using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Controllers
 {
-    [ApiController, Route("api/[controller]"), Authorize(Roles ="99")]
+    [ApiController, Route("api/[controller]"), Authorize(Roles = "99")]
     public class CategoryController(ManagementSystemContext context) : ControllerBase
     {
         private CategoryActions action = new(context);
         public enum CategoryType { all, level, parId }
 
         [HttpGet]
-        public IEnumerable<BaseCateInfo?>? GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
+        public IEnumerable<ICategoryInfo?>? GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
         => select switch { CategoryType.all => action.GetCategoryList(page, pageSize), CategoryType.level => action.GetCategoryListByLevel(obj, page, pageSize), CategoryType.parId => action.GetCategoryListByParId(obj, page, pageSize), _ => null };
 
         [HttpPost]
-        public async Task<ActionResult<string>> PostCategory(CaInfo category)
+        public async Task<ActionResult<string>> PostCategory(CateInfo category)
         {
             if (!action.Validate(category)) return action.ValidateMessage;
 
             Guid? iss = action.GetParentId(category.ParentSortSerial);
-            int id = action.GetLastId() + 1;
-            int level = action.GetLevelByParId((Guid)iss!)+1;
+            category.SortSerial = action.GetLastSerial() + 1;
+            category.CategoryLevel = action.GetLevelByParId((Guid)iss!) + 1;
 
-            Category obj = category.ToCategory(Guid.NewGuid(), iss, id, level);
+            Category obj = category.ToCategory(Guid.NewGuid(), iss);
 
             context.categories.Add(obj);
             await context.SaveChangesAsync();
@@ -39,10 +40,14 @@ namespace TaskManangerSystem.Controllers
         // public ActionResult<int> GetLevel(int id) =>action.GetLevelById(id);
 
         [HttpGet("{id}")]
-        public ActionResult<BaseCateInfo?> GetCategory(int id)
+        public ActionResult<ICategoryInfo>? GetCategory(int id)
         {
+            // if(!action.ExistsCategoryBySerial(id))return ;
             var obj = action.GetCategoryBySerial(id);
-            return obj?.ToCateInfo(action.GetParIdBySerial(id));
+            if (obj is not null)
+                return new CateInfo(obj, action.GetParSerialBySerial(obj.SortSerial));
+            else return null;
+
         }
 
         // POST: api/categories  
@@ -50,7 +55,7 @@ namespace TaskManangerSystem.Controllers
 
         // PUT: api/categories/5  
         [HttpPut("{id}")]
-        public async Task<string> PutCategory(int id, CaInfo category)
+        public async Task<string> PutCategory(int id, CateInfo category)
         {
             if (id <= 0 || !action.ExistsCategoryBySerial(id)) return "不存在信息";
 

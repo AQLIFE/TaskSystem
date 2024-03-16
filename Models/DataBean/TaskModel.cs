@@ -7,32 +7,30 @@ using TaskManangerSystem.Models.SystemBean;
 namespace TaskManangerSystem.Models.DataBean
 {
     [Comment("任务信息")]
-    public class TaskCustomer : BaseCustomer
+    public class Customer : ICustomer
     {
         [Key, Comment("客户ID")]
-        public override Guid CustomerId { get; set; } = Guid.NewGuid();
+        public  Guid CustomerId { get; set; } = Guid.NewGuid();
         [Comment("客户名称"), Required]
-        public override string CustomerName { get; set; }
+        public  string CustomerName { get; set; }=string.Empty;
         [Comment("客户联系方式")]
-        public override string? CustomerContactWay { get; set; }
+        public  string? CustomerContactWay { get; set; }
         [Comment("客户地址")]
-        public override string? CustomerAddress { get; set; }
+        public  string? CustomerAddress { get; set; }
         [Comment("客户类型"), ForeignKey("CategoryId")]
-        public override Guid CustomerType { get; set; }
+        public  Guid CustomerType { get; set; }
 
         [Comment("客户等级"), Range(1, 10, ErrorMessage = "客户等级必须在1-10之间")]
-        public override int ClientGrade { get; set; }
+        public  int ClientGrade { get; set; }
 
         [Comment("客户添加时间")]
-        public override DateTime AddTime { get; set; } = DateTime.Now;
+        public  DateTime AddTime { get; set; } = DateTime.Now;
 
         public Category? Category { get; set; }
 
-        public TaskCustomer() { }
-
-        public TaskCustomer(ICustomerInfo customer, Guid cateId) : base(customer, cateId) { }
-
-        public TaskCustomer(BaseCustomer customer)
+        public Customer() { }
+        public Customer(ICustomerInfo customer, Guid cateId){ }
+        public Customer(BaseCustomer customer)
         {
             this.CustomerId = customer.CustomerId;
             this.CustomerName = customer.CustomerName;
@@ -43,7 +41,7 @@ namespace TaskManangerSystem.Models.DataBean
             this.AddTime = customer.AddTime;
         }
 
-        public TaskCustomer(string name, Guid cateId, int level = 1, string? conway = null, string? add = null)
+        public Customer(string name, Guid cateId, int level = 1, string? conway = null, string? add = null)
         {
             CustomerId = Guid.NewGuid();
             CustomerName = name;
@@ -55,7 +53,7 @@ namespace TaskManangerSystem.Models.DataBean
 
         }
 
-        public void update(BaseCustomerInfo info)
+        public void update(CustomerInfo info)
         {
             CustomerAddress = info.CustomerAddress;
             CustomerContactWay = info.CustomerContactWay;
@@ -73,7 +71,7 @@ namespace TaskManangerSystem.Models.DataBean
         [ForeignKey("CustomerId"), Comment("客户ID")]
         public Guid? CustomerId { get; set; }
         [Comment("任务描述"), Required]
-        public string Content { get; set; }
+        public string Content { get; set; } =string.Empty;
         [ForeignKey("CategoryId"),Comment("任务类型")]
         public Guid TaskType{set;get;}
         [Range(0.0, 3000.0, ErrorMessage = "任务花费必须在0-3000之间")]
@@ -82,7 +80,7 @@ namespace TaskManangerSystem.Models.DataBean
         public Guid EmployeeId { get; set; }
 
 
-        public TaskCustomer TaskCustomer { get; set; }
+        public Customer Customer { get; set; }
         public EmployeeAccount EmployeeAccount { get; set; }
 
     }

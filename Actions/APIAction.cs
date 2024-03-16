@@ -44,26 +44,27 @@ namespace TaskManangerSystem.Actions
                 context.SaveChanges();
             }else category = actions.GetCategoryBySerial(103)!;
 
-            TaskCustomer customers = new("管理员", category.CategoryId, 1, "13212345678", "本公司");
-            context.Entry<TaskCustomer>(customers).State = EntityState.Added;
+            Customer customers = new("管理员", category.CategoryId, 1, "13212345678", "本公司");
+            context.Entry<Customer>(customers).State = EntityState.Added;
             Console.WriteLine("添加客户");
             return context.SaveChanges();
         }
     }
     public class EmployeeActions(ManagementSystemContext context)
     {
-        public bool ExistsEncryptsByName(string name) => context.encrypts.Any(e => e.EmployeeAlias == name);
-        public bool ExistsEncrypts(string id) => context.encrypts.Any(e => e.EncryptionId == id);
-        public bool ExistsEncrypts(Guid id) => context.encrypts.Any(e => e.EmployeeId == id);
+        public bool ExistsEmployeeByName(string name) => context.employees.Any(e => e.EmployeeAlias == name);
+        public bool ExistsEmployee(string id) => context.employees.Any(e => e.SHA512Hash == id);
+        
 
 
         /// <summary>
         /// 查询对应加密ID 的原始信息
         /// </summary>
-        /// <param name="id">加密ID</param>
+        /// <param name="id">SHA512 加密ID</param>
         /// <returns>原始信息</returns>
-        public EmployeeAccount? GetEmployee(string id) => context.employees.Find(GetEncrypts(id)?.EmployeeId.ToString());
-        public EmployeeAccount? GetEmployeeByName(string name) => context.employees.Find(GetEncryptsByName(name)?.EmployeeId.ToString());
+        public EmployeeAccount? GetEmployee(string id) => context.employees.Where(e=>e.SHA512Hash==id).FirstOrDefault();
+        // public EmployeeAccount? GetEmployee(string id) => context.employees.Find(GetEncrypts(id)?.EmployeeId.ToString());
+        public EmployeeAccount? GetEmployeeByName(string name) => context.employees.Where(e=>e.EmployeeAlias==name).FirstOrDefault();
         // public async Task<EmployeeAccount?> GetEmployeeAsync(string id) => await context.employees.FindAsync(GetEncryptsAsync(id)?.Result?.EmployeeId);
 
         /// <summary>
@@ -71,12 +72,12 @@ namespace TaskManangerSystem.Actions
         /// </summary>
         /// <param name="id">加密ID</param>
         /// <returns>加密信息</returns>
-        public EncryptAccount? GetEncrypts(string id) => context.encrypts.Where(e => e.EncryptionId == id).FirstOrDefault();
-        // public async Task<EncryptAccount?> GetEncryptsAsync(string id) => await context.encrypts.Where(e => e.EncryptionId == id).FirstOrDefaultAsync();
-        public EncryptAccount? GetEncryptsByName(string name) => context.encrypts.Where(e => e.EmployeeAlias == name).FirstOrDefault();
+        // public EncryptAccount? GetEncrypts(string id) => context.encrypts.Where(e => e.EncryptionId == id).FirstOrDefault();
+        // // public async Task<EncryptAccount?> GetEncryptsAsync(string id) => await context.encrypts.Where(e => e.EncryptionId == id).FirstOrDefaultAsync();
+        // public EncryptAccount? GetEncryptsByName(string name) => context.encrypts.Where(e => e.EmployeeAlias == name).FirstOrDefault();
 
         public bool LoginCheck(Part account)
-       => context.encrypts.Any(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd);
+       => context.employees.Any(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd);
     }
 
     public class CategoryActions(ManagementSystemContext context)
@@ -106,36 +107,35 @@ namespace TaskManangerSystem.Actions
 
 
         public string ValidateMessage = "";
-        public bool Validate(CaInfo obj)
+        public bool Validate(CateInfo obj)
         {
-            // if (ExistsCategoryBySerial(obj.SortSerial) ) { ValidateMessage = "已存在相同序列号"; return false; }
             if (obj.ParentSortSerial != 0 && !ExistsCategoryBySerial(obj.ParentSortSerial)) { ValidateMessage = "父分类序列号不存在"; return false; }
             if (obj.CategoryName != null && ExistsCategoryByName(obj.CategoryName)) { ValidateMessage = "分类名称已存在"; return false; }
             return true;
         }
 
-        public IEnumerable<BaseCateInfo?> GetCategoryList(int page = 1, int pageSize = 120)
+        public IEnumerable<ICategoryInfo?> GetCategoryList(int page = 1, int pageSize = 120)
         => context.categories.OrderBy(c => c.CategoryLevel).OrderBy(c => c.SortSerial)
         .Skip((page - 1) * pageSize).Take(pageSize)
-        .ToList().Select(e => e.ToCateInfo(GetParentSort(e.ParentCategoryId != null ? (Guid)e.ParentCategoryId : Guid.NewGuid())));
+        .ToList().Select(e => e as ICategoryInfo);
 
 
-        public IEnumerable<BaseCateInfo?> GetCategoryListByLevel(int level = 1, int page = 1, int pageSize = 120)
+        public IEnumerable<ICategoryInfo?> GetCategoryListByLevel(int level = 1, int page = 1, int pageSize = 120)
         => context.categories
             .Where(e => e.CategoryLevel == level)
             .OrderBy(c => c.SortSerial)
             .Skip((page - 1) * pageSize).Take(pageSize)
             .ToList()
-            .Select(e => e.ToCateInfo(GetParentSort(e.ParentCategoryId != null ? (Guid)e.ParentCategoryId : Guid.NewGuid())));
+            .Select(e => e as ICategoryInfo);
 
 
-        public IEnumerable<BaseCateInfo?> GetCategoryListByParId(int parId = 100, int page = 1, int pageSize = 120)
+        public IEnumerable<ICategoryInfo?> GetCategoryListByParId(int parId = 100, int page = 1, int pageSize = 120)
         => context.categories
             .Where(e => e.ParentCategoryId == GetCategoryBySerial(parId)!.CategoryId)
             .OrderBy(c => c.SortSerial)
             .Skip((page - 1) * pageSize).Take(pageSize)
             .ToList()
-            .Select(e => e.ToCateInfo(GetParentSort(e.ParentCategoryId != null ? (Guid)e.ParentCategoryId : Guid.NewGuid())));
+            .Select(e => e  as ICategoryInfo);
 
 
         public int GetLevelByParId(Guid parId)
@@ -148,7 +148,9 @@ namespace TaskManangerSystem.Actions
 
         public int GetLevelById(int parId) => parId == 0 ? 1 : (ExistsCategoryBySerial(parId) ? GetLevelByParId((Guid)GetCategoryBySerial(parId)!.ParentCategoryId!) + 1 : 1);
 
-        public int GetLastId() => context.categories.OrderBy(e => e.SortSerial).LastOrDefault()?.SortSerial ?? 100;
+        public int GetLastSerial() => context.categories.OrderBy(e => e.SortSerial).LastOrDefault()?.SortSerial ?? 100;
+
+        public int GetParSerialBySerial(int serial) => GetCategory((Guid)GetCategoryBySerial(serial)!.ParentCategoryId!)!.SortSerial;
 
 
         /// <summary>
@@ -165,7 +167,7 @@ namespace TaskManangerSystem.Actions
 
     public class CustomerActions(ManagementSystemContext context){
         public bool ExistsCustomerByName(string name)=>context.customers.Any(e=>e.CustomerName==name);
-        public TaskCustomer? GetCustomerByName(string name)=>context.customers.Where(e=>e.CustomerName==name).FirstOrDefault();
+        public Customer? GetCustomerByName(string name)=>context.customers.Where(e=>e.CustomerName==name).FirstOrDefault();
         // public ICustomerInfo? GetCustomerInfoByName(string name)=>context.customers.Where(e=>e.CustomerName==name).Select(e=>e.ToCustomerInfo(e.CustomerType));
     }
 }
