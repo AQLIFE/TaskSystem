@@ -17,18 +17,33 @@ namespace TaskManangerSystem.Controllers
 
         [HttpGet]
         public IEnumerable<ICategoryInfo?>? GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
-        => select switch { CategoryType.all => action.GetCategoryList(page, pageSize), CategoryType.level => action.GetCategoryListByLevel(obj, page, pageSize), CategoryType.parId => action.GetCategoryListByParId(obj, page, pageSize), _ => null };
+        => select switch
+        {
+            CategoryType.all =>   action.GetCategoryList(page, pageSize).Select(e=>e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
+            CategoryType.level => action.GetCategoryListByLevel(obj, page, pageSize).Select(e=>e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
+            CategoryType.parId => action.GetCategoryListByParId(obj, page, pageSize).Select(e=>e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
+            _ => null
+        };
+
+
+        [Obsolete]
+        private IEnumerable<ICategoryInfo> MapToCategoryInfo(List<Category> obj)
+        {
+            List<ICategoryInfo> info = new();
+            obj.ForEach(os => info.Add(CopyToCategory(os)));
+            return info;
+        }
+
+        private ICategoryInfo CopyToCategory(Category obj)
+            => obj.ToCateInfo(action.GetSerialById(obj.ParentCategoryId));
+
 
         [HttpPost]
-        public async Task<ActionResult<string>> PostCategory(CateInfo category)
+        public async Task<ActionResult<string>> PostCategory(MiniCate info)
         {
-            if (!action.Validate(category)) return action.ValidateMessage;
+            if (!action.Validate(info)) return action.ValidateMessage;
 
-            Guid? iss = action.GetParentId(category.ParentSortSerial);
-            category.SortSerial = action.GetLastSerial() + 1;
-            category.CategoryLevel = action.GetLevelByParId((Guid)iss!) + 1;
-
-            Category obj = category.ToCategory(Guid.NewGuid(), iss);
+            Category obj = info.ToCategory(action.GetIdBySerial(info.ParentSortSerial), action.GetLastSerial() + 1,action.GetLevelBySerial(info.ParentSortSerial));
 
             context.categories.Add(obj);
             await context.SaveChangesAsync();
@@ -57,7 +72,7 @@ namespace TaskManangerSystem.Controllers
         [HttpPut("{id}")]
         public async Task<string> PutCategory(int id, CateInfo category)
         {
-            if (id <= 0 || !action.ExistsCategoryBySerial(id)) return "不存在信息";
+            if ( !action.ExistsCategoryBySerial(id)) return "不存在信息";
 
             Category? obj = action.GetCategoryBySerial(id);
 

@@ -3,43 +3,38 @@ using System.Text;
 
 namespace TaskManangerSystem.Actions
 {
-    [Obsolete("请使用ShaEncrypted类")]
-    public class GlobalActions
+    
+    /// <summary>
+    /// ShaEncrypted 的Static版本
+    /// 功能实现一致
+    /// </summary>
+    public static class ShaHashExtensions
     {
-        public static string ComputeSHA256Hash(string input)
+        public static string ComputeSHA256Hash(this string plainText)
+        => ComputeHash(plainText, data => SHA256.HashData(data));
+
+        public static string ComputeSHA384Hash(this string plainText)
+        => ComputeHash(plainText, data => SHA384.HashData(data));
+
+        public static string ComputeSHA512Hash(this string plainText)
+           => ComputeHash(plainText, data => SHA512.HashData(data));
+
+
+        private static string ComputeHash(string input, Func<byte[], byte[]> hashAlgorithmFunc)
         {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                // Convert the input string to a byte array
-                byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+            var bytesToHash = Encoding.UTF8.GetBytes(input);
+            var hashedBytes = hashAlgorithmFunc(bytesToHash);
 
-                // Compute the hash value
-                byte[] hashBytes = sha256.ComputeHash(inputBytes);
-
-                // Convert the hash bytes to a hexadecimal string
-                StringBuilder sb = new StringBuilder();
-                foreach (byte b in hashBytes)
-                {
-                    sb.Append(b.ToString("x2"));
-                }
-
-                return sb.ToString();
-            }
-        }
-        public static string GetMD5(string myString)
-        {
-            MD5 md5 = new MD5CryptoServiceProvider();
-            byte[] fromData = System.Text.Encoding.UTF8.GetBytes(myString);
-            byte[] targetData = md5.ComputeHash(fromData);
-            string byte2String = "";
-            for (int i = 0; i < targetData.Length; i++)
-            {
-                byte2String += targetData[i].ToString("x2");
-            }
-            return byte2String;
+            return string.Join("", hashedBytes.Select(b => b.ToString("x2")));
         }
     }
 
+
+
+    /// <summary>
+    /// 提供SHA2 系列加密
+    /// </summary>
+    /// <param name="str"></param>
     public class ShaEncrypted(string str)
     {
         private readonly string _encryptedValue = str;
@@ -48,11 +43,11 @@ namespace TaskManangerSystem.Actions
         public static implicit operator ShaEncrypted(string plainText) => new ShaEncrypted(plainText);
 
         private string ComputeHash(Func<byte[], byte[]> hashAlgorithmFunc)
-           =>string.Join("", hashAlgorithmFunc(_encoding.GetBytes(_encryptedValue)).Select(b => b.ToString("x2")));
-        
-        public string ComputeSHA256Hash()=> ComputeHash(data => SHA256.HashData(data));
-        public string ComputeSHA384Hash()=> ComputeHash(data => SHA384.HashData(data));
-        public string ComputeSHA512Hash()=> ComputeHash(data => SHA512.HashData(data));
+           => string.Join("", hashAlgorithmFunc(_encoding.GetBytes(_encryptedValue)).Select(b => b.ToString("x2")));
+
+        public string ComputeSHA256Hash() => ComputeHash(data => SHA256.HashData(data));
+        public string ComputeSHA384Hash() => ComputeHash(data => SHA384.HashData(data));
+        public string ComputeSHA512Hash() => ComputeHash(data => SHA512.HashData(data));
     }
 
     public class SymmetricEncryption

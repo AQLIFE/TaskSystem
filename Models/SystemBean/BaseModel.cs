@@ -79,40 +79,6 @@ namespace TaskManangerSystem.Models.SystemBean
     //     public virtual ICategory ToCategory(Guid Id, Guid? ParId) => new Category(this, Id, ParId);
     // }
 
-    [Obsolete("该接口将移除，使用Category")]
-    public abstract class BaseCategory/* (ICateInfo? cateInfo, Guid id, Guid? parId) */ : ICategory
-    {
-        public virtual Guid CategoryId { get; set; } /* = id; */
-        public virtual Guid? ParentCategoryId { get; set; }/*  = parId; */
-        public virtual int SortSerial { set; get; } /* = cateInfo.SortSerial; */
-        public virtual string CategoryName { get; set; } /* = cateInfo.CategoryName; */
-        public virtual int CategoryLevel { get; set; } /* = cateInfo.CategoryLevel; */
-        public virtual string? Remark { get; set; }/*  = cateInfo.Remark; */
-        public BaseCategory() /* : this(null, Guid.NewGuid(), Guid.NewGuid()) */ { }
-        // public BaseCategory(ICateInfo? cateInfo, Guid id, Guid? parId)
-        // {
-        //     CategoryId = id;
-        //     ParentCategoryId = parId;
-        //     SortSerial = cateInfo.SortSerial;
-        //     CategoryName = cateInfo.CategoryName;
-        //     CategoryLevel = cateInfo.CategoryLevel;
-        //     Remark = cateInfo.Remark;
-        // }
-
-        // public BaseCategory(CaInfo ca, Guid id, Guid? parId, int sort, int level)
-        // {
-        //     CategoryId = id;
-        //     ParentCategoryId = parId;
-        //     SortSerial = sort;
-        //     CategoryName = ca.CategoryName;
-        //     CategoryLevel = level;
-        //     Remark = ca.Remark;
-        // }
-
-
-        // public virtual ICateInfo ToCateInfo(ManagementSystemContext context) => new BaseCateInfo(this, context.categories.Find(this.ParentCategoryId).SortSerial);
-    }
-
     [Obsolete("废弃，使用Customer")]
     public abstract class BaseCustomer : ICustomer
     {

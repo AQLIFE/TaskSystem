@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManangerSystem.Services;
-using TaskManangerSystem.IServices.BeanServices;
-using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models.SystemBean;
 

@@ -19,9 +19,11 @@ namespace TaskManangerSystem.Actions
 
         public void Cauth(ActionExecutingContext action)
         {
+            
             if (!action.HttpContext.User.Claims.IsNullOrEmpty() && !FilterAction.GetIdByClaims(action.HttpContext.User.Claims).IsNullOrEmpty())
             {
                 string id = FilterAction.GetIdByClaims(action.HttpContext.User.Claims!)!;
+                // Console.WriteLine(id);
                 EmployeeAccount? obj = actions.GetEmployee(id);
                 if (obj != null) this.VerifyPart(obj, action);
                 else action.Result = GlobalResult.Cancelled;

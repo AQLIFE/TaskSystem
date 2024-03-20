@@ -38,8 +38,17 @@ namespace TaskManangerSystem.Models.SystemBean
         }
         public Category ToCategory(Guid Id, Guid? ParId)
             => new Category(this, Id, ParId);
-        // public Category ToCategory(Guid Id, Guid? ParId,int id,int level)
-        //     => new Category(this.CategoryName,this.SortSerial,this.Remark,this.CategoryLevel);
+    }
+
+
+    public class MiniCate{
+        public int ParentSortSerial { set; get; }// 子类自定义
+        public string CategoryName { get; set; } =string.Empty;
+        public string? Remark { get; set; }
+
+        public MiniCate(){}
+
+        public Category ToCategory(Guid? parId,int serial,int level)=>new (this,serial:serial,level:level,parId:parId);
     }
 
     public class CustomerInfo : ICustomerInfo

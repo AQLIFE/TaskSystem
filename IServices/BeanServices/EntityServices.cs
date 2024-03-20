@@ -40,6 +40,7 @@ namespace TaskManangerSystem.IServices.BeanServices
     public interface ICategoryInfo
     {
         public int SortSerial { set; get; }
+        // public int ParentSortSerial { set; get; }// 子类自定义
 
         public string CategoryName { get; set; }
 

@@ -27,7 +27,7 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("备注")]
         public string? Remark { get; set; }
 
-        public Category ParentCategory { get; set; }
+
 
         public Category() { }
 
@@ -41,16 +41,28 @@ namespace TaskManangerSystem.Models.DataBean
             Remark = cateInfo.Remark;
         }
 
+        public Category(MiniCate info, Guid? parId,int serial,int level)
+        {
+            ParentCategoryId = parId;
+            SortSerial = serial;
+            CategoryLevel = level;
+            CategoryName = info.CategoryName;
+            Remark = info.Remark;
+        }
+
 
         // 用于系统初始化
-        public Category(string name, int serial, string? remark=null, int level=1, Guid? parId=null)
-        {  
+        public Category(string name, int serial, string? remark = null, int level = 1, Guid? parId = null)
+        {
             CategoryName = name;
-            SortSerial= serial;
+            SortSerial = serial;
             Remark = remark;
             CategoryLevel = level;
             ParentCategoryId = parId;
         }
+        public Category ParentCategory { get; set; }
+
+        public CateInfo ToCateInfo(int serial) => new CateInfo(this, serial);
     }
 
     [Comment("库存信息")]
@@ -60,14 +72,14 @@ namespace TaskManangerSystem.Models.DataBean
         public Guid ProductId { get; set; } = Guid.NewGuid();
 
         [Required, Comment("产品名称")]
-        public string ProductName { get; set; }
+        public string ProductName { get; set; } = string.Empty;
         [Comment("产品进货价"), Range(0.0, double.MaxValue, ErrorMessage = "最低进货价格必须大于等于0")]
         public decimal ProductPrice { get; set; }
 
         [Comment("产品零售价"), Range(0.0, double.MaxValue, ErrorMessage = "最低零售价格必须大于等于0")]
         public decimal ProductCost { get; set; }
         [Required, Comment("产品型号")]
-        public string ProductModel { get; set; } =string.Empty;
+        public string ProductModel { get; set; } = string.Empty;
         [ForeignKey("CategoryId"), Comment("产品类型-使用分类ID")]
         public Guid ProductType { get; set; }
         public Category Category { get; set; }
@@ -87,8 +99,7 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("备注")]
         public string? Remark { get; set; }
 
-        [ForeignKey("ProductId"), Comment("产品ID")]
-        public Guid ProductId { get; set; }
+
 
         [ForeignKey("TaskId"), Comment("任务ID")]
         public Guid TaskId { get; set; }
@@ -97,6 +108,9 @@ namespace TaskManangerSystem.Models.DataBean
 
 
         public InventoryInfo InventoryInfo { get; set; }
+
+        [ForeignKey("ProductId"), Column("ProductId"), Comment("产品ID")]
+        public Guid InventoryProductId { get; set; }
 
     }
 }

@@ -17,15 +17,15 @@ namespace TaskManangerSystem.Models.DataBean
                 [Comment("账户名称"), Required(ErrorMessage = "账户名不可为空"), ConcurrencyCheck, RegularExpression(@"^[\dA-Za-z]{5,16}$", ErrorMessage = "员工ID必须是普通字符[数字|字母(不区分大小写)]"), StringLength(16, MinimumLength = 5, ErrorMessage = "账户名长度必须控制在5-16位字符")]
                 public string EmployeeAlias { get; set; } = string.Empty;
 
-                [Comment("账户密码"), Required(ErrorMessage = "密码不可为空"), ConcurrencyCheck, MinLength(8, ErrorMessage = "密码长度不足")]
+                [Comment("账户密码"), Required(ErrorMessage = "密码不可为空"), ConcurrencyCheck, StringLength(128,MinimumLength =16, ErrorMessage = "密码长度不足")]
                 public string EmployeePwd { get; set; } = string.Empty;
 
                 [Comment("账户权限"), Required(ErrorMessage = "权限级不能为空"), ConcurrencyCheck, DefaultValue(1), Range(0, 100, ErrorMessage = "权限不能低于0")]
                 public int AccountPermission { get; set; } = 0;
                 // 当权限为0时，视为封存账户
 
-                [NotMapped]
-                public string SHA512Hash { get { ShaEncrypted obj = EmployeeId.ToString(); return obj.ComputeSHA512Hash(); } }
+                // [NotMapped]
+                // public string SHA512Hash { get { return ShaHashExtensions.ComputeSHA512Hash(this.EmployeePwd); } }
 
                 #region 注参实现
                 public EmployeeAccount(IPart obj)
@@ -45,25 +45,7 @@ namespace TaskManangerSystem.Models.DataBean
                         AccountPermission = ap;
                 }
 
-
-                // public override BasePartInfo ToBasePartInfo()=>new BasePartInfo(this);
-
                 #endregion
-                // public EmployeeAccount(Info obj, Guid id, string pwd)
-                // {
-                //         this.EmployeeId = id;
-                //         this.EmployeeAlias = obj.EmployeeAlias;
-                //         this.EmployeePwd = pwd;
-                //         this.AccountPermission = obj.AccountPermission;
-                // }
-
-                // public EmployeeAccount(Part obj, Guid id)
-                // {
-                //         this.EmployeeId = id;
-                //         this.EmployeeAlias = obj.EmployeeAlias;
-                //         this.EmployeePwd = obj.EmployeePwd;
-                //         this.AccountPermission = 1;
-                // }
         }
 
         [Comment("员工信息")]

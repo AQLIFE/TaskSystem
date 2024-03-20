@@ -30,7 +30,7 @@ namespace TaskManangerSystem.IServices.SystemServices
         {
             get
             {
-                return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                return new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
             }
         }//加密后密钥
     }
