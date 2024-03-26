@@ -28,7 +28,7 @@ namespace TaskManangerSystem.Services
 
         public string RequestInformation=>$"访问状态：{(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName}";
 
-        public string RespenseInfomation =>$"API Status: {(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName},返回结果：{invalidParameterValue}";
+        public string RespenseInfomation =>$"API Status: {(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "匿名用户"},请求方法:{funcName}";
     }
 
 

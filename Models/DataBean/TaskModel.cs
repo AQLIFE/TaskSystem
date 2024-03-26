@@ -30,16 +30,6 @@ namespace TaskManangerSystem.Models.DataBean
 
         public Customer() { }
         public Customer(ICustomerInfo customer, Guid cateId) { }
-        // public Customer(BaseCustomer customer)
-        // {
-        //     this.CustomerId = customer.CustomerId;
-        //     this.CustomerName = customer.CustomerName;
-        //     this.CustomerContactWay = customer.CustomerContactWay;
-        //     this.CustomerAddress = customer.CustomerAddress;
-        //     this.CustomerType = customer.CustomerType;
-        //     this.ClientGrade = customer.ClientGrade;
-        //     this.AddTime = customer.AddTime;
-        // }
 
         public Customer(string name, Guid cateId, int level = 1, string? conway = null, string? add = null)
         {

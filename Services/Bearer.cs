@@ -7,11 +7,11 @@ using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.IServices.SystemServices;
 using TaskManangerSystem.Actions;
 using Jose;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Org.BouncyCastle.Crypto.Parameters;
 
 namespace TaskManangerSystem.Services
 {
-
-    // 注意：在实际应用中，你需要确保使用的是公钥进行加密，私钥进行解密。
 
     public static class StringExtensions
     {
@@ -23,7 +23,10 @@ namespace TaskManangerSystem.Services
     }
     public class BearerInfo
     {
+
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public BearerInfo() { }
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public BearerInfo(EmployeeAccount employeeAccount)
         {
             jwt = new(
@@ -50,6 +53,7 @@ namespace TaskManangerSystem.Services
 
     public class BearerConfig
     {
+        public JwtBearerOptions JwtOptions { get; private set; }
         public JwtBearerEvents bearerEvents = new();
         public TokenValidationParameters tokenValidation;
 
@@ -64,15 +68,13 @@ namespace TaskManangerSystem.Services
                 ValidateLifetime = true,//验证失效时间
                 ValidateIssuerSigningKey = true,//验证公钥
                 IssuerSigningKey = KeyManager.SigningCredentials.Key
+
             };
 
             bearerEvents.OnTokenValidated = async (context) =>
             {
-                // Jose.JWE
                 int? accountPermission = FilterAction.GetClaim(context.Principal?.Claims, ClaimTypes.Role)?.Value.ToInt32();
-
-                // 设定一个固定的权限等级 Roles
-                const int roles = 1;
+                const int roles = 1;// 设定一个固定的权限等级 Roles
 
                 // 如果 AccountPermission Claim 不存在或其值小于设定的 Roles，则拒绝访问
                 if (!accountPermission.HasValue || accountPermission.Value < roles)
@@ -95,6 +97,24 @@ namespace TaskManangerSystem.Services
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.WriteAsJsonAsync(GlobalResult.Forbidden);
                 return Task.FromResult(0);
+            };
+            bearerEvents.OnMessageReceived = context =>
+            {
+
+                var authorizationHeader = context.Request.Headers["Authorization"];
+                if (!authorizationHeader.IsNullOrEmpty())
+                {
+
+                    string deJwt = JWT.Decode(authorizationHeader.ToString().Replace("Bearer ", ""), KeyManager.rsaDecryptor.Rsa, JweAlgorithm.RSA_OAEP, JweEncryption.A256CBC_HS512);
+                    // context.HttpContext.Items.Add("Bearer", deJwt);
+                    // context.Token = context.HttpContext.Items.Where(e => e.Key.ToString() == "Bearer").First().Value!.ToString();
+                    context.Token = deJwt;
+                    return Task.FromResult(0);
+                    
+                }
+
+                context.Fail("全局规则:token无效");
+                return Task.CompletedTask;
             };
         }
     }
