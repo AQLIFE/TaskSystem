@@ -6,14 +6,17 @@ using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices.BeanServices;
+using System.Security.Claims;
 
 namespace TaskManangerSystem.Controllers
 {
 
-    [ApiController, Authorize]
+    [ApiController,Authorize]
     [Route("api/[controller]")]
     public class EmployeeController(ManagementSystemContext context) : ControllerBase
     {
+        [HttpGet("test")]
+        public string test()=>"hello";
         private EmployeeActions action = new(context);
         /// <summary>
         /// 返回所有的账户信息
@@ -21,7 +24,7 @@ namespace TaskManangerSystem.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Authorize(Roles = "99")]
+        [Authorize(Roles ="99")]
         public async Task<ActionResult<IEnumerable<IPartInfo>>> GetEmployeeSystemAccounts(int page = 1, int pageSize = 120)
             => await context.employees.OrderByDescending(e => e.AccountPermission)
             .Skip((page - 1) * pageSize).Take(pageSize).Select(x => x as IPartInfo).ToListAsync();

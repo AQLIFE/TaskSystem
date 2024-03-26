@@ -3,3 +3,7 @@
 /.vscode
 /Migrations
 .editorconfig
+.server.key
+.server.csr
+.server.crt
+.server.pfx

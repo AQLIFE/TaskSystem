@@ -56,6 +56,7 @@ namespace TaskManangerSystem.Actions
         public bool ExistsEmployeeByName(string name) => context.employees.Any(e => e.EmployeeAlias == name);
         public bool ExistsEmployee(string id) => context.employees.Any(e => e.EmployeeId.ToString() == id);
 
+        public bool ExistsEmployeeByHashId(string hashId)=>context.employees.ToList().Any(e=>ShaHashExtensions.ComputeSHA512Hash(e.EmployeeId.ToString())==hashId);
 
 
         /// <summary>
@@ -64,6 +65,7 @@ namespace TaskManangerSystem.Actions
         /// <param name="id">SHA512 加密ID</param>
         /// <returns>原始信息</returns>
         public EmployeeAccount? GetEmployee(string id) => context.employees.Where(e => e.EmployeeId.ToString() == id).FirstOrDefault();
+        public EmployeeAccount? GetEmployeeByHashId(string hashId) => context.employees.ToList().Where(e=>ShaHashExtensions.ComputeSHA512Hash(e.EmployeeId.ToString())==hashId).FirstOrDefault();
 
         public EmployeeAccount? GetEmployeeByName(string name) => context.employees.Where(e => e.EmployeeAlias == name).FirstOrDefault();
 

@@ -51,30 +51,21 @@ namespace TaskManangerSystem.Controllers
             return obj.CategoryName;
         }
 
-        // [HttpGet("{id}/info")]
-        // public ActionResult<int> GetLevel(int id) =>action.GetLevelById(id);
 
-        [HttpGet("{id}")]
-        public ActionResult<ICategoryInfo>? GetCategory(int id)
-        {
-            // if(!action.ExistsCategoryBySerial(id))return ;
-            var obj = action.GetCategoryBySerial(id);
-            if (obj is not null)
-                return new CateInfo(obj, action.GetParSerialBySerial(obj.SortSerial));
-            else return null;
-
-        }
+        [HttpGet("{SortSerial}")]
+        public ActionResult<ICategoryInfo?> GetCategory(int SortSerial)
+            => action.GetCategoryBySerial(SortSerial) is  Category obj ? obj.ToCateInfo(action.GetParSerialBySerial(obj.SortSerial)):null;
 
         // POST: api/categories  
 
 
         // PUT: api/categories/5  
-        [HttpPut("{id}")]
-        public async Task<string> PutCategory(int id, CateInfo category)
+        [HttpPut("{SortSerial}")]
+        public async Task<string> PutCategory(int SortSerial, CateInfo category)
         {
-            if ( !action.ExistsCategoryBySerial(id)) return "不存在信息";
+            if ( !action.ExistsCategoryBySerial(SortSerial)) return "不存在信息";
 
-            Category? obj = action.GetCategoryBySerial(id);
+            Category? obj = action.GetCategoryBySerial(SortSerial);
 
             obj!.CategoryName = obj.CategoryName != category.CategoryName ? category.CategoryName : obj.CategoryName;
             obj.CategoryLevel = obj.CategoryLevel != category.CategoryLevel ? category.CategoryLevel : obj.CategoryLevel;
@@ -89,10 +80,10 @@ namespace TaskManangerSystem.Controllers
         }
 
         // DELETE: api/categories/5  
-        [HttpDelete("{id}")]
-        public async Task<string?> DeleteCategory(int id)
+        [HttpDelete("{SortSerial}")]
+        public async Task<string?> DeleteCategory(int SortSerial)
         {
-            var category = action.GetCategoryBySerial(id);
+            var category = action.GetCategoryBySerial(SortSerial);
             if (category == null) return "不存在信息";
 
             context.categories.Remove(category);

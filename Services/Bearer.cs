@@ -6,51 +6,80 @@ using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.IServices.SystemServices;
 using TaskManangerSystem.Actions;
-
+using Jose;
 
 namespace TaskManangerSystem.Services
 {
 
-    public class BearerInfo : BearerBase, IBearer
+    // 注意：在实际应用中，你需要确保使用的是公钥进行加密，私钥进行解密。
+
+    public static class StringExtensions
     {
-        private Claim[]? claims;//客户端信息
-
-        private JwtSecurityToken? token;
-
-        public BearerInfo() { }
-
-        public string CreateToken(EmployeeAccount employee)
+        public static int? ToInt32(this string? value)
         {
-            // ShaEncrypted obj = employee.EmployeeId.ToString();
-            this.claims = [
-                new Claim(ClaimTypes.Name,          employee.EmployeeAlias),
-            // new Claim(ClaimTypes,A)
-                new Claim(ClaimTypes.Authentication,employee.EmployeeId.ToString()),
-                new Claim(ClaimTypes.Role,          employee.AccountPermission.ToString())
-            ];
-            this.token = new(issuer: Issuer,audience:Audience, claims: claims, expires: DateTime.Now.AddDays(7), signingCredentials: signing);
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            if (int.TryParse(value, out int result)) return result;
+            else return null;
         }
     }
-
-    public class BearerConfig : BearerBase
+    public class BearerInfo
     {
-        public JwtBearerEvents bearerEvents = new JwtBearerEvents();
+        public BearerInfo() { }
+        public BearerInfo(EmployeeAccount employeeAccount)
+        {
+            jwt = new(
+                issuer: TokenOption.Issuer,
+                audience: TokenOption.Audience,
+                claims:
+                [
+                    new(ClaimTypes.Authentication,ShaHashExtensions.ComputeSHA512Hash(employeeAccount.EmployeeId.ToString())),
+                    new(ClaimTypes.Role,          employeeAccount.AccountPermission.ToString())
+                ],
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: KeyManager.SigningCredentials);
+        }
+        private JwtSecurityToken jwt;
+
+        public string CreateJWT()
+            => new JwtSecurityTokenHandler().WriteToken(jwt);// 创建JwtSecurityToken
+
+        public string CreateToken()
+            => JWT.Encode(payload: CreateJWT(), key: KeyManager.rsaEncryptor.Rsa, alg: JweAlgorithm.RSA_OAEP, enc: JweEncryption.A256CBC_HS512);
+        // 使用Jose库创建加密的JWE
+
+    }
+
+    public class BearerConfig
+    {
+        public JwtBearerEvents bearerEvents = new();
         public TokenValidationParameters tokenValidation;
 
         public BearerConfig()
         {
-            tokenValidation = new TokenValidationParameters
+            tokenValidation = new()
             {
                 ValidateIssuer = true,//验证发布者
-                ValidIssuer = Issuer,
+                ValidIssuer = TokenOption.Issuer,
                 ValidateAudience = true,//验证订阅者
-                ValidAudience = Audience,
+                ValidAudience = TokenOption.Audience,
                 ValidateLifetime = true,//验证失效时间
                 ValidateIssuerSigningKey = true,//验证公钥
-                IssuerSigningKey = key
+                IssuerSigningKey = KeyManager.SigningCredentials.Key
             };
 
+            bearerEvents.OnTokenValidated = async (context) =>
+            {
+                // Jose.JWE
+                int? accountPermission = FilterAction.GetClaim(context.Principal?.Claims, ClaimTypes.Role)?.Value.ToInt32();
+
+                // 设定一个固定的权限等级 Roles
+                const int roles = 1;
+
+                // 如果 AccountPermission Claim 不存在或其值小于设定的 Roles，则拒绝访问
+                if (!accountPermission.HasValue || accountPermission.Value < roles)
+                    context.Fail("全局规则:权限等级不足");
+
+                await Task.CompletedTask;
+            };
 
             bearerEvents.OnChallenge = context =>
             {
@@ -64,7 +93,7 @@ namespace TaskManangerSystem.Services
             {
                 // context.HandleResponse();
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                context.Response.WriteAsJsonAsync(GlobalResult.LimitedAuthority);
+                context.Response.WriteAsJsonAsync(GlobalResult.Forbidden);
                 return Task.FromResult(0);
             };
         }

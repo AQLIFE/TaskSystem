@@ -17,7 +17,11 @@ namespace TaskManangerSystem.Models.SystemBean
 
     public abstract class BaseEmployee : IEmployee
     {
-        public BaseEmployee() { }
+        public BaseEmployee()
+        {
+            EmployeeAlias=string.Empty;
+            EmployeePwd=string.Empty;
+        }
         // 从 注册 转为 实体
         public BaseEmployee(IPart obj)
         {
@@ -44,18 +48,18 @@ namespace TaskManangerSystem.Models.SystemBean
 
     //----------------------------------------------------------------
 
-    [Obsolete("该接口将移除，使用IEmployee")]
-    public abstract class BaseEncrypt : IEncrypt
-    {
-        public virtual string EncryptionId { get; set; }
-        public virtual Guid EmployeeId { get; set; }
-        public virtual string EmployeeAlias { get; set; }
-        public virtual string EmployeePwd { get; set; }
-        public virtual int AccountPermission { get; set; }
-        // public virtual IPartInfo ToBasePartInfo() => new BasePartInfo(this);
+    // [Obsolete("该接口将移除，使用IEmployee")]
+    // public abstract class BaseEncrypt : IEncrypt
+    // {
+    //     public virtual string EncryptionId { get; set; }
+    //     public virtual Guid EmployeeId { get; set; }
+    //     public virtual string EmployeeAlias { get; set; }
+    //     public virtual string EmployeePwd { get; set; }
+    //     public virtual int AccountPermission { get; set; }
+    //     // public virtual IPartInfo ToBasePartInfo() => new BasePartInfo(this);
 
-        public BaseEncrypt() { }
-    }
+    //     public BaseEncrypt() { }
+    // }
 
     // public abstract class BaseCateInfo : ICateInfo
     // {
@@ -79,30 +83,30 @@ namespace TaskManangerSystem.Models.SystemBean
     //     public virtual ICategory ToCategory(Guid Id, Guid? ParId) => new Category(this, Id, ParId);
     // }
 
-    [Obsolete("废弃，使用Customer")]
-    public abstract class BaseCustomer : ICustomer
-    {
-        public virtual Guid CustomerId { get; set; }
-        public virtual string CustomerName { get; set; }
-        public virtual string? CustomerContactWay { get; set; }
-        public virtual string? CustomerAddress { get; set; }
-        public virtual Guid CustomerType { get; set; }
-        public virtual int ClientGrade { get; set; }
-        public virtual DateTime AddTime { get; set; }
+    // [Obsolete("废弃，使用Customer")]
+    // public abstract class BaseCustomer : ICustomer
+    // {
+    //     public virtual Guid CustomerId { get; set; }
+    //     public virtual string CustomerName { get; set; }
+    //     public virtual string? CustomerContactWay { get; set; }
+    //     public virtual string? CustomerAddress { get; set; }
+    //     public virtual Guid CustomerType { get; set; }
+    //     public virtual int ClientGrade { get; set; }
+    //     public virtual DateTime AddTime { get; set; }
 
-        public BaseCustomer() { }
+    //     public BaseCustomer() { }
 
-        public BaseCustomer(ICustomerInfo customer, Guid cateId, int defaultLevel = 1)
-        {
-            CustomerId = Guid.NewGuid();
-            CustomerName = customer.CustomerName;
-            CustomerContactWay = customer.CustomerContactWay;
-            CustomerAddress = customer.CustomerAddress;
-            ClientGrade = defaultLevel;
-            AddTime = DateTime.Now;
-            CustomerType = cateId;
-        }
-        //     public ICustomerInfo ToCustomerInfo(int serial = 100)
-        //         => new BaseCustomerInfo(this, serial);
-    }
+    //     public BaseCustomer(ICustomerInfo customer, Guid cateId, int defaultLevel = 1)
+    //     {
+    //         CustomerId = Guid.NewGuid();
+    //         CustomerName = customer.CustomerName;
+    //         CustomerContactWay = customer.CustomerContactWay;
+    //         CustomerAddress = customer.CustomerAddress;
+    //         ClientGrade = defaultLevel;
+    //         AddTime = DateTime.Now;
+    //         CustomerType = cateId;
+    //     }
+    //     //     public ICustomerInfo ToCustomerInfo(int serial = 100)
+    //     //         => new BaseCustomerInfo(this, serial);
+    // }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models.SystemBean;
@@ -5,11 +6,11 @@ using TaskManangerSystem.Services;
 
 namespace InitDb
 {
-    [ApiController, Route("api/[controller]")]
+    [ApiController, Route("api/[controller]"),AllowAnonymous]
     public class InitDBController(ManagementSystemContext context) : ControllerBase
     {
         private DBAction action = new(context);
-        private DBStatus status;
+        private DBStatus? status;
         [HttpGet("status")]
         public DBStatus ExistsDb() => status = new(context);
 

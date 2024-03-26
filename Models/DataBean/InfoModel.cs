@@ -8,7 +8,7 @@ using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Models.DataBean
 {
-    [Comment("分类信息")]
+    [Comment("分类信息"), Index(nameof(SortSerial), nameof(CategoryName), IsUnique = true)]
     public class Category : ICategory
     {
         [Key, Comment("分类ID"), ForeignKey("CategoryId")]
@@ -28,7 +28,7 @@ namespace TaskManangerSystem.Models.DataBean
         public string? Remark { get; set; }
 
 
-
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public Category() { }
 
         public Category(ICategoryInfo cateInfo, Guid id, Guid? parId)
@@ -41,7 +41,7 @@ namespace TaskManangerSystem.Models.DataBean
             Remark = cateInfo.Remark;
         }
 
-        public Category(MiniCate info, Guid? parId,int serial,int level)
+        public Category(MiniCate info, Guid? parId, int serial, int level)
         {
             ParentCategoryId = parId;
             SortSerial = serial;
@@ -53,6 +53,7 @@ namespace TaskManangerSystem.Models.DataBean
 
         // 用于系统初始化
         public Category(string name, int serial, string? remark = null, int level = 1, Guid? parId = null)
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         {
             CategoryName = name;
             SortSerial = serial;
@@ -65,7 +66,7 @@ namespace TaskManangerSystem.Models.DataBean
         public CateInfo ToCateInfo(int serial) => new CateInfo(this, serial);
     }
 
-    [Comment("库存信息")]
+    [Comment("库存信息"), Index(nameof(ProductName), IsUnique = true)]
     public class InventoryInfo
     {
         [Key, Comment("产品ID")]
@@ -82,7 +83,9 @@ namespace TaskManangerSystem.Models.DataBean
         public string ProductModel { get; set; } = string.Empty;
         [ForeignKey("CategoryId"), Comment("产品类型-使用分类ID")]
         public Guid ProductType { get; set; }
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public Category Category { get; set; }
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
     }
     [Comment("库存变动信息")]
@@ -104,6 +107,7 @@ namespace TaskManangerSystem.Models.DataBean
         [ForeignKey("TaskId"), Comment("任务ID")]
         public Guid TaskId { get; set; }
 
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public TaskAffair Task { get; set; }
 
 
@@ -111,6 +115,6 @@ namespace TaskManangerSystem.Models.DataBean
 
         [ForeignKey("ProductId"), Column("ProductId"), Comment("产品ID")]
         public Guid InventoryProductId { get; set; }
-
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
     }
 }

@@ -64,18 +64,6 @@ namespace TaskManangerSystem.IServices.BeanServices
         // public string? Remark { get; set; }
     }
 
-    // public interface ICateInfo
-    // {
-    //     public int SortSerial { set; get; }
-    //     public int ParentSortSerial { set; get; }
-
-    //     public string CategoryName { get; set; }
-
-    //     public int CategoryLevel { get; set; }
-
-    //     public string? Remark { get; set; }
-    // }
-
     public interface ICustomerInfo
     {
         public string CustomerName { get; set; }

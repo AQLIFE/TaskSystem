@@ -25,7 +25,7 @@ namespace TaskManangerSystem.Actions
             var bytesToHash = Encoding.UTF8.GetBytes(input);
             var hashedBytes = hashAlgorithmFunc(bytesToHash);
 
-            return string.Join("", hashedBytes.Select(b => b.ToString("x2")));
+            return string.Join("", hashedBytes.Select(b => b.ToString("X2")));
         }
     }
 
@@ -102,7 +102,7 @@ namespace TaskManangerSystem.Actions
 
             // Declare the string used to hold  
             // the decrypted text.  
-            string plaintext = null;
+            string plaintext = string.Empty;
 
             // Create an Aes object  
             // with the specified key and IV.  

@@ -6,10 +6,9 @@ namespace TaskManangerSystem.Services
 
         public string? name { set; get; }
 
-        public string funcName { set; get; }
+        public string funcName { set; get; } =string.Empty;
 
         public T? invalidParameterValue { set; get; }
-        // public U? parameterValue { set; get; }
 
         public LogInfo() { }
         public LogInfo(bool status, string? name, string funcName, T? ParameterValue)
@@ -18,7 +17,6 @@ namespace TaskManangerSystem.Services
             this.name = name;
             this.funcName = funcName;
             this.invalidParameterValue = ParameterValue;
-            // this.parameterValue = parameterValue;
         }
 
         public LogInfo(bool status, string? name, string funcName)
@@ -26,19 +24,11 @@ namespace TaskManangerSystem.Services
             this.status = status;
             this.name = name;
             this.funcName = funcName;
-            // this.invalidParameterValue = ParameterValue;
-            // this.parameterValue = parameterValue;
         }
 
-        public string RequestInformation
-        {
-            get
-            {
-                return $"访问状态：{(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName}";
-            }
-        }
+        public string RequestInformation=>$"访问状态：{(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName}";
 
-        public string RespenseInfomation { get { return $"API Status: {(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName},返回结果：{invalidParameterValue}"; } }
+        public string RespenseInfomation =>$"API Status: {(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName},返回结果：{invalidParameterValue}";
     }
 
 
