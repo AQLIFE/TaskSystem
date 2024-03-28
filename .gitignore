@@ -4,3 +4,4 @@
 /Migrations
 .editorconfig
 /server.*
+/Dockerfile
