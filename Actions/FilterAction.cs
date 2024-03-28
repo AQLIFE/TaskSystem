@@ -10,7 +10,9 @@ using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Actions
 {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public class FilterAction(ManagementSystemContext context)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         private EmployeeActions employeeAction = new(context);
         private CategoryActions categoryActions = new(context);
@@ -53,6 +55,7 @@ namespace TaskManangerSystem.Actions
         }
 
         public enum ParameterName { id, info, SortSerial };
+        
         public IDictionary<string, object?> pairs;
         public bool ParameterVerifierByCategory()
         {
