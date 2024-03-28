@@ -52,6 +52,7 @@ namespace TaskManangerSystem.Models.DataBean
                         && EmployeeAlias == account.EmployeeAlias
                         && EmployeePwd == account.EmployeePwd
                         && AccountPermission == account.AccountPermission;
+                public IPartInfo ToPartInfo()=>new PartInfo(this);
 
         }
 

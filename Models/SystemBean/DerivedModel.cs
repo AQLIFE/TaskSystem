@@ -17,6 +17,10 @@ namespace TaskManangerSystem.Models.SystemBean
     {
         public string EmployeeAlias { get; set; } = string.Empty;
         public int AccountPermission { get; set; } = 0;
+        public PartInfo(EmployeeAccount obj){
+            AccountPermission=obj.AccountPermission;
+            EmployeeAlias = obj.EmployeeAlias;
+        }
         public IEmployee ToEmployee(string pwd, Guid id) => new EmployeeAccount(this, pwd, id);
     }
 

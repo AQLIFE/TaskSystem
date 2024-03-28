@@ -17,13 +17,13 @@ namespace TaskManangerSystem.Services
         public void OnActionExecuting(ActionExecutingContext action)
         {
             filterAction.pairs = action.ActionArguments;
-            
+
             switch (action.Controller.GetType().FullName)
             {
-                case string s when s == typeof(EmployeeController).FullName:    if (filterAction.ParameterVerifierByEmployee(action.HttpContext) == false)  action.Result = GlobalResult.NoData; break;
-                case string s when s == typeof(CategoryController).FullName:    if (filterAction.ParameterVerifierByCategory() == false)                    action.Result = GlobalResult.NoData; break;
-                case string s when s == typeof(TaskSystemController).FullName:  if (filterAction.ParameterVerifierByTask() == false)                        action.Result = GlobalResult.NoData; break;
-                case string s when s == typeof(CustomerController).FullName:    if (filterAction.ParameterVerifierByCustomer() == false)                    action.Result = GlobalResult.NoData; break;
+                case string s when s == typeof(EmployeeController).FullName: if (filterAction.ParameterVerifierByEmployee(action.HttpContext) == false) action.Result = GlobalResult.NoData; break;
+                case string s when s == typeof(CategoryController).FullName: if (filterAction.ParameterVerifierByCategory() == false) action.Result = GlobalResult.NoData; break;
+                case string s when s == typeof(TaskSystemController).FullName: if (filterAction.ParameterVerifierByTask() == false) action.Result = GlobalResult.NoData; break;
+                case string s when s == typeof(CustomerController).FullName: if (filterAction.ParameterVerifierByCustomer() == false) action.Result = GlobalResult.NoData; break;
             }
 
             // 输出或记录控制器名称
@@ -32,10 +32,15 @@ namespace TaskManangerSystem.Services
 
         public void OnActionExecuted(ActionExecutedContext action)
         {
-            ObjectResult item = action.Result as ObjectResult ?? throw new Exception(action.RouteData.Values + "接口发生错误");
-            log = filterAction.InitLog(action); log.status = true;
-            logger.LogInformation(log.RespenseInfomation);
-            action.Result = new Result<Object?>(item.Value, !(action.Exception != null || item.Value == null)).ToObjectResult();
+
+            try
+            {
+                ObjectResult item = action.Result as ObjectResult ?? throw new Exception(action.RouteData.Values + "接口发生错误");
+                log = filterAction.InitLog(action); log.status = true;
+                logger.LogInformation(log.RespenseInfomation);
+                action.Result = new Result<Object?>(item.Value, !(action.Exception != null || item.Value == null)).ToObjectResult();
+            }
+            catch (Exception) { action.Result = GlobalResult.Message("程序错误，请联系授权");}
         }
     }
     public class CustomRequirement : IAuthorizationRequirement

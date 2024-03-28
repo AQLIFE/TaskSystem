@@ -51,7 +51,7 @@ namespace TaskManangerSystem.Controllers
 
         // GET: api/EmployeeSystemAccounts/SHA512-string
         [HttpGet("{id}")]//查看用户 公开信息
-        public IPartInfo? GetEmployeeSystemAccount(string id)=> action.GetEmployee(id);
+        public IPartInfo GetEmployeeSystemAccount(string id)=> action.GetEmployeeByHashId(id)!.ToPartInfo();
 
         // 大写
         // PUT: api/EmployeeSystemAccounts/5

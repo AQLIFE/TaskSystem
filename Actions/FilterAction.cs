@@ -26,7 +26,7 @@ namespace TaskManangerSystem.Actions
         }
 
         public EmployeeAccount? GetAccountByParameter(IDictionary<string, object?> cx, string str)
-            => employeeAction.GetEmployee(cx[str] as string ?? string.Empty.ToString());
+            => employeeAction.GetEmployeeByHashId(cx[str] as string ?? string.Empty.ToString());
 
 
 
@@ -55,27 +55,35 @@ namespace TaskManangerSystem.Actions
         }
 
         public enum ParameterName { id, info, SortSerial };
-        
+
         public IDictionary<string, object?> pairs;
         public bool ParameterVerifierByCategory()
         {
             // 序列号验证器
-            if (ExistsParmeter(pairs, ParameterName.SortSerial.ToString()) && pairs[ParameterName.SortSerial.ToString()] as int? >= 100)
-                if (ExistsParmeter(pairs, ParameterName.info.ToString())){
-                    var os=pairs[ParameterName.info.ToString()] as MiniCate;
-                    return os is MiniCate?ValifyByMiniCate(os):false;
-                }else return true;
-            else return true;
+            if (ExistsParmeter(pairs, ParameterName.SortSerial.ToString()))
+                if (ExistsParmeter(pairs, ParameterName.info.ToString()))
+                {
+                    var os = pairs[ParameterName.info.ToString()] as MiniCate;
+                    return os is MiniCate ? ValifyByMiniCate(os) : false;
+                }
+                else return pairs[ParameterName.SortSerial.ToString()] as int? >= 100;
+            return true;
         }
 
         public bool ParameterVerifierByEmployee(HttpContext cx)
         {
+            bool status = true;
+            if (ExistsParmeter(pairs, ParameterName.id.ToString()))
+            {
+                var obj =GetAccountByParameter(pairs, ParameterName.id.ToString());
+                status = obj is EmployeeAccount;
+                // var os = GetAccountByParameter(pairs, ParameterName.id.ToString()) is EmployeeAccount obj;
 
-            if (ExistsParmeter(pairs, ParameterName.id.ToString()) && GetAccountByParameter(pairs, ParameterName.id.ToString()) is EmployeeAccount obj)
-                if (ExistsParmeter(pairs, ParameterName.info.ToString()))
-                    return VerifyByPartInfo(obj, cx);
-                else return true;
-            else return false;
+                if (status && ExistsParmeter(pairs, ParameterName.info.ToString()))
+                    return VerifyByPartInfo(obj!, cx);
+                else return status;
+            }
+            return status;
 
         }
         public bool ParameterVerifierByTask()
@@ -94,7 +102,7 @@ namespace TaskManangerSystem.Actions
 
         public bool ValifyByMiniCate(MiniCate obj)
         {
-            if ( !categoryActions.ExistsCategoryBySerial(obj.ParentSortSerial) || categoryActions.ExistsCategoryByName(obj.CategoryName)) return false;
+            if (!categoryActions.ExistsCategoryBySerial(obj.ParentSortSerial) || categoryActions.ExistsCategoryByName(obj.CategoryName)) return false;
             return true;
         }
         public bool IsAdmin(HttpContext cx) => cx.Items.Where(e => e.Key.ToString() == "IsAdmin").FirstOrDefault().Value?.ToString() == true.ToString();
