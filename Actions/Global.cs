@@ -1,9 +1,32 @@
 using System.Security.Cryptography;
 using System.Text;
+using TaskManangerSystem.Models.DataBean;
 
 namespace TaskManangerSystem.Actions
 {
-    
+
+    public static class SystemInfo
+    {
+        public const int adminRole = 90;
+        public const int pageSize = 120;
+        public static EmployeeAccount admin => new("admin", ShaHashExtensions.ComputeSHA512Hash("admin@123"), adminRole + 9);
+        public static Category[] categories => [
+            new("库存分类",100,"用于对产品进行分类"),
+            new("客户分类",101,"用于对客户进行分类"),
+            new("任务分类",102,"用于对任务进行分类"),
+        ];
+        // public static readonly Category category = new("本公司", 103, "管理员所属公司", 2, actions.GetCategoryBySerial(101)?.CategoryId);
+        public static Customer customers = new("管理员", Guid.NewGuid(), 1, "13212345678", "本公司");
+
+
+        public static string DBLINK => Environment.GetEnvironmentVariable("DB_LINK") ?? throw new Exception("Miss ENV:DB_LINK");
+        public static string ISSUER => Environment.GetEnvironmentVariable("ISSUER") ?? throw new Exception("Program Error:Misssing Issuer");
+        public static string AUDIENCE => Environment.GetEnvironmentVariable("AUDIENCE") ?? throw new Exception("Program Error:Misssing Audience");
+        public static string SECURITYKEY => Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception("Program Error:Missing Key");
+        public static string CERTPATH => Environment.GetEnvironmentVariable("RSA_CERT_PATH") ?? throw new Exception("Miss certPath");
+        // 假设私钥存储在环境变量中，需要根据实际情况调整
+    }
+
     /// <summary>
     /// ShaEncrypted 的Static版本
     /// 功能实现一致

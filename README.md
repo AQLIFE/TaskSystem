@@ -5,6 +5,7 @@ This is a cross-platform project that is intended to be designed to integrate wi
 ## There is a problem with the project
 
 - If the database foreign key binding is too deep, it may not be possible to migrate from Mysql to other databases
+
 > Thinking about implementing data validation from the application layer?
 
 ## The next goal of the project
@@ -27,7 +28,7 @@ The project uses environment variables to read confidential information, which i
     DB_LINK ,
     API_KEY ,
     ISSUER  ,
-    AUDIENCE 
+    AUDIENCE
     </td>
 <td>NET 8</td>
 <td>MYSQL 8.X</td>
@@ -35,11 +36,11 @@ The project uses environment variables to read confidential information, which i
 </table>
 
 #### Environment variable
+
 - DB_LINK ：数据库连接字符串
 - API_KEY ：一个密钥，用于JWT验证
 - ISSUER  ：JWT 验证项
 - AUDIENCE：JWT 验证项
-
 
 ### Project development prospective design
 
@@ -66,17 +67,36 @@ mindmap
 
 ```
 
-## 备忘录
-
-已完成目标：
+## 已实现的功能
 
 - 加入操作日志(控制台)
+  - GlobaleLogger
 
 - 加入环境变量读取
+  - RSA_CERT_PATH ：RSA证书路径
+  - API_KEY ：一个密钥，用于JWE验证
+  - ISSUER  ：JWT 验证项
+  - AUDIENCE：JWT 验证项
+  - DB_LINK ：数据库连接字符串
 
 - 统一数据返回
+  - Result&lt;T&gt; AppFilter()
 
-- 身份验证和授权方案[Bearer Token]
+- 身份验证和授权方案[JWE]
+  - BearerInfo : JWE 生成器
+  - BearerConfig : JWE 验证配置
+    - 使用X509证书密钥
 
-- 取消MD5加解密，转为使用SHA-256加密
-
+- 数据接口
+  - TaskController
+  - CustomerController
+  - EmployeeController
+  - CategoryController
+    - GetCategorys ：返回分页的分类列表
+      - 基于等级
+      - 基于父序
+      - 默认 基于创建时间或ID
+    - PostCategory ：添加分类
+    - PutCategory ：修改分类
+    - DeleteCategory ：删除分类
+    - GetCategory ：获取分类

@@ -3,44 +3,32 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using TaskManangerSystem.Actions;
+using TaskManangerSystem.Controllers;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Services
 {
-    partial class AppFilter(ManagementSystemContext management, ILogger<AppFilter> logger) :IActionFilter /* ,IAuthorizationFilter */
+    partial class AppFilter(ManagementSystemContext management, ILogger<AppFilter> logger) : IActionFilter /* ,IAuthorizationFilter */
     {
         private LogInfo<string?>? log;
         private FilterAction filterAction = new(management);
 
-        // private EmployeeAccount? account;
-        // bool IsSuccess = false;
-        // private int Roles  =1;
+        public void OnActionExecuting(ActionExecutingContext action)
+        {
+            filterAction.pairs = action.ActionArguments;
+            
+            switch (action.Controller.GetType().FullName)
+            {
+                case string s when s == typeof(EmployeeController).FullName:    if (filterAction.ParameterVerifierByEmployee(action.HttpContext) == false)  action.Result = GlobalResult.NoData; break;
+                case string s when s == typeof(CategoryController).FullName:    if (filterAction.ParameterVerifierByCategory() == false)                    action.Result = GlobalResult.NoData; break;
+                case string s when s == typeof(TaskSystemController).FullName:  if (filterAction.ParameterVerifierByTask() == false)                        action.Result = GlobalResult.NoData; break;
+                case string s when s == typeof(CustomerController).FullName:    if (filterAction.ParameterVerifierByCustomer() == false)                    action.Result = GlobalResult.NoData; break;
+            }
 
-        // private bool IsFlag(HttpContext httpContext, string fullName)
-        //     => httpContext.GetEndpoint()?.Metadata.Any(e => e.GetType().FullName == fullName) ?? false;
-        
-        // private bool IsAllowAnonymous(HttpContext httpContext)
-        //     => IsFlag(httpContext, typeof(AllowAnonymousAttribute).FullName!);
-
-        // private bool IsAuthorization(HttpContext httpContext)
-        //     => IsFlag(httpContext, typeof(AuthorizeAttribute).FullName!);
-
-        // public void OnAuthorization(AuthorizationFilterContext authFilter)
-        // {
-        //     // if (!IsAllowAnonymous(authFilter.HttpContext) && IsAuthorization(authFilter.HttpContext))
-        //     // {
-        //     //     // 检查是否具有JWT
-        //     //     // account = obj is not null? employeeAction.GetEmployee(obj.Value):null;
-        //     //     account = filterAction.GetAccountByClaim(authFilter.HttpContext, ClaimTypes.Authentication);
-                
-        //     //     //检查JWT的ID所对应的权限
-        //     //     if ((account?.AccountPermission ?? 0) < Roles) authFilter.Result = new ObjectResult(GlobalResult.Message($"全局规则:权限等级不足"));
-        //     // }
-        // }
-
-
-        public void OnActionExecuting(ActionExecutingContext action){}
+            // 输出或记录控制器名称
+            Console.WriteLine($"Controller name: {action.Controller.GetType().FullName}");
+        }
 
         public void OnActionExecuted(ActionExecutedContext action)
         {
@@ -50,4 +38,5 @@ namespace TaskManangerSystem.Services
             action.Result = new Result<Object?>(item.Value, !(action.Exception != null || item.Value == null)).ToObjectResult();
         }
     }
+
 }
