@@ -4,11 +4,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
-using TaskManangerSystem.IServices.SystemServices;
 using TaskManangerSystem.Actions;
 using Jose;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Org.BouncyCastle.Crypto.Parameters;
 
 namespace TaskManangerSystem.Services
 {
@@ -30,8 +27,8 @@ namespace TaskManangerSystem.Services
         public BearerInfo(EmployeeAccount employeeAccount)
         {
             jwt = new(
-                issuer: TokenOption.Issuer,
-                audience: TokenOption.Audience,
+                issuer:   SystemInfo.ISSUER,
+                audience: SystemInfo.AUDIENCE,
                 claims:
                 [
                     new(ClaimTypes.Authentication,ShaHashExtensions.ComputeSHA512Hash(employeeAccount.EmployeeId.ToString())),
@@ -53,7 +50,6 @@ namespace TaskManangerSystem.Services
 
     public class BearerConfig
     {
-        public JwtBearerOptions JwtOptions { get; private set; }
         public JwtBearerEvents bearerEvents = new();
         public TokenValidationParameters tokenValidation;
 
@@ -62,9 +58,9 @@ namespace TaskManangerSystem.Services
             tokenValidation = new()
             {
                 ValidateIssuer = true,//验证发布者
-                ValidIssuer = TokenOption.Issuer,
+                ValidIssuer = SystemInfo.ISSUER,
                 ValidateAudience = true,//验证订阅者
-                ValidAudience = TokenOption.Audience,
+                ValidAudience = SystemInfo.AUDIENCE,
                 ValidateLifetime = true,//验证失效时间
                 ValidateIssuerSigningKey = true,//验证公钥
                 IssuerSigningKey = KeyManager.SigningCredentials.Key
@@ -75,10 +71,10 @@ namespace TaskManangerSystem.Services
             {
                 int? accountPermission = FilterAction.GetClaim(context.Principal?.Claims, ClaimTypes.Role)?.Value.ToInt32();
                 const int roles = 1;// 设定一个固定的权限等级 Roles
-
                 // 如果 AccountPermission Claim 不存在或其值小于设定的 Roles，则拒绝访问
                 if (!accountPermission.HasValue || accountPermission.Value < roles)
                     context.Fail("全局规则:权限等级不足");
+                context.HttpContext.Items.Add("IsAdmin",accountPermission>=SystemInfo.adminRole);
 
                 await Task.CompletedTask;
             };

@@ -17,26 +17,30 @@ namespace TaskManangerSystem.Controllers
     {
         [HttpGet("test")]
         public string test()=>"hello";
+
         private EmployeeActions action = new(context);
+
+
+        
         /// <summary>
         /// 返回所有的账户信息
         /// - 完成数据脱敏
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Authorize(Roles ="99")]
-        public async Task<ActionResult<IEnumerable<IPartInfo>>> GetEmployeeSystemAccounts(int page = 1, int pageSize = 120)
+        [Authorize(Policy = "admin")]
+        public async Task<ActionResult<IEnumerable<IPartInfo>>> GetEmployeeSystemAccounts(int page = 1, int pageSize = SystemInfo.pageSize)
             => await context.employees.OrderByDescending(e => e.AccountPermission)
             .Skip((page - 1) * pageSize).Take(pageSize).Select(x => x as IPartInfo).ToListAsync();
 
 
         // POST: api/EmployeeSystemAccounts
         [HttpPost]//增加
-        public async Task<string?> PostEmployeeSystemAccount(Part employeeSystemAccount)
+        public async Task<string?> PostEmployeeSystemAccount(Part info)
         {
-            if (action.ExistsEmployeeByName(employeeSystemAccount.EmployeeAlias)) return "名称已存在";
+            // if (action.ExistsEmployeeByName(info.EmployeeAlias)) return "名称已存在";
 
-            EmployeeAccount part = (EmployeeAccount)employeeSystemAccount.ToEmployee();
+            EmployeeAccount part = (EmployeeAccount)info.ToEmployee();
 
             context.employees.Add(part);
             await context.SaveChangesAsync();
@@ -52,19 +56,19 @@ namespace TaskManangerSystem.Controllers
         // 大写
         // PUT: api/EmployeeSystemAccounts/5
         [HttpPut("{id}")]// 更新指定用户
-        public async Task<string?> PutEmployeeSystemAccount(string id, PartInfo employeeSystemAccount)
+        public async Task<string?> PutEmployeeSystemAccount(string id, PartInfo info)
         {
-            if (id == String.Empty || id == null || action.ExistsEmployee(id)) return "不存在这个账户";
-            else if (action.ExistsEmployeeByName(employeeSystemAccount.EmployeeAlias)) return "账户名重复";
+            // if (id == String.Empty || id == null || action.ExistsEmployee(id)) return "不存在这个账户";
+            // else if (action.ExistsEmployeeByName(info.EmployeeAlias)) return "账户名重复";
 
             // Console.WriteLine("在方法内");
             EmployeeAccount? objs = action.GetEmployee(id);
-            objs!.AccountPermission = employeeSystemAccount.AccountPermission;
-            objs!.EmployeeAlias = employeeSystemAccount.EmployeeAlias;
+            objs!.AccountPermission = info.AccountPermission;
+            objs!.EmployeeAlias = info.EmployeeAlias;
 
             context.Entry<EmployeeAccount>(objs).State = EntityState.Modified;
             await context.SaveChangesAsync();
-            return employeeSystemAccount.EmployeeAlias;
+            return info.EmployeeAlias;
         }
 
 

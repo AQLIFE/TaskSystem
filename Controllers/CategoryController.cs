@@ -9,13 +9,13 @@ using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Controllers
 {
-    [ApiController, Route("api/[controller]"), Authorize(Roles = "99")]
+    [ApiController, Route("api/[controller]"), Authorize]
     public class CategoryController(ManagementSystemContext context) : ControllerBase
     {
         private CategoryActions action = new(context);
         public enum CategoryType { all, level, parId }
 
-        [HttpGet]
+        [HttpGet, Authorize(policy: "Admin")]
         public IEnumerable<ICategoryInfo?>? GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
         => select switch
         {
@@ -26,22 +26,10 @@ namespace TaskManangerSystem.Controllers
         };
 
 
-        [Obsolete]
-        private IEnumerable<ICategoryInfo> MapToCategoryInfo(List<Category> obj)
-        {
-            List<ICategoryInfo> info = new();
-            obj.ForEach(os => info.Add(CopyToCategory(os)));
-            return info;
-        }
-
-        private ICategoryInfo CopyToCategory(Category obj)
-            => obj.ToCateInfo(action.GetSerialById(obj.ParentCategoryId));
-
-
         [HttpPost]
         public async Task<ActionResult<string>> PostCategory(MiniCate info)
         {
-            if (!action.Validate(info)) return action.ValidateMessage;
+            // if (!action.Validate(info)) return action.ValidateMessage;
 
             Category obj = info.ToCategory(action.GetIdBySerial(info.ParentSortSerial), action.GetLastSerial() + 1,action.GetLevelBySerial(info.ParentSortSerial));
 
@@ -61,18 +49,18 @@ namespace TaskManangerSystem.Controllers
 
         // PUT: api/categories/5  
         [HttpPut("{SortSerial}")]
-        public async Task<string> PutCategory(int SortSerial, CateInfo category)
+        public async Task<string> PutCategory(int SortSerial, MiniCate info)
         {
-            if ( !action.ExistsCategoryBySerial(SortSerial)) return "不存在信息";
+            // if ( !action.ExistsCategoryBySerial(SortSerial)) return "不存在信息";
 
             Category? obj = action.GetCategoryBySerial(SortSerial);
 
-            obj!.CategoryName = obj.CategoryName != category.CategoryName ? category.CategoryName : obj.CategoryName;
-            obj.CategoryLevel = obj.CategoryLevel != category.CategoryLevel ? category.CategoryLevel : obj.CategoryLevel;
-            obj.Remark = obj.Remark != category.Remark ? category.Remark : obj.Remark;
-            var sl = action.GetCategoryBySerial(category.ParentSortSerial)!.CategoryId;
+            obj!.CategoryName = obj.CategoryName != info.CategoryName ? info.CategoryName : obj.CategoryName;
+            obj.CategoryLevel = action.GetLevelBySerial(info.ParentSortSerial);
+            obj.Remark = obj.Remark != info.Remark ? info.Remark : obj.Remark;
+            var sl = action.GetCategoryBySerial(info.ParentSortSerial)!.CategoryId;
             obj.ParentCategoryId = obj.ParentCategoryId != sl ? sl : obj.ParentCategoryId;
-            // obj.SortSerial = obj.SortSerial != category.SortSerial ? category.SortSerial : obj.SortSerial;
+            
             context.Entry(obj).State = EntityState.Modified;
             await context.SaveChangesAsync();
 

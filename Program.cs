@@ -1,8 +1,9 @@
 using TaskManangerSystem.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using TaskManangerSystem.IServices.SystemServices;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
+using TaskManangerSystem.Actions;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -10,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders().AddConsole();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Configuration.Bind("Authentication", nameof(TokenOption));//绑定配置数据至对象
+// builder.Configuration.Bind("Authentication", nameof(TokenOption));//绑定配置数据至对象
 builder.Services
     .AddScoped<BearerInfo>()
     .AddControllers(options => options.Filters.Add<AppFilter>());
@@ -22,15 +23,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             option.TokenValidationParameters = obj.tokenValidation;
             option.Events = obj.bearerEvents;
         });
+builder.Services.AddAuthorization(option =>
+    option.AddPolicy("Admin",policy=>policy.Requirements.Add(new CustomRequirement()))
+);
+builder.Services.AddSingleton<IAuthorizationHandler, CustomHandler>();
 
 
-
-
-string? oj = Environment.GetEnvironmentVariable("DB_LINK");
-if (!oj.IsNullOrEmpty() && oj is string str)
-    builder.Services.AddDbContext<ManagementSystemContext>(options => options.UseMySQL(str));
+if (!SystemInfo.DBLINK.IsNullOrEmpty())
+    builder.Services.AddDbContext<ManagementSystemContext>(options => options.UseMySQL(SystemInfo.DBLINK));
 //添加数据库链接上下文
-else throw new Exception("Missing DB_LINK config");
 
 if (builder.Environment.IsDevelopment())
 {

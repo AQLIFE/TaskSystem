@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
@@ -9,25 +8,16 @@ namespace TaskManangerSystem.Actions
 
     public class DBAction(ManagementSystemContext context)
     {
-
-        private EmployeeAccount admin = new("admin", ShaHashExtensions.ComputeSHA512Hash("admin@123"), 99);
-
-        private Category[] categories = [
-            new("库存分类",100,"用于对产品进行分类"),
-            new("客户分类",101,"用于对客户进行分类"),
-            new("任务分类",102,"用于对任务进行分类"),
-        ];
-
         public int AddAdminAccount()
         {
-            context.Entry<EmployeeAccount>(admin).State = EntityState.Added;
+            context.Entry<EmployeeAccount>(SystemInfo.admin).State = EntityState.Added;
             Console.WriteLine("添加角色");
             return context.SaveChanges();
         }
 
         public int AddCategory()
         {
-            foreach (var item in categories)
+            foreach (var item in SystemInfo.categories)
                 context.Entry<Category>(item).State = EntityState.Added;
             Console.WriteLine("添加分类");
             return context.SaveChanges();
@@ -45,18 +35,20 @@ namespace TaskManangerSystem.Actions
             }
             else category = actions.GetCategoryBySerial(103)!;
 
-            Customer customers = new("管理员", category.CategoryId, 1, "13212345678", "本公司");
-            context.Entry<Customer>(customers).State = EntityState.Added;
+            SystemInfo.customers.CustomerType = category.CategoryId;
+
+            context.Entry<Customer>(SystemInfo.customers).State = EntityState.Added;
             Console.WriteLine("添加客户");
             return context.SaveChanges();
         }
     }
+
     public class EmployeeActions(ManagementSystemContext context)
     {
         public bool ExistsEmployeeByName(string name) => context.employees.Any(e => e.EmployeeAlias == name);
         public bool ExistsEmployee(string id) => context.employees.Any(e => e.EmployeeId.ToString() == id);
 
-        public bool ExistsEmployeeByHashId(string hashId)=>context.employees.ToList().Any(e=>ShaHashExtensions.ComputeSHA512Hash(e.EmployeeId.ToString())==hashId);
+        public bool ExistsEmployeeByHashId(string hashId) => context.employees.ToList().Any(e => ShaHashExtensions.ComputeSHA512Hash(e.EmployeeId.ToString()) == hashId);
 
 
         /// <summary>
@@ -65,7 +57,7 @@ namespace TaskManangerSystem.Actions
         /// <param name="id">SHA512 加密ID</param>
         /// <returns>原始信息</returns>
         public EmployeeAccount? GetEmployee(string id) => context.employees.Where(e => e.EmployeeId.ToString() == id).FirstOrDefault();
-        public EmployeeAccount? GetEmployeeByHashId(string hashId) => context.employees.ToList().Where(e=>ShaHashExtensions.ComputeSHA512Hash(e.EmployeeId.ToString())==hashId).FirstOrDefault();
+        public EmployeeAccount? GetEmployeeByHashId(string hashId) => context.employees.ToList().Where(e => ShaHashExtensions.ComputeSHA512Hash(e.EmployeeId.ToString()) == hashId).FirstOrDefault();
 
         public EmployeeAccount? GetEmployeeByName(string name) => context.employees.Where(e => e.EmployeeAlias == name).FirstOrDefault();
 
@@ -165,46 +157,48 @@ namespace TaskManangerSystem.Actions
         /// </summary>
         /// <param name="serial">子序列号</param>
         /// <returns></returns>
-        public int GetParSerialBySerial(int serial) => GetCategory(GetCategoryBySerial(serial)!.ParentCategoryId)!.SortSerial;
+        public int GetParSerialBySerial(int serial) {
+            var os =GetCategoryBySerial(serial)?.ParentCategoryId;
+             return os is not null?GetCategory(os)!.SortSerial:0;}
 
-        #endregion
+    #endregion
 
-        #region  api专用
-        public string ValidateMessage = "";
-        public bool Validate(MiniCate obj)
-        {
-            if (obj.ParentSortSerial == 0 || !ExistsCategoryBySerial(obj.ParentSortSerial)) { ValidateMessage = "父分类序列号不存在"; return false; }
-            if (ExistsCategoryByName(obj.CategoryName)) { ValidateMessage = "分类名称已存在"; return false; }
-            return true;
-        }
+    #region  api专用
+    // public string ValidateMessage = "";
+    // public bool Validate(MiniCate obj)
+    // {
+    //     if (obj.ParentSortSerial == 0 || !ExistsCategoryBySerial(obj.ParentSortSerial)) { ValidateMessage = "父分类序列号不存在"; return false; }
+    //     if (ExistsCategoryByName(obj.CategoryName)) { ValidateMessage = "分类名称已存在"; return false; }
+    //     return true;
+    // }
 
-        public List<Category> GetCategoryList(int page = 1, int pageSize = 120)
-        => context.categories.OrderBy(c => c.CategoryLevel).OrderBy(c => c.SortSerial)
+    public List<Category> GetCategoryList(int page = 1, int pageSize = 120)
+    => context.categories.OrderBy(c => c.CategoryLevel).OrderBy(c => c.SortSerial)
+    .Skip((page - 1) * pageSize).Take(pageSize)
+    .ToList();
+
+    public List<Category> GetCategoryListByLevel(int level = 1, int page = 1, int pageSize = 120)
+    => context.categories
+        .Where(e => e.CategoryLevel == level)
+        .OrderBy(c => c.SortSerial)
         .Skip((page - 1) * pageSize).Take(pageSize)
         .ToList();
 
-        public List<Category> GetCategoryListByLevel(int level = 1, int page = 1, int pageSize = 120)
-        => context.categories
-            .Where(e => e.CategoryLevel == level)
-            .OrderBy(c => c.SortSerial)
-            .Skip((page - 1) * pageSize).Take(pageSize)
-            .ToList();
 
+    public List<Category> GetCategoryListByParId(int parId = 100, int page = 1, int pageSize = 120)
+    => context.categories
+        .Where(e => e.ParentCategoryId == GetCategoryBySerial(parId)!.CategoryId)
+        .OrderBy(c => c.SortSerial)
+        .Skip((page - 1) * pageSize).Take(pageSize)
+        .ToList();
+    #endregion
 
-        public List<Category> GetCategoryListByParId(int parId = 100, int page = 1, int pageSize = 120)
-        => context.categories
-            .Where(e => e.ParentCategoryId == GetCategoryBySerial(parId)!.CategoryId)
-            .OrderBy(c => c.SortSerial)
-            .Skip((page - 1) * pageSize).Take(pageSize)
-            .ToList();
-        #endregion
+}
 
-    }
-
-    public class CustomerActions(ManagementSystemContext context)
-    {
-        public bool ExistsCustomerByName(string name) => context.customers.Any(e => e.CustomerName == name);
-        public Customer? GetCustomerByName(string name) => context.customers.Where(e => e.CustomerName == name).FirstOrDefault();
-        // public ICustomerInfo? GetCustomerInfoByName(string name)=>context.customers.Where(e=>e.CustomerName==name).Select(e=>e.ToCustomerInfo(e.CustomerType));
-    }
+public class CustomerActions(ManagementSystemContext context)
+{
+    public bool ExistsCustomerByName(string name) => context.customers.Any(e => e.CustomerName == name);
+    public Customer? GetCustomerByName(string name) => context.customers.Where(e => e.CustomerName == name).FirstOrDefault();
+    // public ICustomerInfo? GetCustomerInfoByName(string name)=>context.customers.Where(e=>e.CustomerName==name).Select(e=>e.ToCustomerInfo(e.CustomerType));
+}
 }

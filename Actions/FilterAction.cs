@@ -12,14 +12,10 @@ namespace TaskManangerSystem.Actions
 {
     public class FilterAction(ManagementSystemContext context)
     {
-        // private EmployeeActions actions = new(context);
-        private EmployeeActions employeeAction = new EmployeeActions(context);
+        private EmployeeActions employeeAction = new(context);
+        private CategoryActions categoryActions = new(context);
+
         public bool status = false;
-
-        [Obsolete("Please use GetClaim")]
-        public static string? GetIdByClaims(IEnumerable<Claim> claims)
-            => (from item in claims where item.ToString() == ClaimTypes.Authentication + ": " + item.Value select item.Value).FirstOrDefault();
-
 
         public EmployeeAccount? GetAccountByClaim(HttpContext cx, string str)
         {
@@ -27,8 +23,8 @@ namespace TaskManangerSystem.Actions
             return employeeAction.ExistsEmployeeByHashId(sr) ? employeeAction.GetEmployeeByHashId(sr) : null;
         }
 
-        public EmployeeAccount? GetAccountByParameter(ActionExecutingContext cx, string str)
-            => employeeAction.GetEmployee(GetParameter(cx.ActionArguments, str) as string ?? Guid.Empty.ToString());
+        public EmployeeAccount? GetAccountByParameter(IDictionary<string, object?> cx, string str)
+            => employeeAction.GetEmployee(cx[str] as string ?? string.Empty.ToString());
 
 
 
@@ -36,31 +32,9 @@ namespace TaskManangerSystem.Actions
             => claims?.FirstOrDefault(e => e.Type == flag);
 
         public static bool ExistsParmeter(IDictionary<string, object?> pairs, string name) => !pairs.IsNullOrEmpty() && pairs.ContainsKey(name);
-        public static object? GetParameter(IDictionary<string, object?> pairs, string name)
-            => pairs[name];
 
-        public bool Validators(Claim kv, string obj) => kv.Value == obj;
+        // public bool Validators(Claim kv, string obj) => kv.Value == obj;
 
-
-        [Obsolete]
-        public void VerifyPart(EmployeeAccount obj, ActionExecutingContext action)
-        {
-            if (action.ActionArguments.ContainsKey("id"))
-            // 方法需要ID 且 用户权限不足90
-            {
-                if (obj!.AccountPermission < 90)
-                {
-                    if (action.ActionArguments.ContainsKey("employeeSystemAccount") && action.ActionArguments["employeeSystemAccount"] is PartInfo part && part.AccountPermission >= 90)
-                        action.Result = GlobalResult.LimitAuth;//无权
-
-                    if (obj.EmployeeId.ToString() != action.ActionArguments["id"]!.ToString())
-                        action.Result = GlobalResult.InvalidParameter;// 错误参数
-                }
-
-            }                                                                                                                      // 请求ID和用户ID不一
-            status = true;
-
-        }
 
         public LogInfo<string?> InitLog(ActionExecutingContext context)
         {
@@ -77,5 +51,49 @@ namespace TaskManangerSystem.Actions
             var sl = il?.Value as Result<string?>;
             return new LogInfo<string?>(status, ob?.Value, oj!.ActionName, sl?.Data?.GetType().Name);
         }
+
+        public enum ParameterName { id, info, SortSerial };
+        public IDictionary<string, object?> pairs;
+        public bool ParameterVerifierByCategory()
+        {
+            // 序列号验证器
+            if (ExistsParmeter(pairs, ParameterName.SortSerial.ToString()) && pairs[ParameterName.SortSerial.ToString()] as int? >= 100)
+                if (ExistsParmeter(pairs, ParameterName.info.ToString())){
+                    var os=pairs[ParameterName.info.ToString()] as MiniCate;
+                    return os is MiniCate?ValifyByMiniCate(os):false;
+                }else return true;
+            else return true;
+        }
+
+        public bool ParameterVerifierByEmployee(HttpContext cx)
+        {
+
+            if (ExistsParmeter(pairs, ParameterName.id.ToString()) && GetAccountByParameter(pairs, ParameterName.id.ToString()) is EmployeeAccount obj)
+                if (ExistsParmeter(pairs, ParameterName.info.ToString()))
+                    return VerifyByPartInfo(obj, cx);
+                else return true;
+            else return false;
+
+        }
+        public bool ParameterVerifierByTask()
+        {
+            return true;
+
+        }
+        public bool ParameterVerifierByCustomer()
+        {
+            return true;
+
+        }
+
+        public bool VerifyByPartInfo(EmployeeAccount obj, HttpContext action)
+        => !IsAdmin(action) && obj.AccountPermission < SystemInfo.adminRole && obj.EmployeeAlias != SystemInfo.admin.EmployeeAlias && obj.EmployeePwd.Length >= 8;
+
+        public bool ValifyByMiniCate(MiniCate obj)
+        {
+            if ( !categoryActions.ExistsCategoryBySerial(obj.ParentSortSerial) || categoryActions.ExistsCategoryByName(obj.CategoryName)) return false;
+            return true;
+        }
+        public bool IsAdmin(HttpContext cx) => cx.Items.Where(e => e.Key.ToString() == "IsAdmin").FirstOrDefault().Value?.ToString() == true.ToString();
     }
 }
