@@ -45,8 +45,7 @@ namespace TaskManangerSystem.Controllers
             context.employees.Add(part);
             await context.SaveChangesAsync();
 
-            ShaEncrypted encrypted = part.EmployeeId.ToString();
-            return GetEmployeeSystemAccount(encrypted.ComputeSHA512Hash())?.EmployeeAlias;
+            return GetEmployeeSystemAccount(ShaHashExtensions.ComputeSHA512Hash(part.EmployeeId.ToString()))?.EmployeeAlias;
         }
 
         // GET: api/EmployeeSystemAccounts/SHA512-string

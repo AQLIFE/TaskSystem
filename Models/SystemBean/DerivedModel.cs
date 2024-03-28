@@ -1,3 +1,4 @@
+using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 
@@ -10,7 +11,7 @@ namespace TaskManangerSystem.Models.SystemBean
     {
         public string EmployeeAlias { get; set; } = string.Empty;
         public string EmployeePwd { get; set; } = string.Empty;
-        public IEmployee ToEmployee() => new EmployeeAccount(this);
+        public IEmployee ToEmployee() {this.EmployeePwd=ShaHashExtensions.ComputeSHA512Hash(EmployeePwd);return new EmployeeAccount(this);}
     }
 
     public class PartInfo : IPartInfo, IEmployeeConverter<PartInfo>
