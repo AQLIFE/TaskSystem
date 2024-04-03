@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.IdentityModel.Tokens;
+using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
@@ -70,18 +71,27 @@ namespace TaskManangerSystem.Actions
             return true;
         }
 
-        public bool ParameterVerifierByEmployee(HttpContext cx)
+        public bool ParameterVerifierByEmployee(HttpContext http)
         {
             bool status = true;
+            // if (ExistsParmeter(pairs, ParameterName.id.ToString()))
+            // {
+            //     var obj = GetAccountByParameter(pairs, ParameterName.id.ToString());
+            //     status = obj is EmployeeAccount;
+            //     // var os = GetAccountByParameter(pairs, ParameterName.id.ToString()) is EmployeeAccount obj;
+
+            //     if (status && ExistsParmeter(pairs, ParameterName.info.ToString()))
+            //         return VerifyByPartInfo(obj!, cx);
+            //     else return status;
+            // }
+            // return status;
+
             if (ExistsParmeter(pairs, ParameterName.id.ToString()))
             {
-                var obj =GetAccountByParameter(pairs, ParameterName.id.ToString());
-                status = obj is EmployeeAccount;
-                // var os = GetAccountByParameter(pairs, ParameterName.id.ToString()) is EmployeeAccount obj;
-
-                if (status && ExistsParmeter(pairs, ParameterName.info.ToString()))
-                    return VerifyByPartInfo(obj!, cx);
-                else return status;
+                status = EmployeeAccountBeForeSelect(http, pairs[ParameterName.id.ToString()]!.ToString()!);
+                if (ExistsParmeter(pairs, ParameterName.info.ToString()) && pairs[ParameterName.info.ToString()] is EAlias eAlias)
+                    status = !employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias);
+                if ( status && pairs[ParameterName.info.ToString()] is PartInfo info) return info.AccountPermission < SystemInfo.adminRole;
             }
             return status;
 
@@ -97,8 +107,31 @@ namespace TaskManangerSystem.Actions
 
         }
 
-        public bool VerifyByPartInfo(EmployeeAccount obj, HttpContext action)
-        => !IsAdmin(action) && obj.AccountPermission < SystemInfo.adminRole && obj.EmployeeAlias != SystemInfo.admin.EmployeeAlias && obj.EmployeePwd.Length >= 8;
+        public bool VerifyByEmployeeAccount(EmployeeAccount obj, HttpContext action)
+        => obj.AccountPermission < SystemInfo.adminRole && obj.EmployeeAlias != SystemInfo.admin.EmployeeAlias && obj.EmployeePwd.Length >= 8 && !IsAdmin(action);
+
+
+        public bool EmployeeAccountBeForeSelect(HttpContext http, string hashId)
+        {
+            EmployeeAccount? obj = GetAccountByClaim(http, ClaimTypes.Authentication);
+            return !IsAdmin(http) || obj is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId;
+        }
+
+        // public bool EmployeeAccountBeForeAdd(IDictionary<string, object?> cx, string str)
+        //     => ExistsParmeter(cx, str) && cx[str] is Part part && !employeeAction.ExistsEmployeeByName(part.EmployeeAlias);
+
+        // public bool EmployeeAccountBeForeUpdate(IDictionary<string, object?> cx, string str)
+        //     => ExistsParmeter(cx, str) && cx[str] is PartInfo info && !employeeAction.ExistsEmployeeByName(info.EmployeeAlias) && info.AccountPermission < SystemInfo.adminRole;
+
+        // public bool IsEmployeeAccountValid(HttpContext http,IDictionary<string, object?> cx, string str){
+
+        //     if( EmployeeAccountBeForeSelect(http,pairs[ParameterName.id.ToString()]!.ToString()! ) &&  ExistsParmeter(cx,str) && cx[str] is EAlias eAlias )
+        //     {
+        //         status = employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias);
+        //         if( status && cx[str] is PartInfo info )return info.AccountPermission < SystemInfo.adminRole;
+        //     }
+        //     return status;
+        // }
 
         public bool ValifyByMiniCate(MiniCate obj)
         {
