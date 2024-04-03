@@ -56,14 +56,16 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("员工信息")]
         public class EmployeeInfo
         {
-                [Key, ForeignKey("EmployeeId"), Comment("员工ID")]
+                [Key, Comment("员工ID")]
                 public Guid EmployeeId { get; set; }
+                
                 [MinLength(2, ErrorMessage = "姓名长度必须大于等于2"), Comment("员工姓名")]
                 public string? EmployeeName { get; set; }
                 [MinLength(11, ErrorMessage = "手机号长度必须大于等于11"), Comment("员工联系方式")]
                 public string? EmployeeContactWay { get; set; }
 
                 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+                [ForeignKey("EmployeeId"),Column("EmployeeId")]
                 public EmployeeAccount EmployeeSystemAccount { get; set; }
                 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         }

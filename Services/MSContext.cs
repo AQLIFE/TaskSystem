@@ -21,16 +21,38 @@ namespace TaskManangerSystem.Services
         {
             modelBuilder.Entity<EmployeeAccount>().HasIndex(e => e.EmployeeAlias).IsUnique();
 
-            modelBuilder.Entity<InventoryInfo>().HasIndex(e => e.ProductName).IsUnique();
-            
-            modelBuilder.Entity<Customer>().HasIndex(e => e.CustomerName).IsUnique();
+            modelBuilder.Entity<InventoryInfo>(e =>
+            {
+                e.HasIndex(e => e.ProductName).IsUnique();
+                e.HasOne(i => i.Category).WithMany().HasForeignKey(e => e.ProductType).IsRequired(false);
+            });
 
-            modelBuilder.Entity<Category>(e=>{e.HasIndex(e => e.SortSerial).IsUnique();e.HasIndex(e => e.CategoryName).IsUnique();});
+            modelBuilder.Entity<InOutStock>(e =>
+            {
+                e.HasOne(i => i.Task).WithMany().HasForeignKey(e => e.TaskId);
+                e.HasOne(i => i.InventoryInfo).WithMany().HasForeignKey(e => e.ProductId);
+            });
+
+            modelBuilder.Entity<Customer>(e =>
+            {
+                e.HasIndex(e => e.CustomerName).IsUnique();
+                
+                e.HasOne(i=>i.Category).WithMany().HasForeignKey(e=>e.CustomerType);
+            });
+
+            modelBuilder.Entity<Category>(e => { e.HasIndex(e => e.SortSerial).IsUnique(); e.HasIndex(e => e.CategoryName).IsUnique(); });
 
 
-            // modelBuilder.Entity<TaskAffair>().Property(e=>e.)
-            modelBuilder.Entity<TaskStatusTrack>().HasIndex(e => new {e.TaskId,e.EmployeeId,e.TaskStatus}).IsUnique();
-            
+            modelBuilder.Entity<TaskAffair>(e=>{
+                e.HasOne(i=>i.EmployeeAccount).WithMany().HasForeignKey(e=>e.EmployeeId);
+                e.HasOne(i=>i.Customer).WithMany().HasForeignKey(e=>e.CustomerId);
+            });
+            modelBuilder.Entity<TaskStatusTrack>(e=>{
+                e.HasOne(i=>i.EmployeeAccount).WithMany().HasForeignKey(e=>e.EmployeeId);
+                e.HasOne(i=>i.Task).WithMany().HasForeignKey(e=>e.TaskId);
+                e.HasIndex(e => new { e.TaskId, e.EmployeeId, e.TaskStatus }).IsUnique();
+            });
+
         }
 
     }
