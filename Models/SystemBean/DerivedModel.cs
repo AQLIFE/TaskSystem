@@ -23,6 +23,8 @@ namespace TaskManangerSystem.Models.SystemBean
             EmployeeAlias = obj.EmployeeAlias;
         }
         public IEmployee ToEmployee(string pwd, Guid id) => new EmployeeAccount(this, pwd, id);
+
+        public PartInfo(){}
     }
 
 

@@ -15,8 +15,6 @@ namespace TaskManangerSystem.Controllers
     [Route("api/[controller]")]
     public class EmployeeController(ManagementSystemContext context) : ControllerBase
     {
-        [HttpGet("test")]
-        public string test()=>"hello";
 
         private EmployeeActions action = new(context);
 
@@ -57,17 +55,13 @@ namespace TaskManangerSystem.Controllers
         [HttpPut("{id}")]// 更新指定用户
         public async Task<string?> PutEmployeeSystemAccount(string id, PartInfo info)
         {
-            // if (id == String.Empty || id == null || action.ExistsEmployee(id)) return "不存在这个账户";
-            // else if (action.ExistsEmployeeByName(info.EmployeeAlias)) return "账户名重复";
-
-            // Console.WriteLine("在方法内");
-            EmployeeAccount? objs = action.GetEmployee(id);
+            EmployeeAccount? objs = action.GetEmployeeByHashId(id);
             objs!.AccountPermission = info.AccountPermission;
             objs!.EmployeeAlias = info.EmployeeAlias;
 
             context.Entry<EmployeeAccount>(objs).State = EntityState.Modified;
             await context.SaveChangesAsync();
-            return info.EmployeeAlias;
+            return "已修改"+info.EmployeeAlias;
         }
 
 

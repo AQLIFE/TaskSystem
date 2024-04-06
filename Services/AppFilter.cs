@@ -20,7 +20,8 @@ namespace TaskManangerSystem.Services
 
             switch (action.Controller.GetType().FullName)
             {
-                case string s when s == typeof(EmployeeController).FullName: if (filterAction.ParameterVerifierByEmployee(action.HttpContext) == false) action.Result = GlobalResult.NoData; break;
+                // case string s when s == typeof(EmployeeController).FullName: if (filterAction.ParameterVerifierByEmployee(action.HttpContext) == false) action.Result = GlobalResult.NoData; break;
+                case string s when s == typeof(EmployeeController).FullName: filterAction.ParameterVerifierByEmployee(action); break;
                 case string s when s == typeof(CategoryController).FullName: if (filterAction.ParameterVerifierByCategory() == false) action.Result = GlobalResult.NoData; break;
                 case string s when s == typeof(TaskSystemController).FullName: if (filterAction.ParameterVerifierByTask() == false) action.Result = GlobalResult.NoData; break;
                 case string s when s == typeof(CustomerController).FullName: if (filterAction.ParameterVerifierByCustomer() == false) action.Result = GlobalResult.NoData; break;
@@ -36,11 +37,19 @@ namespace TaskManangerSystem.Services
             try
             {
                 ObjectResult item = action.Result as ObjectResult ?? throw new Exception(action.RouteData.Values + "接口发生错误");
-                log = filterAction.InitLog(action); log.status = true;
+                log = filterAction.InitLog(action);
+                log.status = true;
                 logger.LogInformation(log.RespenseInfomation);
                 action.Result = new Result<Object?>(item.Value, !(action.Exception != null || item.Value == null)).ToObjectResult();
             }
-            catch (Exception) { action.Result = GlobalResult.Message("程序错误，请联系授权");}
+            catch (Exception)
+            {
+                action.Exception = null;
+                action.Result = GlobalResult.Message("程序错误，请联系授权");
+                log = filterAction.InitLog(action);
+                log.status = false;
+                logger.LogInformation(log.RespenseInfomation);
+            }
         }
     }
     public class CustomRequirement : IAuthorizationRequirement

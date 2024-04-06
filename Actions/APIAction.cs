@@ -48,7 +48,8 @@ namespace TaskManangerSystem.Actions
         public bool ExistsEmployeeByName(string name) => context.employees.Any(e => e.EmployeeAlias == name);
         public bool ExistsEmployee(string id) => context.employees.Any(e => e.EmployeeId.ToString() == id);
 
-        public bool ExistsEmployeeByHashId(string hashId) => context.employees.ToList().Any(e => ShaHashExtensions.ComputeSHA512Hash(e.EmployeeId.ToString()) == hashId);
+        public bool ExistsEmployeeByHashId(string hashId) =>
+            context.employees.ToList().Any(c => ShaHashExtensions.ComputeSHA512Hash(c.EmployeeId.ToString()) == hashId);
 
 
         /// <summary>

@@ -20,6 +20,7 @@ namespace TaskManangerSystem.Models.SystemBean
         public static ObjectResult InvalidParameter = new Result<string>("仅允许你自己的信息").ToObjectResult();//无效参数
 
         public static ObjectResult NoData = new Result<string>("信息不合法或不存在").ToObjectResult();
+        // public static ObjectResult Data = new Result<string>("信息重复").ToObjectResult();
         public static ObjectResult Repetition(string name) => new Result<string>(name + "重复").ToObjectResult();
 
         public static ObjectResult Cancelled = new Result<string>("你的账户不存在，请重新登录").ToObjectResult();

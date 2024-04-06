@@ -71,9 +71,12 @@ namespace TaskManangerSystem.Actions
             return true;
         }
 
-        public bool ParameterVerifierByEmployee(HttpContext http)
+        public void ParameterVerifierByEmployee(ActionExecutingContext http)
         {
-            bool status = true;
+            // bool status = true;
+            ObjectResult? result = null;
+
+            #region 注释代码
             // if (ExistsParmeter(pairs, ParameterName.id.ToString()))
             // {
             //     var obj = GetAccountByParameter(pairs, ParameterName.id.ToString());
@@ -85,17 +88,44 @@ namespace TaskManangerSystem.Actions
             //     else return status;
             // }
             // return status;
+            #endregion
 
-            if (ExistsParmeter(pairs, ParameterName.id.ToString()))
+            if (ExistsParmeter(pairs, ParameterName.id.ToString())) //是否存在ID参数
             {
-                status = EmployeeAccountBeForeSelect(http, pairs[ParameterName.id.ToString()]!.ToString()!);
-                if (ExistsParmeter(pairs, ParameterName.info.ToString()) && pairs[ParameterName.info.ToString()] is EAlias eAlias)
-                    status = !employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias);
-                if ( status && pairs[ParameterName.info.ToString()] is PartInfo info) return info.AccountPermission < SystemInfo.adminRole;
+                // status = EmployeeAccountBeForeSelect(http.HttpContext, pairs[ParameterName.id.ToString()]!.ToString()!);    //返回是否为有效ID或身份（管理）
+                // if (!EmployeeAccountBeForeSelect(http.HttpContext, pairs[ParameterName.id.ToString()]!.ToString()!)) result = GlobalResult.InvalidParameter;
+                var hashId = pairs[ParameterName.id.ToString()]!.ToString()!;
+                if (IsAdmin(http.HttpContext) && !employeeAction.ExistsEmployeeByHashId(hashId))
+                    result = GlobalResult.NoData;
+                else if( GetAccountByClaim(http.HttpContext, ClaimTypes.Authentication) is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId)
+                    result = GlobalResult.InvalidParameter;
+
+                if (ExistsParmeter(pairs, ParameterName.info.ToString()))
+                {
+                    if (pairs[ParameterName.info.ToString()] is PartInfo eAlias && employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias))//是否存在info参数，并属于Ealias类型
+                    {
+                        result = GlobalResult.Repetition(eAlias.EmployeeAlias);
+                    }
+
+
+                    if (pairs[ParameterName.info.ToString()] is PartInfo info && info.AccountPermission >= SystemInfo.adminRole)
+                    {
+                        result = GlobalResult.LimitAuth;
+                    }
+                }
             }
-            return status;
+            else if (ExistsParmeter(pairs, ParameterName.info.ToString()) && pairs[ParameterName.info.ToString()] is Part eAlias && employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias))
+            {
+                result = GlobalResult.Repetition(eAlias.EmployeeAlias);
+            }
+            // return status;
+            if (result != null)
+            {
+                http.Result = result;
+            }
 
         }
+
         public bool ParameterVerifierByTask()
         {
             return true;
@@ -114,7 +144,7 @@ namespace TaskManangerSystem.Actions
         public bool EmployeeAccountBeForeSelect(HttpContext http, string hashId)
         {
             EmployeeAccount? obj = GetAccountByClaim(http, ClaimTypes.Authentication);
-            return !IsAdmin(http) || obj is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId;
+            return (IsAdmin(http) && employeeAction.ExistsEmployeeByHashId(hashId)) || (obj is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId);
         }
 
         // public bool EmployeeAccountBeForeAdd(IDictionary<string, object?> cx, string str)

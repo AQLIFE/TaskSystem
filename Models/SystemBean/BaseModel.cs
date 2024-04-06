@@ -3,17 +3,17 @@ using TaskManangerSystem.Models.DataBean;
 
 namespace TaskManangerSystem.Models.SystemBean
 {
-    public abstract class BasePart : IPart
-    {
-        public virtual string EmployeeAlias { get; set; } = string.Empty;
-        public virtual string EmployeePwd { get; set; } = string.Empty;
-    }
+    // public abstract class BasePart : IPart
+    // {
+    //     public virtual string EmployeeAlias { get; set; } = string.Empty;
+    //     public virtual string EmployeePwd { get; set; } = string.Empty;
+    // }
 
-    public abstract class BasePartInfo : IPartInfo
-    {
-        public virtual string EmployeeAlias { get; set; } = string.Empty;
-        public virtual int AccountPermission { get; set; } = 0;
-    }
+    // public abstract class BasePartInfo : IPartInfo
+    // {
+    //     public virtual string EmployeeAlias { get; set; } = string.Empty;
+    //     public virtual int AccountPermission { get; set; } = 0;
+    // }
 
     public abstract class BaseEmployee : IEmployee
     {
