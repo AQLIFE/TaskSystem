@@ -19,9 +19,9 @@ namespace TaskManangerSystem.Controllers
         public IEnumerable<ICategoryInfo?>? GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
         => select switch
         {
-            CategoryType.all =>   action.GetCategoryList(page, pageSize).Select(e=>e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
-            CategoryType.level => action.GetCategoryListByLevel(obj, page, pageSize).Select(e=>e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
-            CategoryType.parId => action.GetCategoryListByParId(obj, page, pageSize).Select(e=>e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
+            CategoryType.all => action.GetCategoryList(page, pageSize).Select(e => e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
+            CategoryType.level => action.GetCategoryListByLevel(obj, page, pageSize).Select(e => e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
+            CategoryType.parId => action.GetCategoryListByParId(obj, page, pageSize).Select(e => e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
             _ => null
         };
 
@@ -31,7 +31,7 @@ namespace TaskManangerSystem.Controllers
         {
             // if (!action.Validate(info)) return action.ValidateMessage;
 
-            Category obj = info.ToCategory(action.GetIdBySerial(info.ParentSortSerial), action.GetLastSerial() + 1,action.GetLevelBySerial(info.ParentSortSerial));
+            Category obj = info.ToCategory(action.GetIdBySerial(info.ParentSortSerial), action.GetLastSerial() + 1, action.GetLevelBySerial(info.ParentSortSerial));
 
             context.categories.Add(obj);
             await context.SaveChangesAsync();
@@ -42,7 +42,7 @@ namespace TaskManangerSystem.Controllers
 
         [HttpGet("{SortSerial}")]
         public ActionResult<ICategoryInfo?> GetCategory(int SortSerial)
-            => action.GetCategoryBySerial(SortSerial) is  Category obj ? obj.ToCateInfo(action.GetParSerialBySerial(obj.SortSerial)):null;
+            => action.GetCategoryBySerial(SortSerial) is Category obj ? obj.ToCateInfo(action.GetParSerialBySerial(obj.SortSerial)) : null;
 
         // POST: api/categories  
 
@@ -60,7 +60,7 @@ namespace TaskManangerSystem.Controllers
             obj.Remark = obj.Remark != info.Remark ? info.Remark : obj.Remark;
             var sl = action.GetCategoryBySerial(info.ParentSortSerial)!.CategoryId;
             obj.ParentCategoryId = obj.ParentCategoryId != sl ? sl : obj.ParentCategoryId;
-            
+
             context.Entry(obj).State = EntityState.Modified;
             await context.SaveChangesAsync();
 

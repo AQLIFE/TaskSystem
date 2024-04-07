@@ -1,10 +1,8 @@
-using System.Runtime.InteropServices;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.IdentityModel.Tokens;
-using TaskManangerSystem.IServices.BeanServices;
+using System.Security.Claims;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
@@ -97,18 +95,18 @@ namespace TaskManangerSystem.Actions
                 var hashId = pairs[ParameterName.id.ToString()]!.ToString()!;
                 if (IsAdmin(http.HttpContext) && !employeeAction.ExistsEmployeeByHashId(hashId))
                     result = GlobalResult.NoData;
-                else if( GetAccountByClaim(http.HttpContext, ClaimTypes.Authentication) is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId)
+                else if (GetAccountByClaim(http.HttpContext, ClaimTypes.Authentication) is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId)
                     result = GlobalResult.InvalidParameter;
 
-                if (ExistsParmeter(pairs, ParameterName.info.ToString()))
+                if (ExistsParmeter(pairs, ParameterName.info.ToString()) && pairs[ParameterName.info.ToString()] is PartInfo eAlias)
                 {
-                    if (pairs[ParameterName.info.ToString()] is PartInfo eAlias && employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias))//是否存在info参数，并属于Ealias类型
+                    if (employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias) && employeeAction.GetEmployeeByHashId(hashId)?.EmployeeAlias != eAlias.EmployeeAlias)//是否存在info参数，并属于Ealias类型
                     {
                         result = GlobalResult.Repetition(eAlias.EmployeeAlias);
                     }
 
 
-                    if (pairs[ParameterName.info.ToString()] is PartInfo info && info.AccountPermission >= SystemInfo.adminRole)
+                    if (eAlias.AccountPermission >= SystemInfo.adminRole || eAlias.AccountPermission >= employeeAction.GetEmployeeByHashId(hashId)!.AccountPermission + 2)
                     {
                         result = GlobalResult.LimitAuth;
                     }

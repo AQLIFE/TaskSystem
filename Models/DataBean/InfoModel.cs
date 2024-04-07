@@ -1,8 +1,8 @@
 
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.SystemBean;
 
@@ -13,7 +13,7 @@ namespace TaskManangerSystem.Models.DataBean
     {
         [Key, Comment("分类ID")]
         public Guid CategoryId { get; set; } = Guid.NewGuid();
-        [Comment("父分类ID"),ForeignKey("CategoryId")]
+        [Comment("父分类ID"), ForeignKey("CategoryId")]
         public Guid? ParentCategoryId { get; set; }
 
         [Comment("序列号"), DefaultValue(101)]
@@ -85,7 +85,7 @@ namespace TaskManangerSystem.Models.DataBean
         public decimal ProductCost { get; set; }
         [Required, Comment("产品型号")]
         public string ProductModel { get; set; } = string.Empty;
-        [Comment("产品类型-使用分类ID"),ForeignKey("CategoryId")]
+        [Comment("产品类型-使用分类ID"), ForeignKey("CategoryId")]
         public Guid ProductType { get; set; }
 
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。

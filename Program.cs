@@ -1,9 +1,9 @@
-using TaskManangerSystem.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TaskManangerSystem.Actions;
+using TaskManangerSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -24,7 +24,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             option.Events = obj.bearerEvents;
         });
 builder.Services.AddAuthorization(option =>
-    option.AddPolicy("Admin",policy=>policy.Requirements.Add(new CustomRequirement()))
+    option.AddPolicy("Admin", policy => policy.Requirements.Add(new CustomRequirement()))
 );
 builder.Services.AddSingleton<IAuthorizationHandler, CustomHandler>();
 

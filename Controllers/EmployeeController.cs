@@ -1,17 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TaskManangerSystem.Services;
-using TaskManangerSystem.Models.DataBean;
-using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices.BeanServices;
-using System.Security.Claims;
+using TaskManangerSystem.Models.DataBean;
+using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Controllers
 {
 
-    [ApiController,Authorize]
+    [ApiController, Authorize]
     [Route("api/[controller]")]
     public class EmployeeController(ManagementSystemContext context) : ControllerBase
     {
@@ -19,7 +18,7 @@ namespace TaskManangerSystem.Controllers
         private EmployeeActions action = new(context);
 
 
-        
+
         /// <summary>
         /// 返回所有的账户信息
         /// - 完成数据脱敏
@@ -33,60 +32,46 @@ namespace TaskManangerSystem.Controllers
 
 
         // POST: api/EmployeeSystemAccounts
-        [HttpPost]//增加
+        [HttpPost, AllowAnonymous]//增加
         public async Task<string?> PostEmployeeSystemAccount(Part info)
         {
-            // if (action.ExistsEmployeeByName(info.EmployeeAlias)) return "名称已存在";
-
-            EmployeeAccount part = (EmployeeAccount)info.ToEmployee();
+            EmployeeAccount part = await Task.Run(() => (EmployeeAccount)info.ToEmployee());
 
             context.employees.Add(part);
             await context.SaveChangesAsync();
 
-            return GetEmployeeSystemAccount(ShaHashExtensions.ComputeSHA512Hash(part.EmployeeId.ToString()))?.EmployeeAlias;
+            return action.GetEmployee(part.EmployeeId.ToString())!.EmployeeAlias;
         }
 
         // GET: api/EmployeeSystemAccounts/SHA512-string
         [HttpGet("{id}")]//查看用户 公开信息
-        public IPartInfo GetEmployeeSystemAccount(string id)=> action.GetEmployeeByHashId(id)!.ToPartInfo();
+        public IPartInfo GetEmployeeSystemAccount(string id) => action.GetEmployeeByHashId(id)!.ToPartInfo();
 
         // 大写
         // PUT: api/EmployeeSystemAccounts/5
         [HttpPut("{id}")]// 更新指定用户
         public async Task<string?> PutEmployeeSystemAccount(string id, PartInfo info)
         {
-            EmployeeAccount? objs = action.GetEmployeeByHashId(id);
+            EmployeeAccount? objs = await Task.Run(() => action.GetEmployeeByHashId(id));
             objs!.AccountPermission = info.AccountPermission;
             objs!.EmployeeAlias = info.EmployeeAlias;
 
             context.Entry<EmployeeAccount>(objs).State = EntityState.Modified;
             await context.SaveChangesAsync();
-            return "已修改"+info.EmployeeAlias;
+            return info.EmployeeAlias;
         }
 
-
-        [HttpPut("{id}/pwd")]
-        public async Task<string> PutEmployeeSystemAccountPwd(string id, string pwd)
-        {
-            EmployeeAccount? employeeAccount = action.GetEmployee(id);
-            if (employeeAccount == null) return "不存在这个账户";
-            employeeAccount.EmployeePwd = pwd;
-            context.Entry<EmployeeAccount>(employeeAccount).State = EntityState.Modified;
-            await context.SaveChangesAsync();
-            return $"已更新 {id}";
-        }
-
-
-        // DELETE: api/EmployeeSystemAccounts/SHA256-string 
+        // DELETE: api/EmployeeSystemAccounts/SHA512-string 
         [HttpDelete("{id}")]//删除
         public async Task<string> DeleteEmployeeSystemAccount(string id)
         {
-            EmployeeAccount? employeeAccount = action.GetEmployee(id);
+            EmployeeAccount? employeeAccount = await Task.Run(() => action.GetEmployee(id));
             if (employeeAccount == null) return "不存在这个账户";
 
-            context.employees.Remove(employeeAccount);
-            await context.SaveChangesAsync();
-            return $"已删除 {id}";
+            // context.employees.Remove(employeeAccount);
+            // await context.SaveChangesAsync();
+            employeeAccount.AccountPermission = 0;
+            return employeeAccount.EmployeeAlias;
         }
     }
 }

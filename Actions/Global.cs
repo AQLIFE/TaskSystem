@@ -19,11 +19,11 @@ namespace TaskManangerSystem.Actions
         public static Customer customers = new("管理员", Guid.NewGuid(), 1, "13212345678", "本公司");
 
 
-        public readonly static string DBLINK = Environment.GetEnvironmentVariable("DB_LINK")        ?? throw new Exception("Program Error:Miss DB_LINK");
-        public readonly static string ISSUER = Environment.GetEnvironmentVariable("ISSUER")         ?? throw new Exception("Program Error:Misssing Issuer");
-        public readonly static string AUDIENCE = Environment.GetEnvironmentVariable("AUDIENCE")     ?? throw new Exception("Program Error:Misssing Audience");
-        public readonly static string SECURITYKEY = Environment.GetEnvironmentVariable("API_KEY")   ?? throw new Exception("Program Error:Missing Key");
-        public readonly static string CERTPATH = Environment.GetEnvironmentVariable("RSA_CERT_PATH")?? throw new Exception("Program Error:Miss certPath");
+        public readonly static string DBLINK = Environment.GetEnvironmentVariable("DB_LINK") ?? throw new Exception("Program Error:Miss DB_LINK");
+        public readonly static string ISSUER = Environment.GetEnvironmentVariable("ISSUER") ?? throw new Exception("Program Error:Misssing Issuer");
+        public readonly static string AUDIENCE = Environment.GetEnvironmentVariable("AUDIENCE") ?? throw new Exception("Program Error:Misssing Audience");
+        public readonly static string SECURITYKEY = Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception("Program Error:Missing Key");
+        public readonly static string CERTPATH = Environment.GetEnvironmentVariable("RSA_CERT_PATH") ?? throw new Exception("Program Error:Miss certPath");
         // 假设私钥存储在环境变量中，需要根据实际情况调整
     }
 

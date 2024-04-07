@@ -1,22 +1,21 @@
-
-using TaskManangerSystem.Models.SystemBean;
-
 namespace TaskManangerSystem.IServices.BeanServices
 {
 
-    public interface IAlias{
+    public interface IAlias
+    {
         public string EmployeeAlias { get; set; }
     }
 
-    public class EAlias:IAlias{
-        public string EmployeeAlias { get; set; }= String.Empty;
+    public class EAlias : IAlias
+    {
+        public string EmployeeAlias { get; set; } = String.Empty;
     }
-    public interface IPart :IAlias
+    public interface IPart : IAlias
     {
         // public string EmployeeAlias { get; set; }
         public string EmployeePwd { get; set; }
     }
-    public interface IPartInfo:IAlias
+    public interface IPartInfo : IAlias
     {
         // public string EmployeeAlias { get; set; }
         public int AccountPermission { get; set; }

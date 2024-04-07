@@ -36,20 +36,22 @@ namespace TaskManangerSystem.Services
             modelBuilder.Entity<Customer>(e =>
             {
                 e.HasIndex(e => e.CustomerName).IsUnique();
-                
-                e.HasOne(i=>i.Category).WithMany().HasForeignKey(e=>e.CustomerType);
+
+                e.HasOne(i => i.Category).WithMany().HasForeignKey(e => e.CustomerType);
             });
 
             modelBuilder.Entity<Category>(e => { e.HasIndex(e => e.SortSerial).IsUnique(); e.HasIndex(e => e.CategoryName).IsUnique(); });
 
 
-            modelBuilder.Entity<TaskAffair>(e=>{
-                e.HasOne(i=>i.EmployeeAccount).WithMany().HasForeignKey(e=>e.EmployeeId);
-                e.HasOne(i=>i.Customer).WithMany().HasForeignKey(e=>e.CustomerId);
+            modelBuilder.Entity<TaskAffair>(e =>
+            {
+                e.HasOne(i => i.EmployeeAccount).WithMany().HasForeignKey(e => e.EmployeeId);
+                e.HasOne(i => i.Customer).WithMany().HasForeignKey(e => e.CustomerId);
             });
-            modelBuilder.Entity<TaskStatusTrack>(e=>{
-                e.HasOne(i=>i.EmployeeAccount).WithMany().HasForeignKey(e=>e.EmployeeId);
-                e.HasOne(i=>i.Task).WithMany().HasForeignKey(e=>e.TaskId);
+            modelBuilder.Entity<TaskStatusTrack>(e =>
+            {
+                e.HasOne(i => i.EmployeeAccount).WithMany().HasForeignKey(e => e.EmployeeId);
+                e.HasOne(i => i.Task).WithMany().HasForeignKey(e => e.TaskId);
                 e.HasIndex(e => new { e.TaskId, e.EmployeeId, e.TaskStatus }).IsUnique();
             });
 

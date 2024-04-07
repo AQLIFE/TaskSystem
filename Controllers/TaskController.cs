@@ -15,24 +15,24 @@ namespace TaskManangerSystem.Controllers
 
     }
 
-    [ApiController,Authorize , Route("api/[controller]")]
+    [ApiController, Authorize, Route("api/[controller]")]
     public class CustomerController(ManagementSystemContext context) : ControllerBase
     {
         private CategoryActions categoryActions = new(context);
         private CustomerActions customerActions = new(context);
 
-        [HttpGet,Authorize(Policy="admin")]
+        [HttpGet, Authorize(Policy = "admin")]
         public ActionResult<IEnumerable<ICustomerInfo>> GetCustomers(int page = 1, int pageSize = 120)
             => context.customers.OrderByDescending(e => e.AddTime)
             .Skip((page - 1) * pageSize).Take(pageSize).ToList().Select(e => e as ICustomerInfo).ToList();
 
 
         [HttpPost]
-        public async Task<string?> PostCustomer(CustomerInfo info,int serial=101)
+        public async Task<string?> PostCustomer(CustomerInfo info, int serial = 101)
         {
             if (customerActions.ExistsCustomerByName(info.CustomerName)) return "客户已存在";
-            else if(!categoryActions.ExistsCategoryBySerial(serial))return "序列号不存在";
-            
+            else if (!categoryActions.ExistsCategoryBySerial(serial)) return "序列号不存在";
+
             Category? obj = categoryActions.GetCategoryBySerial(serial);
             Customer? ls = info.ToCustomer(obj!.CategoryId) as Customer;
 
@@ -49,14 +49,14 @@ namespace TaskManangerSystem.Controllers
         public ICustomerInfo? GetCustomer(string name)
         {
 
-            if(!customerActions.ExistsCustomerByName(name))return null;
+            if (!customerActions.ExistsCustomerByName(name)) return null;
             else return customerActions.GetCustomerByName(name);
         }
 
         // [HttpPut("{name}")]
         // public string? PutCustomer(string name,BaseCustomerInfo customerInfo){
         //     if (customerActions.ExistsCustomerByName(name) && customerActions.GetCustomerByName(name) is TaskCustomer ov && ov != null)
-                
+
         // }
     }
 }

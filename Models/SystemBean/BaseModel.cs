@@ -1,5 +1,4 @@
 using TaskManangerSystem.IServices.BeanServices;
-using TaskManangerSystem.Models.DataBean;
 
 namespace TaskManangerSystem.Models.SystemBean
 {
@@ -19,8 +18,8 @@ namespace TaskManangerSystem.Models.SystemBean
     {
         public BaseEmployee()
         {
-            EmployeeAlias=string.Empty;
-            EmployeePwd=string.Empty;
+            EmployeeAlias = string.Empty;
+            EmployeePwd = string.Empty;
         }
         // 从 注册 转为 实体
         public BaseEmployee(IPart obj)

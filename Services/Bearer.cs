@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Jose;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
-using TaskManangerSystem.Actions;
-using Jose;
 
 namespace TaskManangerSystem.Services
 {
@@ -27,7 +27,7 @@ namespace TaskManangerSystem.Services
         public BearerInfo(EmployeeAccount employeeAccount)
         {
             jwt = new(
-                issuer:   SystemInfo.ISSUER,
+                issuer: SystemInfo.ISSUER,
                 audience: SystemInfo.AUDIENCE,
                 claims:
                 [
@@ -74,7 +74,8 @@ namespace TaskManangerSystem.Services
                 // 如果 AccountPermission Claim 不存在或其值小于设定的 Roles，则拒绝访问
                 if (!accountPermission.HasValue || accountPermission.Value < roles)
                     context.Fail("全局规则:权限等级不足");
-                context.HttpContext.Items.Add("IsAdmin",accountPermission>=SystemInfo.adminRole);
+                context.HttpContext.Items.Add("IsAdmin", accountPermission >= SystemInfo.adminRole);
+                context.HttpContext.Items.Add("HashId", FilterAction.GetClaim(context.Principal?.Claims, ClaimTypes.Authentication)?.Value);
 
                 await Task.CompletedTask;
             };
@@ -102,11 +103,9 @@ namespace TaskManangerSystem.Services
                 {
 
                     string deJwt = JWT.Decode(authorizationHeader.ToString().Replace("Bearer ", ""), KeyManager.rsaDecryptor.Rsa, JweAlgorithm.RSA_OAEP, JweEncryption.A256CBC_HS512);
-                    // context.HttpContext.Items.Add("Bearer", deJwt);
-                    // context.Token = context.HttpContext.Items.Where(e => e.Key.ToString() == "Bearer").First().Value!.ToString();
                     context.Token = deJwt;
                     return Task.FromResult(0);
-                    
+
                 }
 
                 context.Fail("全局规则:token无效");

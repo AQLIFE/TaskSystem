@@ -63,7 +63,7 @@ namespace TaskManangerSystem.Actions
         public EmployeeAccount? GetEmployeeByName(string name) => context.employees.Where(e => e.EmployeeAlias == name).FirstOrDefault();
 
         public bool LoginCheck(Part account)
-       => context.employees.Any(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd);
+       => context.employees.Any(e => e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd && e.AccountPermission >= 1 && e.AccountPermission <= 255);
     }
 
     public class CategoryActions(ManagementSystemContext context)
@@ -158,48 +158,50 @@ namespace TaskManangerSystem.Actions
         /// </summary>
         /// <param name="serial">子序列号</param>
         /// <returns></returns>
-        public int GetParSerialBySerial(int serial) {
-            var os =GetCategoryBySerial(serial)?.ParentCategoryId;
-             return os is not null?GetCategory(os)!.SortSerial:0;}
+        public int GetParSerialBySerial(int serial)
+        {
+            var os = GetCategoryBySerial(serial)?.ParentCategoryId;
+            return os is not null ? GetCategory(os)!.SortSerial : 0;
+        }
 
-    #endregion
+        #endregion
 
-    #region  api专用
-    // public string ValidateMessage = "";
-    // public bool Validate(MiniCate obj)
-    // {
-    //     if (obj.ParentSortSerial == 0 || !ExistsCategoryBySerial(obj.ParentSortSerial)) { ValidateMessage = "父分类序列号不存在"; return false; }
-    //     if (ExistsCategoryByName(obj.CategoryName)) { ValidateMessage = "分类名称已存在"; return false; }
-    //     return true;
-    // }
+        #region  api专用
+        // public string ValidateMessage = "";
+        // public bool Validate(MiniCate obj)
+        // {
+        //     if (obj.ParentSortSerial == 0 || !ExistsCategoryBySerial(obj.ParentSortSerial)) { ValidateMessage = "父分类序列号不存在"; return false; }
+        //     if (ExistsCategoryByName(obj.CategoryName)) { ValidateMessage = "分类名称已存在"; return false; }
+        //     return true;
+        // }
 
-    public List<Category> GetCategoryList(int page = 1, int pageSize = 120)
-    => context.categories.OrderBy(c => c.CategoryLevel).OrderBy(c => c.SortSerial)
-    .Skip((page - 1) * pageSize).Take(pageSize)
-    .ToList();
-
-    public List<Category> GetCategoryListByLevel(int level = 1, int page = 1, int pageSize = 120)
-    => context.categories
-        .Where(e => e.CategoryLevel == level)
-        .OrderBy(c => c.SortSerial)
+        public List<Category> GetCategoryList(int page = 1, int pageSize = 120)
+        => context.categories.OrderBy(c => c.CategoryLevel).OrderBy(c => c.SortSerial)
         .Skip((page - 1) * pageSize).Take(pageSize)
         .ToList();
 
+        public List<Category> GetCategoryListByLevel(int level = 1, int page = 1, int pageSize = 120)
+        => context.categories
+            .Where(e => e.CategoryLevel == level)
+            .OrderBy(c => c.SortSerial)
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .ToList();
 
-    public List<Category> GetCategoryListByParId(int parId = 100, int page = 1, int pageSize = 120)
-    => context.categories
-        .Where(e => e.ParentCategoryId == GetCategoryBySerial(parId)!.CategoryId)
-        .OrderBy(c => c.SortSerial)
-        .Skip((page - 1) * pageSize).Take(pageSize)
-        .ToList();
-    #endregion
 
-}
+        public List<Category> GetCategoryListByParId(int parId = 100, int page = 1, int pageSize = 120)
+        => context.categories
+            .Where(e => e.ParentCategoryId == GetCategoryBySerial(parId)!.CategoryId)
+            .OrderBy(c => c.SortSerial)
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .ToList();
+        #endregion
 
-public class CustomerActions(ManagementSystemContext context)
-{
-    public bool ExistsCustomerByName(string name) => context.customers.Any(e => e.CustomerName == name);
-    public Customer? GetCustomerByName(string name) => context.customers.Where(e => e.CustomerName == name).FirstOrDefault();
-    // public ICustomerInfo? GetCustomerInfoByName(string name)=>context.customers.Where(e=>e.CustomerName==name).Select(e=>e.ToCustomerInfo(e.CustomerType));
-}
+    }
+
+    public class CustomerActions(ManagementSystemContext context)
+    {
+        public bool ExistsCustomerByName(string name) => context.customers.Any(e => e.CustomerName == name);
+        public Customer? GetCustomerByName(string name) => context.customers.Where(e => e.CustomerName == name).FirstOrDefault();
+        // public ICustomerInfo? GetCustomerInfoByName(string name)=>context.customers.Where(e=>e.CustomerName==name).Select(e=>e.ToCustomerInfo(e.CustomerType));
+    }
 }

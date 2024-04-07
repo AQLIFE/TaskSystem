@@ -6,7 +6,7 @@ namespace TaskManangerSystem.Services
 
         public string? name { set; get; }
 
-        public string funcName { set; get; } =string.Empty;
+        public string funcName { set; get; } = string.Empty;
 
         public T? invalidParameterValue { set; get; }
 
@@ -26,9 +26,9 @@ namespace TaskManangerSystem.Services
             this.funcName = funcName;
         }
 
-        public string RequestInformation=>$"访问状态：{(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName}";
+        public string RequestInformation => $"访问状态：{(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName}";
 
-        public string RespenseInfomation =>$"API Status: {(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "匿名用户"},请求方法:{funcName}";
+        public string RespenseInfomation => $"API Status: {(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "匿名用户"},请求方法:{funcName}";
     }
 
 
