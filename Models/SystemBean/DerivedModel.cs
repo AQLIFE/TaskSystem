@@ -7,25 +7,16 @@ namespace TaskManangerSystem.Models.SystemBean
     /// <summary>
     /// 用于返回脱敏数据
     /// </summary>
-    public class Part : IPart, IEmployeeConverter
+    public class EmployeeAccountForLoginOrAdd() : IPart
     {
         public string EmployeeAlias { get; set; } = string.Empty;
         public string EmployeePwd { get; set; } = string.Empty;
-        public IEmployee ToEmployee() { this.EmployeePwd = ShaHashExtensions.ComputeSHA512Hash(EmployeePwd); return new EmployeeAccount(this); }
     }
 
-    public class PartInfo : IPartInfo, IEmployeeConverter<PartInfo>
+    public class EmployeeAccountForSelectOrUpdate() : IPartInfo
     {
         public string EmployeeAlias { get; set; } = string.Empty;
         public int AccountPermission { get; set; } = 0;
-        public PartInfo(EmployeeAccount obj)
-        {
-            AccountPermission = obj.AccountPermission;
-            EmployeeAlias = obj.EmployeeAlias;
-        }
-        public IEmployee ToEmployee(string pwd, Guid id) => new EmployeeAccount(this, pwd, id);
-
-        public PartInfo() { }
     }
 
 
@@ -49,6 +40,21 @@ namespace TaskManangerSystem.Models.SystemBean
             => new Category(this, Id, ParId);
     }
 
+    public class CategoryForSelectOrUpdate() : ICategoryInfo
+    {
+        public int SortSerial { set; get; }
+        public int ParentSortSerial { set; get; }// 子类自定义
+        public string CategoryName { get; set; } = string.Empty;
+        public int CategoryLevel { get; set; }
+        public string? Remark { get; set; }
+    }
+
+    public class CategoryForAdd{
+        public int ParentSortSerial { set; get; }// 子类自定义
+        public string CategoryName { get; set; } = string.Empty;
+        public string? Remark { get; set; }
+    }
+
 
     public class MiniCate
     {
@@ -61,15 +67,15 @@ namespace TaskManangerSystem.Models.SystemBean
         public Category ToCategory(Guid? parId, int serial, int level) => new(this, serial: serial, level: level, parId: parId);
     }
 
-    public class CustomerInfo : ICustomerInfo
+    public class MiniCustomer : ICustomerInfo
     {
         public virtual string CustomerName { get; set; } = string.Empty;
         public virtual string? CustomerContactWay { get; set; }
         public virtual string? CustomerAddress { get; set; }
 
-        public CustomerInfo() { }
+        public MiniCustomer() { }
 
-        public CustomerInfo(ICustomer customer, int serial)
+        public MiniCustomer(ICustomer customer, string customerType)
         {
             CustomerName = customer.CustomerName;
             CustomerContactWay = customer.CustomerContactWay;
@@ -78,6 +84,15 @@ namespace TaskManangerSystem.Models.SystemBean
 
         public ICustomer ToCustomer(Guid cateId)
             => new Customer(this, cateId);
+    }
+
+    public class CustomerInfo:MiniCustomer{
+        public virtual string CustomerType { get; set; } = string.Empty;
+
+        public CustomerInfo(){}
+        public CustomerInfo(string types){
+            this.CustomerType=types;
+        }
     }
 
 }

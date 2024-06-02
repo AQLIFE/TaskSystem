@@ -5,3 +5,7 @@
 .editorconfig
 /server.*
 /Dockerfile
+/server_cert.csr
+/server_private.key
+/server_public.key
+/server_cert.crt

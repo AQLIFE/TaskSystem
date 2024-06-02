@@ -3,22 +3,14 @@ using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Models.SystemBean
 {
-    public class DBStatus
+    public class DBStatus (ManagementSystemContext context)
     {
-        public bool EmployeesStatus { get; set; }
-        public bool CatrgoryStatus { get; set; }
-        public bool TaskCustomerStatus { get; set; }
+        public bool EmployeesStatus { get; set; } = context.employees.ToList().IsNullOrEmpty();
+        public bool CatrgoryStatus { get; set; } = context.categories.ToList().IsNullOrEmpty();
+        public bool TaskCustomerStatus { get; set; } =context.customers.ToList().IsNullOrEmpty();
 
-        public DBStatus() { }
-        public DBStatus(bool employeesStatus, bool catrgoryStatus, bool taskCustomerStatus)
-        {
-            EmployeesStatus = employeesStatus;
-            CatrgoryStatus = catrgoryStatus;
-            TaskCustomerStatus = taskCustomerStatus;
-        }
 
-        public DBStatus(ManagementSystemContext context)
-        {
+        public void  Update(){
             EmployeesStatus = context.employees.ToList().IsNullOrEmpty();
             CatrgoryStatus = context.categories.ToList().IsNullOrEmpty();
             TaskCustomerStatus = context.customers.ToList().IsNullOrEmpty();

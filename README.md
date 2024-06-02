@@ -11,36 +11,26 @@ This is a cross-platform project that is intended to be designed to integrate wi
 ## The next goal of the project
 
 - Add GlobbalErrorCapture
-- Decouple the functions of the filter
-
-## Project Info
-
-The project uses environment variables to read confidential information, which is currently the most efficient and cross-platform approach, and of course it can be stored within the project, but my AI doesn't think it's secure 😂 enough.
+- Introduce AutoMapper to my project
 
 ### Requirements for the project development environment
 
-<table>
-<tr>
-<th>Environment variable</th><th>Project SDK</th><th>DataBase</th>
-</tr>
-<tr>
-<td>
-    DB_LINK ,
-    API_KEY ,
-    ISSUER  ,
-    AUDIENCE
-    </td>
-<td>NET 8</td>
-<td>MYSQL 8.X</td>
-</tr>
-</table>
+|Environment variable|Project SDK|DataBase|
+|--|--|--|
+| **as follows**⬇|[NET 8](https://dotnet.microsoft.com/zh-cn/download/dotnet/8.0)|[MYSQL 8.X](https://dev.mysql.com/downloads/installer/)|
 
 #### Environment variable
 
-- DB_LINK ：数据库连接字符串
-- API_KEY ：一个密钥，用于JWT验证
-- ISSUER  ：JWT 验证项
-- AUDIENCE：JWT 验证项
+`// - DB_LINK : database connection string`**(Obsolete)**
+
+- CERTPATH : Path of the RSA key certificate
+- API_KEY ：A key, `JWE` authentication entry
+- ISSUER  ：`JWE` authentication entry
+- AUDIENCE：`JWE` authentication entry
+- DB_HOST_NAME : Host address or name
+- DB_NAME : DtaBase Name
+- DB_PART_NAME : Database account name
+- DB_HOST_PASS : Password of the database host account
 
 ### Project development prospective design
 
@@ -49,13 +39,6 @@ mindmap
     root(TaskSystem)
         Controllers
             DbControllers
-                TaskInfoController ✔
-                CustomerController 
-                EmployeeController ✔
-                CategoryController ✔
-                OutboundController
-                InboundController
-                InventoryInformationController
             FunctionControllers
                 AuthController ✔
                 InitDbController ✔
@@ -67,36 +50,21 @@ mindmap
 
 ```
 
-## 已实现的功能
+## Implemented functionality
 
-- 加入操作日志(控制台)
-  - GlobaleLogger
+- Add operation log(`Console`)
+  - GlobaleLogger.cs
 
-- 加入环境变量读取
-  - RSA_CERT_PATH ：RSA证书路径
-  - API_KEY ：一个密钥，用于JWE验证
-  - ISSUER  ：JWT 验证项
-  - AUDIENCE：JWT 验证项
-  - DB_LINK ：数据库连接字符串
-
-- 统一数据返回
+- Unified data return
   - Result&lt;T&gt; AppFilter()
 
-- 身份验证和授权方案[JWE]
-  - BearerInfo : JWE 生成器
-  - BearerConfig : JWE 验证配置
-    - 使用X509证书密钥
+- Authentication and authorization schemes(`JWE`)
+  - BearerInfo : JWE generator
+  - BearerConfig : JWE validates the configuration
+    - Use X509 certificate keys
 
-- 数据接口
-  - TaskController
-  - CustomerController
-  - EmployeeController
-  - CategoryController
-    - GetCategorys ：返回分页的分类列表
-      - 基于等级
-      - 基于父序
-      - 默认 基于创建时间或ID
-    - PostCategory ：添加分类
-    - PutCategory ：修改分类
-    - DeleteCategory ：删除分类
-    - GetCategory ：获取分类
+- API
+  - /api/Task
+  - /api/Customer
+  - /api/Employee
+  - /api/Category

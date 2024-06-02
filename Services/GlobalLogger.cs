@@ -1,6 +1,12 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
+using TaskManangerSystem.Actions;
+
 namespace TaskManangerSystem.Services
 {
-    public class LogInfo<T>
+    public class LogInfo
     {
         public bool status { set; get; }
 
@@ -8,28 +14,30 @@ namespace TaskManangerSystem.Services
 
         public string funcName { set; get; } = string.Empty;
 
-        public T? invalidParameterValue { set; get; }
+        // public T? invalidParameterValue { set; get; }
 
         public LogInfo() { }
-        public LogInfo(bool status, string? name, string funcName, T? ParameterValue)
-        {
-            this.status = status;
-            this.name = name;
-            this.funcName = funcName;
-            this.invalidParameterValue = ParameterValue;
+
+        public void SetMessage(ActionExecutedContext context,bool s=true){
+            this.status = s;
+            this.funcName = (context.ActionDescriptor as ControllerActionDescriptor)?.ActionName ?? "Error Func";
+            this.name = context.HttpContext.User.Claims.GetClaim(ClaimTypes.Authentication)?.Value;
         }
 
-        public LogInfo(bool status, string? name, string funcName)
-        {
-            this.status = status;
-            this.name = name;
-            this.funcName = funcName;
+        public void SetMessage(AuthorizationHandlerContext context,bool s = true){
+            this.status =s;
+            this.name = context.User.Claims.GetClaim(ClaimTypes.Authentication)?.Value;
+            this.funcName =context.GetType().Name;
         }
 
-        public string RequestInformation => $"访问状态：{(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName}";
+        
+        public string Message=>$"Status > {this.status} ;Func > {this.funcName} ; TokenId > {this.name}";
 
-        public string RespenseInfomation => $"API Status: {(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "匿名用户"},请求方法:{funcName}";
+        
+
+        // public string RequestInformation => $"访问状态：{(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "未知用户"},请求方法:{funcName}";
+
+        // public string RespenseInfomation => $"API Status: {(status ? "succeed" : "fail")},时间：{DateTime.Now},请求用户:{name ?? "匿名用户"},请求方法:{funcName}";
     }
-
 
 }

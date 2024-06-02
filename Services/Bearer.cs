@@ -43,7 +43,7 @@ namespace TaskManangerSystem.Services
             => new JwtSecurityTokenHandler().WriteToken(jwt);// 创建JwtSecurityToken
 
         public string CreateToken()
-            => JWT.Encode(payload: CreateJWT(), key: KeyManager.rsaEncryptor.Rsa, alg: JweAlgorithm.RSA_OAEP, enc: JweEncryption.A256CBC_HS512);
+            => JWT.Encode(payload: CreateJWT(), key: KeyManager.rsaEncryptor.Rsa, alg: JweAlgorithm.RSA_OAEP_256, enc: JweEncryption.A256CBC_HS512);
         // 使用Jose库创建加密的JWE
 
     }
@@ -69,13 +69,13 @@ namespace TaskManangerSystem.Services
 
             bearerEvents.OnTokenValidated = async (context) =>
             {
-                int? accountPermission = FilterAction.GetClaim(context.Principal?.Claims, ClaimTypes.Role)?.Value.ToInt32();
+                int? accountPermission = HttpAction.GetClaim(context.Principal?.Claims, ClaimTypes.Role)?.Value.ToInt32();
                 const int roles = 1;// 设定一个固定的权限等级 Roles
                 // 如果 AccountPermission Claim 不存在或其值小于设定的 Roles，则拒绝访问
                 if (!accountPermission.HasValue || accountPermission.Value < roles)
                     context.Fail("全局规则:权限等级不足");
                 context.HttpContext.Items.Add("IsAdmin", accountPermission >= SystemInfo.adminRole);
-                context.HttpContext.Items.Add("HashId", FilterAction.GetClaim(context.Principal?.Claims, ClaimTypes.Authentication)?.Value);
+                context.HttpContext.Items.Add("HashId", HttpAction.GetClaim(context.Principal?.Claims, ClaimTypes.Authentication)?.Value);
 
                 await Task.CompletedTask;
             };
@@ -90,7 +90,6 @@ namespace TaskManangerSystem.Services
 
             bearerEvents.OnForbidden = context =>
             {
-                // context.HandleResponse();
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.WriteAsJsonAsync(GlobalResult.Forbidden);
                 return Task.FromResult(0);
@@ -102,7 +101,7 @@ namespace TaskManangerSystem.Services
                 if (!authorizationHeader.IsNullOrEmpty())
                 {
 
-                    string deJwt = JWT.Decode(authorizationHeader.ToString().Replace("Bearer ", ""), KeyManager.rsaDecryptor.Rsa, JweAlgorithm.RSA_OAEP, JweEncryption.A256CBC_HS512);
+                    string deJwt = JWT.Decode(authorizationHeader.ToString().Replace("Bearer ", ""), key: KeyManager.rsaDecryptor.Rsa,alg:JweAlgorithm.RSA_OAEP_256,enc: JweEncryption.A256CBC_HS512);
                     context.Token = deJwt;
                     return Task.FromResult(0);
 

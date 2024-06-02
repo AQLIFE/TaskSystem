@@ -7,6 +7,19 @@ namespace TaskManangerSystem.Actions
 
     public static class SystemInfo
     {
+        private const string ValidChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        public static string GenerateUniqueRandomName(int length)
+        {
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                var randomBytes = new byte[length];
+                rng.GetBytes(randomBytes);
+
+                return new string(randomBytes.Select(b => ValidChars[b % (ValidChars.Length)]).ToArray());
+            }
+        }
+
         public const int adminRole = 90;
         public const int pageSize = 120;
         public static EmployeeAccount admin => new("admin", ShaHashExtensions.ComputeSHA512Hash("admin@123"), adminRole + 9);
@@ -19,12 +32,50 @@ namespace TaskManangerSystem.Actions
         public static Customer customers = new("管理员", Guid.NewGuid(), 1, "13212345678", "本公司");
 
 
-        public readonly static string DBLINK = Environment.GetEnvironmentVariable("DB_LINK") ?? throw new Exception("Program Error:Miss DB_LINK");
-        public readonly static string ISSUER = Environment.GetEnvironmentVariable("ISSUER") ?? throw new Exception("Program Error:Misssing Issuer");
-        public readonly static string AUDIENCE = Environment.GetEnvironmentVariable("AUDIENCE") ?? throw new Exception("Program Error:Misssing Audience");
-        public readonly static string SECURITYKEY = Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception("Program Error:Missing Key");
-        public readonly static string CERTPATH = Environment.GetEnvironmentVariable("RSA_CERT_PATH") ?? throw new Exception("Program Error:Miss certPath");
+        // public readonly static string DBLINK = Environment.GetEnvironmentVariable("DB_LINK") ?? throw new Exception("Program Error:Miss DB_LINK");
+        private readonly static string DB_NAME = Environment.GetEnvironmentVariable("DB_NAME") ?? throw new Exception("Program Error:Miss DB_NAME");
+        private readonly static string DB_HOST_NAME = Environment.GetEnvironmentVariable("DB_HOST_NAME") ?? throw new Exception("Program Error:Miss DB_HOST_NAME");
+        private readonly static string DB_PART_NAME = Environment.GetEnvironmentVariable("DB_PART_NAME") ?? throw new Exception("Program Error:Miss DB_PART_NAME");
+        private readonly static string DB_HOST_PASS = Environment.GetEnvironmentVariable("DB_HOST_PASS") ?? throw new Exception("Program Error:Miss DB_HOST_PASS");
+
+        public static string DB_LINK => $"server={SystemInfo.DB_HOST_NAME};port=3306;database={SystemInfo.DB_NAME};user={SystemInfo.DB_PART_NAME};password={DB_HOST_PASS};";
+
+        public readonly static string ISSUER = Environment.GetEnvironmentVariable("ISSUER") ?? throw new Exception("Program Error:Misssing ISSUER");
+        public readonly static string AUDIENCE = Environment.GetEnvironmentVariable("AUDIENCE") ?? throw new Exception("Program Error:Misssing AUDIENCE");
+        public readonly static string SECURITYKEY = Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception("Program Error:Missing API_KEY");
+        public readonly static string CERTPATH = Environment.GetEnvironmentVariable("RSA_CERT_PATH") ?? throw new Exception("Program Error:Miss RSA_CERT_PATH");
         // 假设私钥存储在环境变量中，需要根据实际情况调整
+
+    }
+
+
+
+    public static class CustomOperators
+    {
+        //截断，但无法设置返回值
+        public static T? ConditionalCheck<T>(this T obj, Func<T, bool> condition) where T : class
+            => obj is not null && condition(obj) ? obj : default;
+
+        //截断，允许设置成功返回值
+        public static TResult? ConditionalCheck<T, TResult>(this T obj, Func<T, bool> condition, Func<T, TResult> succeed) where T : class
+            => obj is not null && condition(obj) ? succeed(obj) : default;
+
+        public static async Task<TResult?> ConditionalCheckAsync<T, TResult>(this T obj, Func<T, bool> condition, Func<T, Task<TResult>> succeed) where T : class
+            => obj is not null && condition(obj) ? await succeed(obj) : default;
+
+        //截断 ，不返回
+        public static void ConditionalCheck<T>(this T obj, Func<T, bool> condition, Action<T> succeed) where T : class
+        { if (obj is not null && condition(obj)) succeed(obj); }
+
+        public static void ConditionalCheck<T>(this T obj, Func<T, bool> condition, Action<T> succeed, Action<T> fail) where T : class
+        { if (obj is not null && condition(obj)) succeed(obj); }
+
+        //非截断，允许设置双向返回值
+        public static TResult ConditionalCheck<T, TResult>(this T obj, Func<T, bool> condition, Func<T, TResult> succeed, Func<T, TResult> fail) where T : class
+            => obj is not null ? (condition(obj) ? succeed(obj) : fail(obj)) : throw new Exception("Obj is null!!!");
+
+        public static TResult ConditionalCheck<T, TResult>(this T? obj, Func<T?, bool> condition, Func<T?, TResult> succeed, TResult fail) where T : class
+        => condition(obj) ? succeed(obj) : fail;
     }
 
     /// <summary>

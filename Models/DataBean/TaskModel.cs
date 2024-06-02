@@ -1,17 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Models.DataBean
 {
-    [Comment("任务信息"), Index(nameof(CustomerName), IsUnique = true)]
+    [Comment("任务信息")]
     public class Customer : ICustomer
     {
         [Key, Comment("客户ID")]
         public Guid CustomerId { get; set; } = Guid.NewGuid();
         [Comment("客户名称"), Required]
         public string CustomerName { get; set; } = string.Empty;
+        
+        [NotMapped]
+        public string HashName =>ShaHashExtensions.ComputeSHA256Hash(CustomerName);
         [Comment("客户联系方式")]
         public string? CustomerContactWay { get; set; }
         [Comment("客户地址")]
@@ -28,7 +33,13 @@ namespace TaskManangerSystem.Models.DataBean
         public Category? Category { get; set; }
 
         public Customer() { }
-        public Customer(ICustomerInfo customer, Guid cateId) { }
+        public Customer(ICustomerInfo customer, Guid cateId) { 
+            CustomerName = customer.CustomerName;
+            CustomerAddress = customer.CustomerAddress;
+            CustomerType= cateId;
+            ClientGrade =1;
+            CustomerContactWay =customer.CustomerContactWay;
+        }
 
         public Customer(string name, Guid cateId, int level = 1, string? conway = null, string? add = null)
         {
@@ -40,13 +51,10 @@ namespace TaskManangerSystem.Models.DataBean
             ClientGrade = level;
             AddTime = DateTime.Now;
 
-        }
+        }//init
 
-        public void update(CustomerInfo info)
-        {
-            CustomerAddress = info.CustomerAddress;
-            CustomerContactWay = info.CustomerContactWay;
-        }
+        public void ToCustomerInfo(string customerType)
+        =>new MiniCustomer(this,customerType);
     }
 
     [Comment("任务信息")]

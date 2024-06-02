@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -9,58 +10,83 @@ using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Actions
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public class FilterAction(ManagementSystemContext context)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    {
-        private EmployeeActions employeeAction = new(context);
-        private CategoryActions categoryActions = new(context);
+    public enum ParameterName { id, info, SortSerial };
 
+    public class FilterAction(ManagementSystemContext storage, IMapper mapper)
+    {
+        public VaildatorForEmployee vaildatorForEmployee = new (new (storage,mapper));
+        public VaildatorForCategory vaildatorForCategory = new (new (storage,mapper));
+    }
+
+    public class HttpLog<T, TResult> where T : FilterContext
+    {
+        public TResult InitLog(T context, Func<T, TResult> edge)
+        {
+            Claim? ob = context.HttpContext.User.Claims.GetClaim(ClaimTypes.Authentication);
+            ControllerActionDescriptor? oj = context.ActionDescriptor as ControllerActionDescriptor;
+
+            return edge(context);
+        }
         public bool status = false;
 
-        public EmployeeAccount? GetAccountByClaim(HttpContext cx, string str)
-        {
-            var sr = GetClaim(cx.User.Claims, str)?.Value ?? Guid.Empty.ToString();
-            return employeeAction.ExistsEmployeeByHashId(sr) ? employeeAction.GetEmployeeByHashId(sr) : null;
-        }
+    }
 
-        public EmployeeAccount? GetAccountByParameter(IDictionary<string, object?> cx, string str)
-            => employeeAction.GetEmployeeByHashId(cx[str] as string ?? string.Empty.ToString());
-
-
-
-        public static Claim? GetClaim(IEnumerable<Claim>? claims, string flag)
+    public static class HttpAction
+    {
+        public static Claim? GetClaim(this IEnumerable<Claim>? claims, string flag)
             => claims?.FirstOrDefault(e => e.Type == flag);
+        public static bool ExistsParmeter(this IDictionary<string, object?> pairs, string name)
+            => !pairs.IsNullOrEmpty() && pairs.ContainsKey(name);
 
-        public static bool ExistsParmeter(IDictionary<string, object?> pairs, string name) => !pairs.IsNullOrEmpty() && pairs.ContainsKey(name);
+        public static bool IsAdmin(this HttpContext cx) => cx.Items.Where(e => e.Key.ToString() == "IsAdmin").FirstOrDefault().Value?.ToString() == true.ToString();
 
-        // public bool Validators(Claim kv, string obj) => kv.Value == obj;
+    }
 
-
-        public LogInfo<string?> InitLog(ActionExecutingContext context)
+    public class VaildatorForEmployee(EmployeeActions employeeAction)
+    {
+        public async Task<EmployeeAccount?> GetAccountByClaim(HttpContext cx, string str)
         {
-            var ob = GetClaim(context.HttpContext.User.Claims, ClaimTypes.Authentication);
-            var oj = context.ActionDescriptor as ControllerActionDescriptor;
-            return new LogInfo<string?>(status, ob?.Value, oj!.ActionName);
+            var sr = cx.User.Claims.GetClaim(str)?.Value ?? Guid.Empty.ToString();
+            return await employeeAction.ExistsEmployeeByHashIdAsync(sr) ? await employeeAction.GetEmployeeByHashIdAsync(sr) : null;
+        }//检查账户是否存在于令牌内并且该账户有效，如果有效则返回该账户信息
+
+        public async Task<EmployeeAccount?> GetAccountByParameter(IDictionary<string, object?> cx, string str)
+            => await employeeAction.GetEmployeeByHashIdAsync(cx[str] as string ?? string.Empty.ToString());
+            //将HttpContext的请求参数字典内的指定参数 作为 员工系统的查询参数 
+
+
+        public bool VerifyByEmployeeAccount(EmployeeAccount obj, HttpContext action)
+                =>!action.IsAdmin() && obj.AccountPermission < SystemInfo.adminRole && obj.EmployeeAlias != SystemInfo.admin.EmployeeAlias && obj.EmployeePwd.Length >= 8;
+            // 验证参数 ： 读取HttpContext 的令牌信息 ，检查是否为管理员账户 ，检查权限是否有效（AdminRole），检查账户名（不允许和管理员账户重名），检查密码（是否符合密码基础规范）
+
+
+        public async Task<bool> EmployeeAccountBeForeSelect(HttpContext cx, string hashId)
+        {
+            EmployeeAccount? obj = await GetAccountByClaim(cx, ClaimTypes.Authentication);
+            return (cx.IsAdmin() &&
+            await employeeAction.ExistsEmployeeByHashIdAsync(hashId)) || (obj is EmployeeAccount nowAccount &&
+            ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId);
+        }//查询前检查 ： 检查是否为有效的管理员账户 ， 检查该令牌提供的账户ID是否属于有效的ID（哈希ID）
+    }
+
+    public class VaildatorForCategory(CategoryActions categoryAction)
+    {
+        public async Task<bool> ValifyByMiniCate(MiniCate obj)
+        {
+            if (!await categoryAction.ExistsCategoryBySerialAsync(obj.ParentSortSerial) || await categoryAction.ExistsCategoryByNameAsync(obj.CategoryName)) return false;
+            return true;
         }
+    }
 
-        public LogInfo<string?> InitLog(ActionExecutedContext context)
+    /*public class Vaildator(ManagementSystemContext storage, IMapper mapper)
+    {
+        
+        public static bool HttpContextParameterVerifierByCategory(this ActionExecutingContext actionHttpcontext)
         {
-            var ob = GetClaim(context.HttpContext.User.Claims, ClaimTypes.Authentication);
-            var oj = context.ActionDescriptor as ControllerActionDescriptor;
-            var il = context.Result as ObjectResult;
-            var sl = il?.Value as Result<string?>;
-            return new LogInfo<string?>(status, ob?.Value, oj!.ActionName, sl?.Data?.GetType().Name);
-        }
+            IDictionary<string, object?> pairs = actionHttpcontext.ActionArguments;
 
-        public enum ParameterName { id, info, SortSerial };
-
-        public IDictionary<string, object?> pairs;
-        public bool ParameterVerifierByCategory()
-        {
-            // 序列号验证器
-            if (ExistsParmeter(pairs, ParameterName.SortSerial.ToString()))
-                if (ExistsParmeter(pairs, ParameterName.info.ToString()))
+            if (pairs.ExistsParmeter(ParameterName.SortSerial.ToString()))
+                if (pairs.ExistsParmeter(ParameterName.info.ToString()))
                 {
                     var os = pairs[ParameterName.info.ToString()] as MiniCate;
                     return os is MiniCate ? ValifyByMiniCate(os) : false;
@@ -69,103 +95,47 @@ namespace TaskManangerSystem.Actions
             return true;
         }
 
-        public void ParameterVerifierByEmployee(ActionExecutingContext http)
+        public async static void HttpContextParameterVerifierByEmployee(this ActionExecutingContext actionHttpcontext)
         {
-            // bool status = true;
             ObjectResult? result = null;
+            IDictionary<string, object?> pairs = actionHttpcontext.ActionArguments;
 
-            #region 注释代码
-            // if (ExistsParmeter(pairs, ParameterName.id.ToString()))
-            // {
-            //     var obj = GetAccountByParameter(pairs, ParameterName.id.ToString());
-            //     status = obj is EmployeeAccount;
-            //     // var os = GetAccountByParameter(pairs, ParameterName.id.ToString()) is EmployeeAccount obj;
-
-            //     if (status && ExistsParmeter(pairs, ParameterName.info.ToString()))
-            //         return VerifyByPartInfo(obj!, cx);
-            //     else return status;
-            // }
-            // return status;
-            #endregion
-
-            if (ExistsParmeter(pairs, ParameterName.id.ToString())) //是否存在ID参数
+            if (pairs.ExistsParmeter(ParameterName.id.ToString())) //是否存在ID参数
             {
-                // status = EmployeeAccountBeForeSelect(http.HttpContext, pairs[ParameterName.id.ToString()]!.ToString()!);    //返回是否为有效ID或身份（管理）
-                // if (!EmployeeAccountBeForeSelect(http.HttpContext, pairs[ParameterName.id.ToString()]!.ToString()!)) result = GlobalResult.InvalidParameter;
                 var hashId = pairs[ParameterName.id.ToString()]!.ToString()!;
-                if (IsAdmin(http.HttpContext) && !employeeAction.ExistsEmployeeByHashId(hashId))
+                if (actionHttpcontext.HttpContext.IsAdmin() && !await employeeAction.ExistsEmployeeByHashId(hashId))
                     result = GlobalResult.NoData;
-                else if (GetAccountByClaim(http.HttpContext, ClaimTypes.Authentication) is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId)
+                else if (await GetAccountByClaim(actionHttpcontext.HttpContext, ClaimTypes.Authentication) is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) != hashId)
                     result = GlobalResult.InvalidParameter;
 
-                if (ExistsParmeter(pairs, ParameterName.info.ToString()) && pairs[ParameterName.info.ToString()] is PartInfo eAlias)
+                if (pairs.ExistsParmeter(ParameterName.info.ToString()) && pairs[ParameterName.info.ToString()] is EmployeeAccountForSelectOrUpdate eAlias)
                 {
-                    if (employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias) && employeeAction.GetEmployeeByHashId(hashId)?.EmployeeAlias != eAlias.EmployeeAlias)//是否存在info参数，并属于Ealias类型
+                    if (await employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias) && (await employeeAction.GetEmployeeByHashId(hashId))?.EmployeeAlias != eAlias.EmployeeAlias)//是否存在info参数，并属于Ealias类型
                     {
                         result = GlobalResult.Repetition(eAlias.EmployeeAlias);
                     }
 
 
-                    if (eAlias.AccountPermission >= SystemInfo.adminRole || eAlias.AccountPermission >= employeeAction.GetEmployeeByHashId(hashId)!.AccountPermission + 2)
+                    if (eAlias.AccountPermission >= SystemInfo.adminRole || eAlias.AccountPermission >= (await employeeAction.GetEmployeeByHashId(hashId))!.AccountPermission + 2)
                     {
                         result = GlobalResult.LimitAuth;
                     }
                 }
             }
-            else if (ExistsParmeter(pairs, ParameterName.info.ToString()) && pairs[ParameterName.info.ToString()] is Part eAlias && employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias))
-            {
-                result = GlobalResult.Repetition(eAlias.EmployeeAlias);
-            }
-            // return status;
-            if (result != null)
-            {
-                http.Result = result;
-            }
+
+            if (result != null) actionHttpcontext.Result = result;
 
         }
 
-        public bool ParameterVerifierByTask()
+        public static bool HttpContextParameterVerifierByTask(this ActionExecutingContext actionHttpcontext)
         {
             return true;
 
         }
-        public bool ParameterVerifierByCustomer()
+        public static bool HttpContextParameterVerifierByCustomer(this ActionExecutingContext actionHttpcontext)
         {
             return true;
-
         }
 
-        public bool VerifyByEmployeeAccount(EmployeeAccount obj, HttpContext action)
-        => obj.AccountPermission < SystemInfo.adminRole && obj.EmployeeAlias != SystemInfo.admin.EmployeeAlias && obj.EmployeePwd.Length >= 8 && !IsAdmin(action);
-
-
-        public bool EmployeeAccountBeForeSelect(HttpContext http, string hashId)
-        {
-            EmployeeAccount? obj = GetAccountByClaim(http, ClaimTypes.Authentication);
-            return (IsAdmin(http) && employeeAction.ExistsEmployeeByHashId(hashId)) || (obj is EmployeeAccount nowAccount && ShaHashExtensions.ComputeSHA512Hash(nowAccount.EmployeeId.ToString()) == hashId);
-        }
-
-        // public bool EmployeeAccountBeForeAdd(IDictionary<string, object?> cx, string str)
-        //     => ExistsParmeter(cx, str) && cx[str] is Part part && !employeeAction.ExistsEmployeeByName(part.EmployeeAlias);
-
-        // public bool EmployeeAccountBeForeUpdate(IDictionary<string, object?> cx, string str)
-        //     => ExistsParmeter(cx, str) && cx[str] is PartInfo info && !employeeAction.ExistsEmployeeByName(info.EmployeeAlias) && info.AccountPermission < SystemInfo.adminRole;
-
-        // public bool IsEmployeeAccountValid(HttpContext http,IDictionary<string, object?> cx, string str){
-
-        //     if( EmployeeAccountBeForeSelect(http,pairs[ParameterName.id.ToString()]!.ToString()! ) &&  ExistsParmeter(cx,str) && cx[str] is EAlias eAlias )
-        //     {
-        //         status = employeeAction.ExistsEmployeeByName(eAlias.EmployeeAlias);
-        //         if( status && cx[str] is PartInfo info )return info.AccountPermission < SystemInfo.adminRole;
-        //     }
-        //     return status;
-        // }
-
-        public bool ValifyByMiniCate(MiniCate obj)
-        {
-            if (!categoryActions.ExistsCategoryBySerial(obj.ParentSortSerial) || categoryActions.ExistsCategoryByName(obj.CategoryName)) return false;
-            return true;
-        }
-        public bool IsAdmin(HttpContext cx) => cx.Items.Where(e => e.Key.ToString() == "IsAdmin").FirstOrDefault().Value?.ToString() == true.ToString();
-    }
+    }*/
 }

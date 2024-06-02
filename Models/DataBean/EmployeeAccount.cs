@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices.BeanServices;
-using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Models.DataBean
 {
@@ -12,6 +12,9 @@ namespace TaskManangerSystem.Models.DataBean
     {
         [Key, Comment("GUID"), Required(ErrorMessage = "员工电子账户ID不能为空")]
         public Guid EmployeeId { set; get; } = Guid.NewGuid();
+        
+        [Comment("加密ID")]
+        public  string HashId {get;set;}
 
         [Comment("账户名称"), Required(ErrorMessage = "账户名不可为空"), ConcurrencyCheck, RegularExpression(@"^[\dA-Za-z]{5,16}$", ErrorMessage = "员工ID必须是普通字符[数字|字母(不区分大小写)]")]
         public string EmployeeAlias { get; set; } = string.Empty;
@@ -23,32 +26,21 @@ namespace TaskManangerSystem.Models.DataBean
         public int AccountPermission { get; set; } = 0;
         // 当权限为0时，视为封存账户
 
-        #region 注参实现
-        public EmployeeAccount(IPart obj)
-        {
-            EmployeeId = Guid.NewGuid();
-            EmployeeAlias = obj.EmployeeAlias;
-            EmployeePwd = obj.EmployeePwd;
-            AccountPermission = 1;
-        }
-        public EmployeeAccount(IPartInfo obj, string pwd, Guid id) { }
 
-        public EmployeeAccount() { }
+        
+
+        public EmployeeAccount() { 
+            this.HashId = Guid.Empty.ToString();
+        }
         public EmployeeAccount(string name, string pwd, int ap = 1)
         {
             EmployeeAlias = name;
             EmployeePwd = pwd;
             AccountPermission = ap;
+            SetHashId();
         }
 
-        #endregion
-
-        public bool Equals(EmployeeAccount account)
-                => EmployeeId == account.EmployeeId
-                && EmployeeAlias == account.EmployeeAlias
-                && EmployeePwd == account.EmployeePwd
-                && AccountPermission == account.AccountPermission;
-        public IPartInfo ToPartInfo() => new PartInfo(this);
+        public void SetHashId(){this.HashId = ShaHashExtensions.ComputeSHA512Hash(this.EmployeeId.ToString());}
 
     }
 
@@ -57,6 +49,9 @@ namespace TaskManangerSystem.Models.DataBean
     {
         [Key, Comment("员工ID")]
         public Guid EmployeeId { get; set; }
+
+        [NotMapped]
+        public  string HashId => ShaHashExtensions.ComputeSHA512Hash(EmployeeId.ToString());
 
         [MinLength(2, ErrorMessage = "姓名长度必须大于等于2"), Comment("员工姓名")]
         public string? EmployeeName { get; set; }

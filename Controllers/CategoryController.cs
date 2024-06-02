@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,53 +11,62 @@ using TaskManangerSystem.Services;
 namespace TaskManangerSystem.Controllers
 {
     [ApiController, Route("api/[controller]"), Authorize]
-    public class CategoryController(ManagementSystemContext context) : ControllerBase
+    public class CategoryController(ManagementSystemContext context,IMapper mapper) : ControllerBase
     {
-        private CategoryActions action = new(context);
+        private CategoryActions action = new(context,mapper);
         public enum CategoryType { all, level, parId }
 
-        [HttpGet, Authorize(policy: "Admin")]
-        public IEnumerable<ICategoryInfo?>? GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
-        => select switch
-        {
-            CategoryType.all => action.GetCategoryList(page, pageSize).Select(e => e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
-            CategoryType.level => action.GetCategoryListByLevel(obj, page, pageSize).Select(e => e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
-            CategoryType.parId => action.GetCategoryListByParId(obj, page, pageSize).Select(e => e.ToCateInfo(action.GetSerialById(e.ParentCategoryId))),
-            _ => null
-        };
+
+
+
+
+        [HttpGet, Authorize(policy: "Admin")]     
+        public async Task<PageContext<CategoryForSelectOrUpdate>?> GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
+        => select switch{
+            CategoryType.all => await action.GetCategoryListAsync(page, pageSize),
+            CategoryType.level => await action.GetCategoryListByLevelAsync(obj, page, pageSize),
+            CategoryType.parId => await action.GetCategoryListByParIdAsync(obj, page, pageSize),
+            _ => null};
+
+        [HttpGet("{SortSerial}")]
+        public async Task<CategoryForSelectOrUpdate?> GetCategory(int sortSerial)
+            => await action.GetCategoryBySerialAsync(sortSerial) is Category ib ? mapper.Map<CategoryForSelectOrUpdate>(ib):null;
+            // => action.GetCategoryBySerial(SortSerial) is Category obj ? obj.ToCateInfo(action.GetParSerialBySerial(obj.SortSerial)) : null;
+
+        // [HttpPost]// POST: api/categories  
+        // public async Task<ActionResult<string>> PostCategory(MiniCate info)
+        // {
+        //     // if (!action.Validate(info)) return action.ValidateMessage;
+
+        //     Category obj = info.ToCategory(action.GetIdBySerial(info.ParentSortSerial), action.GetLastSerial() + 1, action.GetLevelBySerial(info.ParentSortSerial));
+
+        //     context.categories.Add(obj);
+        //     await context.SaveChangesAsync();
+
+        //     return obj.CategoryName;
+        // }
 
 
         [HttpPost]
-        public async Task<ActionResult<string>> PostCategory(MiniCate info)
-        {
-            // if (!action.Validate(info)) return action.ValidateMessage;
-
-            Category obj = info.ToCategory(action.GetIdBySerial(info.ParentSortSerial), action.GetLastSerial() + 1, action.GetLevelBySerial(info.ParentSortSerial));
-
-            context.categories.Add(obj);
-            await context.SaveChangesAsync();
-
-            return obj.CategoryName;
-        }
+        public async Task<bool> PostCategory(CategoryForAdd add)
+        => await action.ExistsCategoryByNameAsync(add.CategoryName) ?false:action.AddInfo( mapper.Map<Category>(add) );
+        //     //检查
+        //     if( await action.ExistsCategoryByNameAsync(add.CategoryName) )return false;
+        //     else 
+        //         return action.AddInfo( mapper.Map<Category>(add) );    
+        // }
 
 
-        [HttpGet("{SortSerial}")]
-        public ActionResult<ICategoryInfo?> GetCategory(int SortSerial)
-            => action.GetCategoryBySerial(SortSerial) is Category obj ? obj.ToCateInfo(action.GetParSerialBySerial(obj.SortSerial)) : null;
 
-        // POST: api/categories  
-
-
-        // PUT: api/categories/5  
-        [HttpPut("{SortSerial}")]
-        public async Task<string> PutCategory(int SortSerial, MiniCate info)
+        [HttpPut("{SortSerial}")]// PUT: api/categories/5  
+        public async Task<string> PutCategory(int sortSerial, CategoryForSelectOrUpdate info)
         {
             // if ( !action.ExistsCategoryBySerial(SortSerial)) return "不存在信息";
 
-            Category? obj = action.GetCategoryBySerial(SortSerial);
+            Category? obj = action.GetCategoryBySerial(sortSerial);
 
             obj!.CategoryName = obj.CategoryName != info.CategoryName ? info.CategoryName : obj.CategoryName;
-            obj.CategoryLevel = action.GetLevelBySerial(info.ParentSortSerial);
+            obj.CategoryLevel = await action.GetLevelBySerialAsync(info.ParentSortSerial);
             obj.Remark = obj.Remark != info.Remark ? info.Remark : obj.Remark;
             var sl = action.GetCategoryBySerial(info.ParentSortSerial)!.CategoryId;
             obj.ParentCategoryId = obj.ParentCategoryId != sl ? sl : obj.ParentCategoryId;
@@ -67,8 +77,10 @@ namespace TaskManangerSystem.Controllers
             return "修改成功";
         }
 
-        // DELETE: api/categories/5  
-        [HttpDelete("{SortSerial}")]
+        
+
+
+        [HttpDelete("{SortSerial}")]// DELETE: api/categories/5  
         public async Task<string?> DeleteCategory(int SortSerial)
         {
             var category = action.GetCategoryBySerial(SortSerial);
