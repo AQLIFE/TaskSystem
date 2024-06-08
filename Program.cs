@@ -1,7 +1,7 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 using TaskManangerSystem.Actions;
 using TaskManangerSystem.Services;
 
@@ -20,7 +20,7 @@ builder.Services
         });
 
 builder
-    .ConditionalCheck<WebApplicationBuilder, IServiceCollection>(e => e.Environment.IsDevelopment(), e => e.Services.AddSwaggerGen(), e => e.Services)
+    .ConditionalCheck(e => e.Environment.IsDevelopment(), e => e.Services.AddSwaggerGen(), e => e.Services)
     .AddAutoMapper(Assembly.GetExecutingAssembly())
     .AddSingleton<IAuthorizationHandler, CustomHandler>()
     .AddSingleton<BearerInfo>()
@@ -32,9 +32,11 @@ builder
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 
-app.ConditionalCheck<WebApplication, IApplicationBuilder>(e => e.Environment.IsDevelopment(), e => e.UseSwaggerUI().UseSwagger(), e => e)
- .UseAuthentication()
- .UseAuthorization();
+app.ConditionalCheck(e => e.Environment.IsDevelopment(),
+                     e => e.UseSwaggerUI().UseSwagger(),
+                     e => e)
+    .UseAuthentication()
+    .UseAuthorization();
 
 app.MapControllers();
 app.Run();

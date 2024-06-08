@@ -101,7 +101,7 @@ namespace TaskManangerSystem.Services
                 if (!authorizationHeader.IsNullOrEmpty())
                 {
 
-                    string deJwt = JWT.Decode(authorizationHeader.ToString().Replace("Bearer ", ""), key: KeyManager.rsaDecryptor.Rsa,alg:JweAlgorithm.RSA_OAEP_256,enc: JweEncryption.A256CBC_HS512);
+                    string deJwt = JWT.Decode(authorizationHeader.ToString().Replace("Bearer ", ""), key: KeyManager.rsaDecryptor.Rsa, alg: JweAlgorithm.RSA_OAEP_256, enc: JweEncryption.A256CBC_HS512);
                     context.Token = deJwt;
                     return Task.FromResult(0);
 

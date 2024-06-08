@@ -27,11 +27,7 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("备注")]
         public string? Remark { get; set; }
 
-
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-        // [ForeignKey("CategoryId"),Column("ParentCategoryId")]
-        public Category ParentCategory { get; set; }
-
+        public Category? ParentCategory { get; set; }
 
         public Category() { }
 
@@ -57,7 +53,6 @@ namespace TaskManangerSystem.Models.DataBean
 
         // 用于系统初始化
         public Category(string name, int serial, string? remark = null, int level = 1, Guid? parId = null)
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         {
             CategoryName = name;
             SortSerial = serial;
@@ -65,10 +60,20 @@ namespace TaskManangerSystem.Models.DataBean
             CategoryLevel = level;
             ParentCategoryId = parId;
         }
-
-
-        public CateInfo ToCateInfo(int serial) => new CateInfo(this, serial);
     }
+
+    public class TestC
+    {
+        public TestC() { }
+        public int SortSerial { set; get; } = 0;
+
+        public string CategoryName { get; set; } = string.Empty;
+
+        //public int CategoryLevel { get; set; } = 0;
+
+        //public string? Remark { get; set; } = null;
+    }
+
 
     [Comment("库存信息")]
     public class InventoryInfo

@@ -14,9 +14,9 @@ namespace TaskManangerSystem.Models.DataBean
         public Guid CustomerId { get; set; } = Guid.NewGuid();
         [Comment("客户名称"), Required]
         public string CustomerName { get; set; } = string.Empty;
-        
+
         [NotMapped]
-        public string HashName =>ShaHashExtensions.ComputeSHA256Hash(CustomerName);
+        public string HashName => ShaHashExtensions.ComputeSHA256Hash(CustomerName);
         [Comment("客户联系方式")]
         public string? CustomerContactWay { get; set; }
         [Comment("客户地址")]
@@ -33,12 +33,13 @@ namespace TaskManangerSystem.Models.DataBean
         public Category? Category { get; set; }
 
         public Customer() { }
-        public Customer(ICustomerInfo customer, Guid cateId) { 
+        public Customer(ICustomerInfo customer, Guid cateId)
+        {
             CustomerName = customer.CustomerName;
             CustomerAddress = customer.CustomerAddress;
-            CustomerType= cateId;
-            ClientGrade =1;
-            CustomerContactWay =customer.CustomerContactWay;
+            CustomerType = cateId;
+            ClientGrade = 1;
+            CustomerContactWay = customer.CustomerContactWay;
         }
 
         public Customer(string name, Guid cateId, int level = 1, string? conway = null, string? add = null)
@@ -54,7 +55,7 @@ namespace TaskManangerSystem.Models.DataBean
         }//init
 
         public void ToCustomerInfo(string customerType)
-        =>new MiniCustomer(this,customerType);
+        => new MiniCustomer(this, customerType);
     }
 
     [Comment("任务信息")]

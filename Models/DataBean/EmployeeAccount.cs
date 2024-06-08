@@ -12,9 +12,9 @@ namespace TaskManangerSystem.Models.DataBean
     {
         [Key, Comment("GUID"), Required(ErrorMessage = "员工电子账户ID不能为空")]
         public Guid EmployeeId { set; get; } = Guid.NewGuid();
-        
+
         [Comment("加密ID")]
-        public  string HashId {get;set;}
+        public string HashId { get; set; }
 
         [Comment("账户名称"), Required(ErrorMessage = "账户名不可为空"), ConcurrencyCheck, RegularExpression(@"^[\dA-Za-z]{5,16}$", ErrorMessage = "员工ID必须是普通字符[数字|字母(不区分大小写)]")]
         public string EmployeeAlias { get; set; } = string.Empty;
@@ -27,9 +27,10 @@ namespace TaskManangerSystem.Models.DataBean
         // 当权限为0时，视为封存账户
 
 
-        
 
-        public EmployeeAccount() { 
+
+        public EmployeeAccount()
+        {
             this.HashId = Guid.Empty.ToString();
         }
         public EmployeeAccount(string name, string pwd, int ap = 1)
@@ -40,7 +41,7 @@ namespace TaskManangerSystem.Models.DataBean
             SetHashId();
         }
 
-        public void SetHashId(){this.HashId = ShaHashExtensions.ComputeSHA512Hash(this.EmployeeId.ToString());}
+        public void SetHashId() { this.HashId = ShaHashExtensions.ComputeSHA512Hash(this.EmployeeId.ToString()); }
 
     }
 
@@ -51,7 +52,7 @@ namespace TaskManangerSystem.Models.DataBean
         public Guid EmployeeId { get; set; }
 
         [NotMapped]
-        public  string HashId => ShaHashExtensions.ComputeSHA512Hash(EmployeeId.ToString());
+        public string HashId => ShaHashExtensions.ComputeSHA512Hash(EmployeeId.ToString());
 
         [MinLength(2, ErrorMessage = "姓名长度必须大于等于2"), Comment("员工姓名")]
         public string? EmployeeName { get; set; }

@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -8,7 +7,7 @@ using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Services
 {
-    partial class AppFilter( ILogger<AppFilter> logger, LogInfo log) : IActionFilter
+    partial class AppFilter(ILogger<AppFilter> logger, LogInfo log) : IActionFilter
     {
         private ObjectResult? actionResult;
 
@@ -22,7 +21,7 @@ namespace TaskManangerSystem.Services
             try
             {
                 ObjectResult item = action.Result as ObjectResult ?? throw new Exception(action.RouteData.Values["controller"]?.ToString() + "接口发生错误");
-                Console.WriteLine( item.Value?.GetType().Name );
+                Console.WriteLine(item.Value?.GetType().Name);
                 actionResult = new Result<Object?>(item.Value, !(action.Exception != null || item.Value == null)).ToObjectResult();
             }
             catch (Exception)

@@ -5,11 +5,12 @@ using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
 
-namespace TaskManangerSystem.Controllers{
+namespace TaskManangerSystem.Controllers
+{
     [ApiController, Route("api/[controller]"), AllowAnonymous]
-    public class SystemController(ManagementSystemContext context,IMapper mapper) : ControllerBase
+    public class SystemController(ManagementSystemContext context, IMapper mapper) : ControllerBase
     {
-        private DBAction action = new(context,mapper);
+        private DBAction action = new(context, mapper);
         private DBStatus status = new(context);
 
 
@@ -22,23 +23,23 @@ namespace TaskManangerSystem.Controllers{
         public async Task<int> InitDb() => status switch
         {
             DBStatus s when s.EmployeesStatus => await action.AddAdminAccount(),
-            DBStatus s when s.CatrgoryStatus =>  await action.AddCategory(),
+            DBStatus s when s.CatrgoryStatus => await action.AddCategory(),
             DBStatus s when s.TaskCustomerStatus => await action.AddCustomer(),
             _ => 0
         };
     }
 
 
-    [ApiController,Route("api/{HashRoute}"),AllowAnonymous]
-    public class EndpointController():ControllerBase
+    [ApiController, Route("api/{HashRoute}"), AllowAnonymous]
+    public class EndpointController() : ControllerBase
     {
         private ErrorActions errorActions = new();
 
-        [HttpGet("{X}")] public async Task<string?> MatchGet()=>await errorActions.Get();
-        [HttpPost("{X}")] public async Task<bool> MatchPost()=>await errorActions.Post();
-        [HttpPatch("{X}")] public async Task<string?> MatchPatch()=>await errorActions.Fetch();
-        [HttpDelete("{X}")] public async Task<bool> MatchDelete()=>await errorActions.Delete();
-        [HttpPut("{X}")] public async Task<bool> MatchPut()=>await errorActions.Put();
+        [HttpGet("{X}")] public async Task<string?> MatchGet() => await errorActions.Get();
+        [HttpPost("{X}")] public async Task<bool> MatchPost() => await errorActions.Post();
+        [HttpPatch("{X}")] public async Task<string?> MatchPatch() => await errorActions.Fetch();
+        [HttpDelete("{X}")] public async Task<bool> MatchDelete() => await errorActions.Delete();
+        [HttpPut("{X}")] public async Task<bool> MatchPut() => await errorActions.Put();
 
     }
 }

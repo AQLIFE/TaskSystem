@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
@@ -11,27 +10,30 @@ using TaskManangerSystem.Services;
 namespace TaskManangerSystem.Controllers
 {
     [ApiController, Route("api/[controller]"), Authorize]
-    public class CategoryController(ManagementSystemContext context,IMapper mapper) : ControllerBase
+    public class CategoryController(ManagementSystemContext context, IMapper mapper) : ControllerBase
     {
-        private CategoryActions action = new(context,mapper);
+        private CategoryActions action = new(context, mapper);
         public enum CategoryType { all, level, parId }
 
 
 
 
 
-        [HttpGet, Authorize(policy: "Admin")]     
+        [HttpGet, Authorize(policy: "Admin")]
         public async Task<PageContext<CategoryForSelectOrUpdate>?> GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
-        => select switch{
+        => select switch
+        {
             CategoryType.all => await action.GetCategoryListAsync(page, pageSize),
             CategoryType.level => await action.GetCategoryListByLevelAsync(obj, page, pageSize),
             CategoryType.parId => await action.GetCategoryListByParIdAsync(obj, page, pageSize),
-            _ => null};
+            _ => null
+        };
+
+
 
         [HttpGet("{SortSerial}")]
         public async Task<CategoryForSelectOrUpdate?> GetCategory(int sortSerial)
-            => await action.GetCategoryBySerialAsync(sortSerial) is Category ib ? mapper.Map<CategoryForSelectOrUpdate>(ib):null;
-            // => action.GetCategoryBySerial(SortSerial) is Category obj ? obj.ToCateInfo(action.GetParSerialBySerial(obj.SortSerial)) : null;
+            =>mapper.Map<CategoryForSelectOrUpdate>(await action.GetCategoryBySerialAsync(sortSerial));
 
         // [HttpPost]// POST: api/categories  
         // public async Task<ActionResult<string>> PostCategory(MiniCate info)
@@ -49,7 +51,7 @@ namespace TaskManangerSystem.Controllers
 
         [HttpPost]
         public async Task<bool> PostCategory(CategoryForAdd add)
-        => await action.ExistsCategoryByNameAsync(add.CategoryName) ?false:action.AddInfo( mapper.Map<Category>(add) );
+        => await action.ExistsCategoryByNameAsync(add.CategoryName) ? false : action.AddInfo(mapper.Map<Category>(add));
         //     //检查
         //     if( await action.ExistsCategoryByNameAsync(add.CategoryName) )return false;
         //     else 
@@ -77,7 +79,7 @@ namespace TaskManangerSystem.Controllers
             return "修改成功";
         }
 
-        
+
 
 
         [HttpDelete("{SortSerial}")]// DELETE: api/categories/5  

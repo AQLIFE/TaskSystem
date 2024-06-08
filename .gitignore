@@ -9,3 +9,5 @@
 /server_private.key
 /server_public.key
 /server_cert.crt
+/libman.json
+/.vs

@@ -1,4 +1,3 @@
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 
@@ -49,7 +48,8 @@ namespace TaskManangerSystem.Models.SystemBean
         public string? Remark { get; set; }
     }
 
-    public class CategoryForAdd{
+    public class CategoryForAdd
+    {
         public int ParentSortSerial { set; get; }// 子类自定义
         public string CategoryName { get; set; } = string.Empty;
         public string? Remark { get; set; }
@@ -86,12 +86,14 @@ namespace TaskManangerSystem.Models.SystemBean
             => new Customer(this, cateId);
     }
 
-    public class CustomerInfo:MiniCustomer{
+    public class CustomerInfo : MiniCustomer
+    {
         public virtual string CustomerType { get; set; } = string.Empty;
 
-        public CustomerInfo(){}
-        public CustomerInfo(string types){
-            this.CustomerType=types;
+        public CustomerInfo() { }
+        public CustomerInfo(string types)
+        {
+            this.CustomerType = types;
         }
     }
 

@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.IdentityModel.Tokens;
@@ -14,8 +13,8 @@ namespace TaskManangerSystem.Actions
 
     public class FilterAction(ManagementSystemContext storage, IMapper mapper)
     {
-        public VaildatorForEmployee vaildatorForEmployee = new (new (storage,mapper));
-        public VaildatorForCategory vaildatorForCategory = new (new (storage,mapper));
+        public VaildatorForEmployee vaildatorForEmployee = new(new(storage, mapper));
+        public VaildatorForCategory vaildatorForCategory = new(new(storage, mapper));
     }
 
     public class HttpLog<T, TResult> where T : FilterContext
@@ -52,12 +51,12 @@ namespace TaskManangerSystem.Actions
 
         public async Task<EmployeeAccount?> GetAccountByParameter(IDictionary<string, object?> cx, string str)
             => await employeeAction.GetEmployeeByHashIdAsync(cx[str] as string ?? string.Empty.ToString());
-            //将HttpContext的请求参数字典内的指定参数 作为 员工系统的查询参数 
+        //将HttpContext的请求参数字典内的指定参数 作为 员工系统的查询参数 
 
 
         public bool VerifyByEmployeeAccount(EmployeeAccount obj, HttpContext action)
-                =>!action.IsAdmin() && obj.AccountPermission < SystemInfo.adminRole && obj.EmployeeAlias != SystemInfo.admin.EmployeeAlias && obj.EmployeePwd.Length >= 8;
-            // 验证参数 ： 读取HttpContext 的令牌信息 ，检查是否为管理员账户 ，检查权限是否有效（AdminRole），检查账户名（不允许和管理员账户重名），检查密码（是否符合密码基础规范）
+                => !action.IsAdmin() && obj.AccountPermission < SystemInfo.adminRole && obj.EmployeeAlias != SystemInfo.admin.EmployeeAlias && obj.EmployeePwd.Length >= 8;
+        // 验证参数 ： 读取HttpContext 的令牌信息 ，检查是否为管理员账户 ，检查权限是否有效（AdminRole），检查账户名（不允许和管理员账户重名），检查密码（是否符合密码基础规范）
 
 
         public async Task<bool> EmployeeAccountBeForeSelect(HttpContext cx, string hashId)

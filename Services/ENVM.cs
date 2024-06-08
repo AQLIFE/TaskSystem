@@ -22,7 +22,7 @@ namespace TaskManangerSystem.Services
         private static X509Certificate2 ReadCert()
         {
             // string certPath = Environment.GetEnvironmentVariable("RSA_CERT_PATH") ?? throw new Exception("Miss certPath");// 假设私钥存储在环境变量中，需要根据实际情况调整
-            return new X509Certificate2(SystemInfo.CERTPATH , ShaHashExtensions.ComputeSHA512Hash(SystemInfo.SECURITYKEY), X509KeyStorageFlags.Exportable);// 从文件加载证书（如有必要提供密码）
+            return new X509Certificate2(SystemInfo.CERTPATH, ShaHashExtensions.ComputeSHA512Hash(SystemInfo.SECURITYKEY), X509KeyStorageFlags.Exportable);// 从文件加载证书（如有必要提供密码）
         }
         //A2104EF28DDC230574C93CEB4B331DC30EBE32B838DEF947C4A1BFF2F7A91F4E
 

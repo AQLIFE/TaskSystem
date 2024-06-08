@@ -33,9 +33,9 @@ namespace TaskManangerSystem.Controllers
         [HttpGet("list"), Authorize(Policy = "admin")]
         public async Task<PageContext<EmployeeAccountForSelectOrUpdate>?> GetAuthList(int page = 1, int pageContext = 100)
         // =>mapper.Map<List<IPartInfo>>(await employeeAction.SearchFor(page, pageSize, e => e.EmployeeAlias));
-        =>await employeeAction.SearchAsync(page, pageContext);
-            
-        
+        => await employeeAction.SearchAsync(page, pageContext);
+
+
 
 
 
@@ -51,7 +51,7 @@ namespace TaskManangerSystem.Controllers
         [HttpPost("register"), AllowAnonymous]//增加
         public async Task<string?> PostRegister(EmployeeAccountForLoginOrAdd info)
         {
-            EmployeeAccount part = await Task.Run(() => mapper.Map<EmployeeAccount>(info));
+            EmployeeAccount part = mapper.Map<EmployeeAccount>(info);
 
             context.employees.Add(part);
             await context.SaveChangesAsync();

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using TaskManangerSystem.Actions;
+﻿using TaskManangerSystem.Actions;
 
 // using TaskManangerSystem.Controllers;
 using TaskManangerSystem.Models.DataBean;
