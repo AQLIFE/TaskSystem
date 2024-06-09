@@ -7,7 +7,7 @@ using TaskManangerSystem.Services;
 namespace TaskManangerSystem.Actions
 {
 
-    public class DBAction(ManagementSystemContext context, IMapper mapper)
+    public class DBAction(ManagementSystemContext context)
     {
         public async Task<int> AddAdminAccount()
         {
@@ -26,7 +26,7 @@ namespace TaskManangerSystem.Actions
 
         public async Task<int> AddCustomer()
         {
-            CategoryActions actions = new(context, mapper);
+            CategoryActions actions = new(context);
             Category category;
             if (!await actions.ExistsCategoryBySerialAsync(103))
             {
@@ -88,7 +88,7 @@ namespace TaskManangerSystem.Actions
         }
     }
 
-    public class CategoryActions(ManagementSystemContext storage, IMapper mapper) : IncludeRepository<Category,Category?>(storage)
+    public class CategoryActions(ManagementSystemContext storage) : IncludeRepository<Category, Category?>(storage)
     {
         #region 检查方法
 
@@ -101,7 +101,7 @@ namespace TaskManangerSystem.Actions
 
 
         public async Task<Category?> GetCategoryAsync(Guid? id) => await GetInfoAsync(e => e.CategoryId == id);
-        public async Task<Category?> GetCategoryBySerialAsync(int serial) => await GetInfoAsync(e => e.SortSerial == serial,c=>c.ParentCategory);
+        public async Task<Category?> GetCategoryBySerialAsync(int serial) => await GetInfoAsync(e => e.SortSerial == serial, c => c.ParentCategory);
         public async Task<Category?> GetCategoryByNameAsync(string name) => await GetInfoAsync(e => e.CategoryName == name);
 
         public async Task<Category?> TryGetCategoryAsync(Guid id) => await ExistsCategoryAsync(id) ? await GetCategoryAsync(id) : null;
@@ -158,6 +158,16 @@ namespace TaskManangerSystem.Actions
             else return 1;
         }
 
+        public int GetLevelById(Guid? parId)
+        {
+            var obj =  GetCategory(parId);
+            if (obj != null)
+                return ! ExistsCategory(obj.ParentCategoryId)
+                ? obj!.CategoryLevel
+                :  GetLevelById(obj!.ParentCategoryId) + 1;
+            else return 1;
+        }
+
         /// <summary>
         /// 低级封装 ： 根据序列号 返回分类等级
         /// </summary>
@@ -168,12 +178,20 @@ namespace TaskManangerSystem.Actions
                 ? await GetLevelByIdAsync(b.ParentCategoryId) + 1
                 : 1;
 
+        public int GetLevelBySerial(int parSerial)
+            => ! ExistsCategoryBySerial(parSerial) &&  GetCategoryBySerial(parSerial) is Category b
+                ?  GetLevelById(b.ParentCategoryId) + 1
+                : 1;
+
         /// <summary>
         /// 获取最后一个Serial
         /// </summary>
         /// <returns>最后一个Serial</returns>
-        public async Task<int> GetLastSerial()
+        public async Task<int> GetLastSerialAsync()
         => (await AsEntity.OrderBy(e => e.SortSerial).LastOrDefaultAsync())?.SortSerial ?? 100;
+
+        public int GetLastSerial()
+        => AsEntity.OrderBy(e => e.SortSerial).LastOrDefault()?.SortSerial ?? 100;
 
         /// <summary>
         /// 获得父分类的序列号
@@ -188,46 +206,33 @@ namespace TaskManangerSystem.Actions
 
         #region  api专用
 
-        public async Task<PageContext<CategoryForSelectOrUpdate>?> GetCategoryListAsync(int page = 1, int pageSize = 100)
+        public async Task<PageContext<Category>?> GetCategoryListAsync(int page = 1, int pageSize = 100)
         {
-            var x = await IncludeSearchAsync(page, pageSize,attribute:c=>c.ParentCategory, e => e.CategoryLevel, s => s.CategoryLevel >= 1);
+            return await IncludeSearchAsync(page, pageSize, attribute: c => c.ParentCategory, e => e.SortSerial, s => s.CategoryLevel >= 1);
 
-            if (x is null) return null;
+            //if (x is null) return null;
 
-            List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
-            // List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
-            PageContext<CategoryForSelectOrUpdate> b = new(x.pageIndex, x.MaxPage, x.Sum, t);
+            //List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
+            //// List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
+            //PageContext<CategoryForSelectOrUpdate> b = new(x.pageIndex, x.MaxPage, x.Sum, t);
 
-            return b;
+            //return b;
         }
 
 
-        public async Task<PageContext<CategoryForSelectOrUpdate>?> GetCategoryListByLevelAsync(int level = 1, int page = 1, int pageSize = 100)
+        public async Task<PageContext<Category>?> GetCategoryListByLevelAsync(int level = 1, int page = 1, int pageSize = 100)
 
         {
-            var x = await IncludeSearchAsync(page, pageSize,c=>c.ParentCategory, e => e.CategoryLevel, s => s.CategoryLevel == level);
-
-            if (x is null) return null;
-
-            List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
-            PageContext<CategoryForSelectOrUpdate> b = new(x.pageIndex, x.MaxPage, x.Sum, t);
-
-            return b;
+            return await IncludeSearchAsync(page, pageSize, c => c.ParentCategory, e => e.CategoryLevel, s => s.CategoryLevel == level);
         }
 
 
-        public async Task<PageContext<CategoryForSelectOrUpdate>?> GetCategoryListByParIdAsync(int parId = 100, int page = 1, int pageSize = 120)
+        public async Task<PageContext<Category>?> GetCategoryListByParIdAsync(int parId = 100, int page = 1, int pageSize = 120)
 
         {
-            var x = await ExistsCategoryBySerialAsync(parId) && await GetCategoryBySerialAsync(parId) is Category c
-            ? await IncludeSearchAsync(page, pageSize,c=>c.ParentCategory, e => e.CategoryLevel, s => s.ParentCategoryId == c.CategoryId) : null;
+            return await ExistsCategoryBySerialAsync(parId) && await GetCategoryBySerialAsync(parId) is Category c
+            ? await IncludeSearchAsync(page, pageSize, c => c.ParentCategory, e => e.CategoryLevel, s => s.ParentCategoryId == c.CategoryId) : null;
 
-            if (x is null) return null;
-
-            List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
-            PageContext<CategoryForSelectOrUpdate> b = new(x.pageIndex, x.MaxPage, x.Sum, t);
-
-            return b;
         }
         #endregion
 

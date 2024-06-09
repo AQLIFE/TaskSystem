@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
@@ -12,7 +13,7 @@ namespace TaskManangerSystem.Controllers
     [ApiController, Route("api/[controller]"), Authorize]
     public class CategoryController(ManagementSystemContext context, IMapper mapper) : ControllerBase
     {
-        private CategoryActions action = new(context, mapper);
+        private CategoryActions action = new(context);
         public enum CategoryType { all, level, parId }
 
 
@@ -21,42 +22,35 @@ namespace TaskManangerSystem.Controllers
 
         [HttpGet, Authorize(policy: "Admin")]
         public async Task<PageContext<CategoryForSelectOrUpdate>?> GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = 120)
-        => select switch
         {
-            CategoryType.all => await action.GetCategoryListAsync(page, pageSize),
-            CategoryType.level => await action.GetCategoryListByLevelAsync(obj, page, pageSize),
-            CategoryType.parId => await action.GetCategoryListByParIdAsync(obj, page, pageSize),
-            _ => null
-        };
+            var x = select switch
+            {
+                CategoryType.all => await action.GetCategoryListAsync(page, pageSize),
+                CategoryType.level => await action.GetCategoryListByLevelAsync(obj, page, pageSize),
+                CategoryType.parId => await action.GetCategoryListByParIdAsync(obj, page, pageSize),
+                _ => null
+            };
+
+            if (x is not null)
+            {
+                List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
+
+                return new(x.pageIndex, x.MaxPage, x.Sum, t);
+            }
+            else return null;
+        }
 
 
 
         [HttpGet("{SortSerial}")]
         public async Task<CategoryForSelectOrUpdate?> GetCategory(int sortSerial)
-            =>mapper.Map<CategoryForSelectOrUpdate>(await action.GetCategoryBySerialAsync(sortSerial));
-
-        // [HttpPost]// POST: api/categories  
-        // public async Task<ActionResult<string>> PostCategory(MiniCate info)
-        // {
-        //     // if (!action.Validate(info)) return action.ValidateMessage;
-
-        //     Category obj = info.ToCategory(action.GetIdBySerial(info.ParentSortSerial), action.GetLastSerial() + 1, action.GetLevelBySerial(info.ParentSortSerial));
-
-        //     context.categories.Add(obj);
-        //     await context.SaveChangesAsync();
-
-        //     return obj.CategoryName;
-        // }
+            => mapper.Map<CategoryForSelectOrUpdate>(await action.GetCategoryBySerialAsync(sortSerial));
 
 
         [HttpPost]
         public async Task<bool> PostCategory(CategoryForAdd add)
-        => await action.ExistsCategoryByNameAsync(add.CategoryName) ? false : action.AddInfo(mapper.Map<Category>(add));
-        //     //检查
-        //     if( await action.ExistsCategoryByNameAsync(add.CategoryName) )return false;
-        //     else 
-        //         return action.AddInfo( mapper.Map<Category>(add) );    
-        // }
+            =>await action.ExistsCategoryByNameAsync(add.CategoryName) ? false : action.AddInfo(mapper.Map<Category>(add, opt => opt.Items["ManagementSystemContext"]=context) );
+        
 
 
 

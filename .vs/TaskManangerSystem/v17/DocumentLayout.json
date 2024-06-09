@@ -3,20 +3,20 @@
   "WorkspaceRootPath": "F:\\Code\\TaskSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|f:\\code\\tasksystem\\controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|solutionrelative:controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|f:\\code\\tasksystem\\services\\entitymapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|solutionrelative:services\\entitymapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|f:\\code\\tasksystem\\actions\\apiaction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|solutionrelative:actions\\apiaction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|f:\\code\\tasksystem\\controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|solutionrelative:controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|f:\\code\\tasksystem\\actions\\repository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|solutionrelative:actions\\repository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|f:\\code\\tasksystem\\models\\databean\\infomodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{52584035-851D-420B-9967-8C6099DC58F4}|TaskManangerSystem.csproj|solutionrelative:models\\databean\\infomodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,59 +26,79 @@
       "DocumentGroups": [
         {
           "DockedWidth": 92,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "CategoryController.cs",
               "DocumentMoniker": "F:\\Code\\TaskSystem\\Controllers\\CategoryController.cs",
               "RelativeDocumentMoniker": "Controllers\\CategoryController.cs",
               "ToolTip": "F:\\Code\\TaskSystem\\Controllers\\CategoryController.cs",
               "RelativeToolTip": "Controllers\\CategoryController.cs",
-              "ViewState": "AQIAAAwAAAAAAAAAAAAAACMAAABZAAAA",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAAB0AAABOAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-08T14:27:00.65Z",
-              "IsPinned": true,
+              "WhenOpened": "2024-06-09T11:56:57.488Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "EntityMapper.cs",
-              "DocumentMoniker": "F:\\Code\\TaskSystem\\Services\\EntityMapper.cs",
-              "RelativeDocumentMoniker": "Services\\EntityMapper.cs",
-              "ToolTip": "F:\\Code\\TaskSystem\\Services\\EntityMapper.cs",
-              "RelativeToolTip": "Services\\EntityMapper.cs",
-              "ViewState": "AQIAAAIAAAAAAAAAAAAQwBYAAAAVAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-08T14:32:33.725Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Repository.cs",
-              "DocumentMoniker": "F:\\Code\\TaskSystem\\Actions\\Repository.cs",
-              "RelativeDocumentMoniker": "Actions\\Repository.cs",
-              "ToolTip": "F:\\Code\\TaskSystem\\Actions\\Repository.cs",
-              "RelativeToolTip": "Actions\\Repository.cs",
-              "ViewState": "AQIAAJcAAAAAAAAAAAAQwMcAAACGAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-08T14:29:36.045Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "APIAction.cs",
               "DocumentMoniker": "F:\\Code\\TaskSystem\\Actions\\APIAction.cs",
               "RelativeDocumentMoniker": "Actions\\APIAction.cs",
               "ToolTip": "F:\\Code\\TaskSystem\\Actions\\APIAction.cs",
               "RelativeToolTip": "Actions\\APIAction.cs",
-              "ViewState": "AQIAAAgAAAAAAAAAAAAQwGcAAABYAAAA",
+              "ViewState": "AQIAALYAAAAAAAAAAADgv9AAAABoAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-08T12:42:11.374Z",
+              "WhenOpened": "2024-06-09T11:55:56.452Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Repository.cs",
+              "DocumentMoniker": "F:\\Code\\TaskSystem\\Actions\\Repository.cs",
+              "RelativeDocumentMoniker": "Actions\\Repository.cs",
+              "ToolTip": "F:\\Code\\TaskSystem\\Actions\\Repository.cs",
+              "RelativeToolTip": "Actions\\Repository.cs",
+              "ViewState": "AQIAAHcAAAAAAAAAAADgv44AAAAkAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-09T11:53:47.562Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "FloatingWindowState": {
+        "Id": "39128a6e-1c97-462e-a96c-4c525a3674f9",
+        "Display": 0,
+        "X": 1023,
+        "Y": 390,
+        "Width": 1552,
+        "Height": 672,
+        "WindowState": 0
+      },
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "InfoModel.cs",
+              "DocumentMoniker": "F:\\Code\\TaskSystem\\Models\\DataBean\\InfoModel.cs",
+              "RelativeDocumentMoniker": "Models\\DataBean\\InfoModel.cs",
+              "ToolTip": "F:\\Code\\TaskSystem\\Models\\DataBean\\InfoModel.cs",
+              "RelativeToolTip": "Models\\DataBean\\InfoModel.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABkAAAAeAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-09T09:37:56.446Z",
               "EditorCaption": ""
             }
           ]

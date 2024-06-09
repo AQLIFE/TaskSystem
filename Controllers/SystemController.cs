@@ -10,7 +10,7 @@ namespace TaskManangerSystem.Controllers
     [ApiController, Route("api/[controller]"), AllowAnonymous]
     public class SystemController(ManagementSystemContext context, IMapper mapper) : ControllerBase
     {
-        private DBAction action = new(context, mapper);
+        private DBAction action = new(context);
         private DBStatus status = new(context);
 
 

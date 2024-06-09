@@ -18,9 +18,9 @@ namespace TaskManangerSystem.Controllers
     }
 
     [ApiController, Authorize(Policy = "admin"), Route("api/[controller]")]
-    public class CustomerController(ManagementSystemContext context, IMapper mapper) : ControllerBase
+    public class CustomerController(ManagementSystemContext context) : ControllerBase
     {
-        private CategoryActions categoryActions = new(context, mapper);
+        private CategoryActions categoryActions = new(context);
         private CustomerActions customerActions = new(context);
 
         [HttpGet]

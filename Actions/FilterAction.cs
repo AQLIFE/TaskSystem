@@ -14,7 +14,7 @@ namespace TaskManangerSystem.Actions
     public class FilterAction(ManagementSystemContext storage, IMapper mapper)
     {
         public VaildatorForEmployee vaildatorForEmployee = new(new(storage, mapper));
-        public VaildatorForCategory vaildatorForCategory = new(new(storage, mapper));
+        public VaildatorForCategory vaildatorForCategory = new(new(storage));
     }
 
     public class HttpLog<T, TResult> where T : FilterContext
