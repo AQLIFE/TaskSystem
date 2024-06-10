@@ -1,3 +1,5 @@
+using TaskManangerSystem.Models.DataBean;
+
 namespace TaskManangerSystem.IServices.BeanServices
 {
 
@@ -24,22 +26,6 @@ namespace TaskManangerSystem.IServices.BeanServices
     public interface IEmployee : IPart, IPartInfo
     {
         public Guid EmployeeId { get; set; }
-    }
-
-    public interface IEmployeeConverter
-    {
-        public IEmployee ToEmployee();
-    }
-
-    public interface IEmployeeConverter<T> where T : IPartInfo
-    {
-        public IEmployee ToEmployee(string pwd, Guid id);
-    }
-
-    [Obsolete("该接口将移除，使用IEmployee")]
-    public interface IEncrypt : IEmployee
-    {
-        public string EncryptionId { get; set; }
     }
 
 
@@ -85,8 +71,26 @@ namespace TaskManangerSystem.IServices.BeanServices
         // public string CustomerName { get; set; }
         // public string? CustomerContactWay { get; set; }
         // public string? CustomerAddress { get; set; }
-        public Guid CustomerType { get; set; }
+        public Guid? CustomerType { get; set; }
         public int ClientGrade { get; set; }
         public DateTime AddTime { get; set; }
+    }
+
+    public interface IInventory
+    {
+        public string ProductName { get; set; } 
+
+        public decimal ProductPrice { get; set; }
+
+        public decimal ProductCost { get; set; }
+
+        public string ProductModel { get; set; }
+
+    }
+
+    public interface IInventoryInfo : IInventory
+    {
+        public Guid ProductId { get; set; }
+        public Guid ProductType { get; set; }
     }
 }

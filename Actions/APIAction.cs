@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
@@ -59,8 +60,8 @@ namespace TaskManangerSystem.Actions
         public async Task<EmployeeAccount?> GetEmployeeByNameAsync(string name) => await GetInfoAsync(e => e.EmployeeAlias == name);
         public async Task<EmployeeAccount?> GetEmployeeByHashIdAsync(string hashId) => await GetInfoAsync(e => e.HashId == hashId);
 
-        public async Task<bool> UpdatePwdAsync(EmployeeAccount obj, string pwd)
-            => obj.EmployeePwd != pwd
+        public async Task<bool> UpdatePwdAsync(EmployeeAccount obj, string pwd, string oldPwd)
+            => obj.EmployeePwd != pwd && obj.EmployeePwd == oldPwd
                 ? await Task.Run(async () => { obj.EmployeePwd = pwd; return await UpdateInfoAsync(obj); }) : false;
 
         public async Task<bool> UpdateLevelAsync(EmployeeAccount obj, int level = 1)
@@ -75,16 +76,23 @@ namespace TaskManangerSystem.Actions
             return await UpdateInfoAsync(obj);
         }
 
-        public async Task<PageContext<EmployeeAccountForSelectOrUpdate>?> SearchAsync(int page = 1, int pageContext = 100)
+        public async Task<PageContext<EmployeeAccountForSelectOrUpdate>?> SearchAsync(int page, int pageContext, bool isUp)
         {
             PageContext<EmployeeAccount>? x = await base.SearchAsync(page, pageContext, e => e.EmployeeId);
 
             if (x is null) return null;
+            if (isUp)
+            {
+                var t = x.data.Where(e => e.AccountPermission >= 1).ToList();
+                x.data = t;
+                x.Sum = t.Count();
+            }
 
-            List<EmployeeAccountForSelectOrUpdate> t = mapper.Map<List<EmployeeAccountForSelectOrUpdate>>(x.data);
-            PageContext<EmployeeAccountForSelectOrUpdate> b = new(x.pageIndex, x.MaxPage, x.Sum, t);
+            //List<EmployeeAccountForSelectOrUpdate> t = mapper.Map<List<EmployeeAccountForSelectOrUpdate>>(x.data);
+            //PageContext<EmployeeAccountForSelectOrUpdate> b = new(x.pageIndex, x.MaxPage, x.Sum, t);
 
-            return b;
+
+            return mapper.Map<PageContext<EmployeeAccountForSelectOrUpdate>>(x);
         }
     }
 
@@ -92,12 +100,29 @@ namespace TaskManangerSystem.Actions
     {
         #region 检查方法
 
+        public async Task<bool> AddCheckAsync(CategoryForAddOrUpdate add) => await ExistsCategoryByNameAsync(add.CategoryName) || !await ExistsCategoryBySerialAsync(add.ParentSortSerial);
+        public async Task<bool> UpdateCheckAsync(int sortSerial, CategoryForAddOrUpdate update) => await ExistsCategoryBySerialAsync(sortSerial) && await ExistsCategoryBySerialAsync(update.ParentSortSerial);
+
+
         public async Task<bool> ExistsCategoryAsync(Guid? id) => await ExistAsync(e => e.CategoryId == id);
-        // public async Task<bool> ExistsCategoryAsync(this Category e) => await ExistAsync(e => e.CategoryId == e.CategoryId);
         public async Task<bool> ExistsCategoryBySerialAsync(int serial) => await ExistAsync(e => e.SortSerial == serial);
-        public bool ExistsCategoryBySerial(int serial) => Exist(e => e.SortSerial == serial);
         public async Task<bool> ExistsCategoryByNameAsync(string name) => await ExistAsync(e => e.CategoryName == name);
 
+        public bool ExistsCategory(Guid? id) => Exist(e => e.CategoryId == id);
+        public bool ExistsCategoryByName(string name) => Exist(e => e.CategoryName == name);
+        public bool ExistsCategoryBySerial(int serial) => Exist(e => e.SortSerial == serial);
+
+        public Category? GetCategory(Guid? id) => GetInfo(e => e.CategoryId == id);
+        public Category? GetCategoryByName(string name) => GetInfo(e => e.CategoryName == name);
+        public Category? GetCategoryBySerial(int serial) => GetInfo(e => e.SortSerial == serial);
+
+
+        public int   TryGetCategorySortSerial(Guid? id) => ExistsCategory(id) ? GetCategory(id)!.SortSerial : 0;
+        public Guid? TryGetCategoryIdBySortSerial(int sortSerial) => ExistsCategoryBySerial(sortSerial) ? GetCategoryBySerial(sortSerial)!.CategoryId : null;
+
+        public Category? TryGetCategory(Guid? id) => ExistsCategory(id) ? GetCategory(id) : null;
+        public Category? TryGetCategoryByName(string name) => ExistsCategoryByName(name) ? GetCategoryByName(name) : null;
+        public Category? TryGetCategoryBySerial(int serial) => ExistsCategoryBySerial(serial) ? GetCategoryBySerial(serial) : null;
 
 
         public async Task<Category?> GetCategoryAsync(Guid? id) => await GetInfoAsync(e => e.CategoryId == id);
@@ -108,18 +133,6 @@ namespace TaskManangerSystem.Actions
         public async Task<Category?> TryGetCategoryByNameAsync(string name) => await ExistsCategoryByNameAsync(name) ? await GetCategoryByNameAsync(name) : null;
         public async Task<Category?> TryGetCategoryBySerialAsync(int serial) => await ExistsCategoryBySerialAsync(serial) ? await GetCategoryBySerialAsync(serial) : null;
 
-
-
-        public bool ExistsCategory(Guid? id) => Exist(e => e.CategoryId == id);
-
-        public Category? TryGetCategory(Guid? id) => ExistsCategory(id) ? GetCategory(id) : null;
-        public int TryGetCategorySortSerial(Guid? id) => ExistsCategory(id) ? GetCategory(id)!.SortSerial : 0;
-        // public Guid? TryGetCategoryIdBySortSerial(int sortSerial) => ExistsCategoryBySerial(sortSerial) ?  GetCategoryBySerial(sortSerial)!.CategoryId : Guid.Empty;
-        public Guid? TryGetCategoryIdBySortSerial(int sortSerial) => ExistsCategoryBySerial(sortSerial) ? GetCategoryBySerial(sortSerial)!.CategoryId : null;
-
-
-        public Category? GetCategory(Guid? id) => GetInfo(e => e.CategoryId == id);
-        public Category? GetCategoryBySerial(int serial) => GetInfo(e => e.SortSerial == serial);
         #endregion
 
         #region  封装复合查询
@@ -160,11 +173,11 @@ namespace TaskManangerSystem.Actions
 
         public int GetLevelById(Guid? parId)
         {
-            var obj =  GetCategory(parId);
+            var obj = GetCategory(parId);
             if (obj != null)
-                return ! ExistsCategory(obj.ParentCategoryId)
+                return !ExistsCategory(obj.ParentCategoryId)
                 ? obj!.CategoryLevel
-                :  GetLevelById(obj!.ParentCategoryId) + 1;
+                : GetLevelById(obj!.ParentCategoryId) + 1;
             else return 1;
         }
 
@@ -179,8 +192,8 @@ namespace TaskManangerSystem.Actions
                 : 1;
 
         public int GetLevelBySerial(int parSerial)
-            => ! ExistsCategoryBySerial(parSerial) &&  GetCategoryBySerial(parSerial) is Category b
-                ?  GetLevelById(b.ParentCategoryId) + 1
+            => !ExistsCategoryBySerial(parSerial) && GetCategoryBySerial(parSerial) is Category b
+                ? GetLevelById(b.ParentCategoryId) + 1
                 : 1;
 
         /// <summary>
@@ -209,14 +222,6 @@ namespace TaskManangerSystem.Actions
         public async Task<PageContext<Category>?> GetCategoryListAsync(int page = 1, int pageSize = 100)
         {
             return await IncludeSearchAsync(page, pageSize, attribute: c => c.ParentCategory, e => e.SortSerial, s => s.CategoryLevel >= 1);
-
-            //if (x is null) return null;
-
-            //List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
-            //// List<CategoryForSelectOrUpdate> t = mapper.Map<List<CategoryForSelectOrUpdate>>(x.data);
-            //PageContext<CategoryForSelectOrUpdate> b = new(x.pageIndex, x.MaxPage, x.Sum, t);
-
-            //return b;
         }
 
 
@@ -238,13 +243,54 @@ namespace TaskManangerSystem.Actions
 
     }
 
-    public class CustomerActions(ManagementSystemContext storage) : Repository<Customer>(storage)
+    public class CustomerActions(ManagementSystemContext storage) : IncludeRepository<Customer, Category?>(storage)
     {
-        public bool ExistsCustomerByName(string Hashname) => Exist(e => e.HashName == Hashname);
-        public Customer? GetCustomerByName(string HashName) => AsEntity.Where(e => e.HashName == HashName).FirstOrDefault();
+        public bool ExistsCustomerByName(string Hashname) => Exist(e => e.CustomerName == Hashname);
+        public async Task<bool> ExistsCustomerByNameAsync(string Hashname) => await ExistAsync(e => e.CustomerName == Hashname);
+        public Customer? GetCustomerByName(string HashName) => AsEntity.Where(e => e.CustomerName == HashName).FirstOrDefault();
         // public ICustomerInfo? GetCustomerInfoByName(string name)=>context.customers.Where(e=>e.CustomerName==name).Select(e=>e.ToCustomerInfo(e.CustomerType));
+
+        public async Task<PageContext<Customer>?> SearchAsync(int pageIndex, int pageSize)
+        => await base.IncludeSearchAsync(pageIndex, pageSize, e => e.Categories, t => t.AddTime, c => c.ClientGrade >= 1);
+
+
     }
 
+
+    public class InventoryActions(ManagementSystemContext storage) : IncludeRepository<InventoryInfo, Category?>(storage)
+    {
+        #region 异步
+        public async Task<bool> ExistsInventoryAsync(Guid guid) => await ExistAsync(e => e.ProductId == guid);
+        public async Task<bool> ExistsInventoryByNameAsync(string name) => await ExistAsync(e => e.ProductName == name);
+
+        public async Task<InventoryInfo?> GetInventoryAsync(Guid guid) => await GetInfoAsync(guid);
+        public async Task<InventoryInfo?> GetInventoryByNameAsync(string name) => await GetInfoAsync(e => e.ProductName == name);
+
+        public async Task<InventoryInfo?> TryGetInventoryAsync(Guid guid) => await ExistsInventoryAsync(guid) ? await GetInfoAsync(guid) : null;
+        public async Task<InventoryInfo?> TryGetInventoryByNameAsync(string name) => await ExistsInventoryByNameAsync(name) ? await GetInventoryByNameAsync(name) : null;
+
+
+        public async Task<bool> UpdateInfoAsync(InventoryInfo x,InventoryForView y)
+        {
+            return await base.UpdateInfoAsync(x);
+        }
+        public async Task<PageContext<InventoryInfo>?> SearchAsync(int pageIndex, int pageSize)
+            => await base.IncludeSearchAsync(pageIndex, pageSize, e => e.Categories, c => c.ProductName);
+
+        #endregion
+
+        //
+        #region 同步
+        public bool ExistsInventory(Guid guid) => Exist(e => e.ProductId == guid);
+        public bool ExistsInventoryByName(string name) => Exist(e => e.ProductName == name);
+
+        public InventoryInfo? GetInventory(Guid guid) => GetInfo(guid);
+        public InventoryInfo? GetInventoryByName(string name) => GetInfo(e => e.ProductName == name);
+
+        public InventoryInfo? TryGetInventory(Guid guid) => ExistsInventory(guid) ? GetInfo(guid) : null;
+        public InventoryInfo? TryGetInventoryByName(string name) => ExistsInventoryByName(name) ? GetInventoryByName(name) : null;
+        #endregion
+    }
 
     public class ErrorActions : IAPIRequest<string>
     {

@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 
@@ -19,27 +22,7 @@ namespace TaskManangerSystem.Models.SystemBean
     }
 
 
-    public class CateInfo : ICategoryInfo
-    {
-        public int SortSerial { set; get; }
-        public int ParentSortSerial { set; get; }// 子类自定义
-        public string CategoryName { get; set; } = string.Empty;
-        public int CategoryLevel { get; set; }
-        public string? Remark { get; set; }
-        public CateInfo() { }
-        public CateInfo(ICategory category, int parSerial)
-        {
-            SortSerial = category.SortSerial;
-            ParentSortSerial = parSerial;
-            CategoryName = category.CategoryName;
-            CategoryLevel = category.CategoryLevel;
-            Remark = category.Remark;
-        }
-        public Category ToCategory(Guid Id, Guid? ParId)
-            => new Category(this, Id, ParId);
-    }
-
-    public class CategoryForSelectOrUpdate() : ICategoryInfo
+    public class CategoryForSelect() : ICategoryInfo
     {
         public int SortSerial { set; get; }
         public int ParentSortSerial { set; get; }// 子类自定义
@@ -48,53 +31,39 @@ namespace TaskManangerSystem.Models.SystemBean
         public string? Remark { get; set; }
     }
 
-    public class CategoryForAdd
+    public class CategoryForAddOrUpdate
     {
         public int ParentSortSerial { set; get; }// 子类自定义
         public string CategoryName { get; set; } = string.Empty;
         public string? Remark { get; set; }
     }
 
-
-    public class MiniCate
-    {
-        public int ParentSortSerial { set; get; }// 子类自定义
-        public string CategoryName { get; set; } = string.Empty;
-        public string? Remark { get; set; }
-
-        public MiniCate() { }
-
-        public Category ToCategory(Guid? parId, int serial, int level) => new(this, serial: serial, level: level, parId: parId);
-    }
-
-    public class MiniCustomer : ICustomerInfo
+    public class CustomerForView() : ICustomerInfo
     {
         public virtual string CustomerName { get; set; } = string.Empty;
         public virtual string? CustomerContactWay { get; set; }
         public virtual string? CustomerAddress { get; set; }
-
-        public MiniCustomer() { }
-
-        public MiniCustomer(ICustomer customer, string customerType)
-        {
-            CustomerName = customer.CustomerName;
-            CustomerContactWay = customer.CustomerContactWay;
-            CustomerAddress = customer.CustomerAddress;
-        }
-
-        public ICustomer ToCustomer(Guid cateId)
-            => new Customer(this, cateId);
+        public virtual string? CustomerType { get; set; } = string.Empty;
     }
 
-    public class CustomerInfo : MiniCustomer
+    public class CustomerForSelect() : CustomerForView
     {
-        public virtual string CustomerType { get; set; } = string.Empty;
+        public int ClientGrade { get; set; }
+        public DateTime AddTime { get; set; }
+    }
 
-        public CustomerInfo() { }
-        public CustomerInfo(string types)
-        {
-            this.CustomerType = types;
-        }
+    public class InventoryForView() : IInventory
+    {       
+        public string ProductName { get; set; } = string.Empty;
+        
+        public decimal ProductPrice { get; set; }
+
+        public decimal ProductCost { get; set; }
+        
+        public string ProductModel { get; set; } = string.Empty;
+
+        public string ProductType { get; set; } = string.Empty;
+
     }
 
 }

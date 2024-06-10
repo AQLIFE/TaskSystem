@@ -31,9 +31,9 @@ namespace TaskManangerSystem.Controllers
 
 
         [HttpGet("list"), Authorize(Policy = "admin")]
-        public async Task<PageContext<EmployeeAccountForSelectOrUpdate>?> GetAuthList(int page = 1, int pageContext = 100)
+        public async Task<PageContext<EmployeeAccountForSelectOrUpdate>?> GetAuthList([FromHeader]bool isUp=true,int page = 1, int pageContext = 100)
         // =>mapper.Map<List<IPartInfo>>(await employeeAction.SearchFor(page, pageSize, e => e.EmployeeAlias));
-        => await employeeAction.SearchAsync(page, pageContext);
+        => await employeeAction.SearchAsync(page, pageContext,isUp);
 
 
 
@@ -49,15 +49,9 @@ namespace TaskManangerSystem.Controllers
 
 
         [HttpPost("register"), AllowAnonymous]//增加
-        public async Task<string?> PostRegister(EmployeeAccountForLoginOrAdd info)
-        {
-            EmployeeAccount part = mapper.Map<EmployeeAccount>(info);
-
-            context.employees.Add(part);
-            await context.SaveChangesAsync();
-
-            return (await employeeAction.GetInfoAsync(part.EmployeeId))!.EmployeeAlias;
-        }
+        public async Task<bool> PostRegister(EmployeeAccountForLoginOrAdd info)
+            => await employeeAction.ExistsEmployeeByNameAsync(info.EmployeeAlias) ? false :
+             await employeeAction.AddInfoAsync(mapper.Map<EmployeeAccount>(info));
 
 
 
@@ -72,17 +66,10 @@ namespace TaskManangerSystem.Controllers
         }
 
         [HttpPut("secret")]//修改密码
-        public async Task<string?> PutSecret(string hashId, string pwd, string oldPwd)
+        public async Task<bool> PutSecret(string hashId, string pwd, string oldPwd)
         {
             EmployeeAccount? employeeAccount = await employeeAction.GetEmployeeByHashIdAsync(hashId);
-            if (employeeAccount == null || oldPwd == pwd || oldPwd != employeeAccount.EmployeePwd) return null;
-            else
-            {
-                employeeAccount.EmployeePwd = pwd;
-                context.Entry<EmployeeAccount>(employeeAccount).State = EntityState.Modified;
-                await context.SaveChangesAsync();
-                return employeeAccount.EmployeeAlias;
-            }
+            return employeeAccount is EmployeeAccount x ? await employeeAction.UpdatePwdAsync(x, pwd, oldPwd) : false;
         }
 
 

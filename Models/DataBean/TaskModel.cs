@@ -15,31 +15,28 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("客户名称"), Required]
         public string CustomerName { get; set; } = string.Empty;
 
-        [NotMapped]
-        public string HashName => ShaHashExtensions.ComputeSHA256Hash(CustomerName);
+        //[NotMapped]
+        //public string HashName => ShaHashExtensions.ComputeSHA256Hash(CustomerName);
         [Comment("客户联系方式")]
         public string? CustomerContactWay { get; set; }
         [Comment("客户地址")]
         public string? CustomerAddress { get; set; }
         [Comment("客户类型")]
-        public Guid CustomerType { get; set; }
+        public Guid? CustomerType { get; set; }
 
         [Comment("客户等级"), Range(1, 10, ErrorMessage = "客户等级必须在1-10之间")]
-        public int ClientGrade { get; set; }
+        public int ClientGrade { get; set; } = 1;
 
         [Comment("客户添加时间")]
         public DateTime AddTime { get; set; } = DateTime.Now;
 
-        public Category? Category { get; set; }
+        public Category? Categories { get; set; }
 
         public Customer() { }
-        public Customer(ICustomerInfo customer, Guid cateId)
+        public Customer(Category? cateId)
         {
-            CustomerName = customer.CustomerName;
-            CustomerAddress = customer.CustomerAddress;
-            CustomerType = cateId;
-            ClientGrade = 1;
-            CustomerContactWay = customer.CustomerContactWay;
+            Categories = cateId;
+            CustomerType = cateId?.CategoryId;
         }
 
         public Customer(string name, Guid cateId, int level = 1, string? conway = null, string? add = null)
@@ -54,8 +51,8 @@ namespace TaskManangerSystem.Models.DataBean
 
         }//init
 
-        public void ToCustomerInfo(string customerType)
-        => new MiniCustomer(this, customerType);
+        //public void ToCustomerInfo(string customerType)
+        //=> new MiniCustomer(this, customerType);
     }
 
     [Comment("任务信息")]

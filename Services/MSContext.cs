@@ -24,7 +24,7 @@ namespace TaskManangerSystem.Services
             modelBuilder.Entity<InventoryInfo>(e =>
             {
                 e.HasIndex(e => e.ProductName).IsUnique();
-                e.HasOne(i => i.Category).WithMany().HasForeignKey(e => e.ProductType).IsRequired(false);
+                e.HasOne(i => i.Categories).WithMany().HasForeignKey(e => e.ProductType).IsRequired(false);
             });
 
             modelBuilder.Entity<InOutStock>(e =>
@@ -37,7 +37,7 @@ namespace TaskManangerSystem.Services
             {
                 e.HasIndex(e => e.CustomerName).IsUnique();
 
-                e.HasOne(i => i.Category).WithMany().HasForeignKey(e => e.CustomerType);
+                e.HasOne(i => i.Categories).WithMany().HasForeignKey(e => e.CustomerType);
             });
 
             modelBuilder.Entity<Category>(e => { e.HasIndex(e => e.SortSerial).IsUnique(); e.HasIndex(e => e.CategoryName).IsUnique(); });

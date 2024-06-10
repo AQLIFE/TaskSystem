@@ -31,24 +31,9 @@ namespace TaskManangerSystem.Models.DataBean
 
         public Category() { }
 
-        public Category(ICategoryInfo cateInfo, Guid id, Guid? parId)
-        {
-            CategoryId = id;
-            ParentCategoryId = parId;
-            SortSerial = cateInfo.SortSerial;
-            CategoryName = cateInfo.CategoryName;
-            CategoryLevel = cateInfo.CategoryLevel;
-            Remark = cateInfo.Remark;
-        }
+        
 
-        public Category(MiniCate info, Guid? parId, int serial, int level)
-        {
-            ParentCategoryId = parId;
-            SortSerial = serial;
-            CategoryLevel = level;
-            CategoryName = info.CategoryName;
-            Remark = info.Remark;
-        }
+        
 
 
         // 用于系统初始化
@@ -62,21 +47,9 @@ namespace TaskManangerSystem.Models.DataBean
         }
     }
 
-    public class TestC
-    {
-        public TestC() { }
-        public int SortSerial { set; get; } = 0;
-
-        public string CategoryName { get; set; } = string.Empty;
-
-        //public int CategoryLevel { get; set; } = 0;
-
-        //public string? Remark { get; set; } = null;
-    }
-
 
     [Comment("库存信息")]
-    public class InventoryInfo
+    public class InventoryInfo() : IInventoryInfo
     {
         [Key, Comment("产品ID")]
         public Guid ProductId { get; set; } = Guid.NewGuid();
@@ -93,9 +66,8 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("产品类型-使用分类ID"), ForeignKey("CategoryId")]
         public Guid ProductType { get; set; }
 
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-        public Category Category { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+        public Category? Categories { get; set; }
+
 
     }
     [Comment("库存变动信息")]

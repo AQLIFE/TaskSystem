@@ -11,48 +11,126 @@ namespace TaskManangerSystem.Services
     {
         public EntityMapper()
         {
+
             CreateMap<EmployeeAccountForLoginOrAdd, EmployeeAccount>()
-                .ForMember(e => e.AccountPermission, o => o.MapFrom(e => 1))
-                .ForMember(e => e.EmployeeId, o => o.MapFrom(op => Guid.NewGuid()));
+                .ConvertUsing((src, context) =>
+                {
+                    var ts = new EmployeeAccount();
+                    ts.EmployeeAlias = src.EmployeeAlias;
+                    ts.EmployeePwd = ShaHashExtensions.ComputeSHA512Hash(src.EmployeePwd);
+                    return ts;
+                });
+
 
             CreateMap<EmployeeAccount, EmployeeAccountForSelectOrUpdate>();
 
+            CreateMap<PageContext<EmployeeAccount>, PageContext<EmployeeAccountForSelectOrUpdate>>()
+                .ConstructUsing((src, context) => new PageContext<EmployeeAccountForSelectOrUpdate>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<EmployeeAccountForSelectOrUpdate>>(src.data)));
 
-            CreateMap<Category, CategoryForSelectOrUpdate>()
+
+            CreateMap<Category, CategoryForSelect>()
                 .ForMember(dest => dest.ParentSortSerial, opt =>
                 {
                     opt.PreCondition(e => e.ParentCategoryId != Guid.Empty && e.ParentCategoryId != null);
                     opt.MapFrom(e => e.ParentCategory!.SortSerial);
                 }
                 );
+            CreateMap<PageContext<Category>, PageContext<CategoryForSelect>>()
+                .ConstructUsing((src, context) => new PageContext<CategoryForSelect>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<CategoryForSelect>>(src.data))
+                 );
 
-            CreateMap<CategoryForAdd, Category>()
+
+            CreateMap<CategoryForAddOrUpdate, Category>()
                 .ConstructUsing((src, context) =>
                 {
                     var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
+                    var sortSerial = (int)context.Items["Serial"];
                     CategoryActions categoryActions = new(dbContext);
 
-                    return new Category
+                    if (sortSerial != 0 && Sh.CreateObj(categoryActions, sortSerial, src) is Category obj)
+                        return obj;
+                    else return new Category
                     {
                         CategoryId = Guid.NewGuid(),
                         ParentCategoryId = categoryActions.TryGetCategoryIdBySortSerial(src.ParentSortSerial),
-                        SortSerial =  categoryActions.GetLastSerial()+1,
-                        CategoryLevel = categoryActions.GetLevelBySerial(src.ParentSortSerial)
+                        SortSerial = categoryActions.GetLastSerial() + 1,
+                        CategoryLevel = categoryActions.GetLevelBySerial(src.ParentSortSerial)+1
+                    };
+                });
+
+
+            CreateMap<Customer, CustomerForSelect>()
+                .ForMember(e => e.CustomerType, c => { c.PreCondition(src => src.Categories is Category); c.MapFrom(src => src.Categories!.CategoryName); });
+
+            CreateMap<PageContext<Customer>, PageContext<CustomerForSelect>>()
+                .ConstructUsing((src, context) =>new PageContext<CustomerForSelect>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<CustomerForSelect>>(src.data)));
+
+            CreateMap<CustomerForView, Customer>()
+                .ConstructUsing((src, context) =>
+                {
+                    var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
+                    var ser = (int)context.Items["Serial"];
+                    CustomerActions customerActions = new(dbContext);
+                    CategoryActions categoryActions = new(dbContext);
+
+
+                    return new Customer( src.CustomerType is string str  ? categoryActions.GetCategoryByName(str): categoryActions.GetCategoryBySerial(ser) );
+                    
+                });
+
+
+            CreateMap<InventoryForView, InventoryInfo>()
+                .ConstructUsing((src, context) =>
+                {
+                    var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
+                    var id = (string)context.Items["name"];
+
+                    InventoryActions inventoryActions = new InventoryActions(dbContext);
+                    CategoryActions categoryActions = new CategoryActions(dbContext);
+                    
+                    Guid obj = Guid.Empty;
+                    if (id != string.Empty && id != null && inventoryActions.ExistsInventoryByName(id) && inventoryActions.GetInventoryByName(id) is InventoryInfo x)
+                        obj = x.ProductId;
+                    else if (inventoryActions.ExistsInventoryByName(src.ProductName) && inventoryActions.GetInventoryByName(src.ProductName) is InventoryInfo y)
+                        obj = y.ProductId;
+                    else obj = Guid.NewGuid();
+
+                    return new InventoryInfo()
+                    {
+                        ProductId =  obj,
+                        Categories = categoryActions.TryGetCategoryByName(src.ProductType),
+                        ProductType=categoryActions.TryGetCategoryByName(src.ProductType)?.CategoryId ?? Guid.Empty 
+                        
                     };
                 })
-                .ForMember(dest => dest.CategoryId, opt => Guid.NewGuid());
+                .ReverseMap()
+                .ConstructUsing((src, context) =>
+                {
+                    var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
+                    InventoryActions inventoryActions = new InventoryActions(dbContext);
+
+                    return new InventoryForView() { ProductType = src.Categories?.CategoryName ?? string.Empty };
+                });
+
+            CreateMap<PageContext<InventoryInfo>, PageContext<InventoryForView>>()
+                .ConstructUsing((src, context) => new PageContext<InventoryForView>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<InventoryForView>>(src.data)));
+
         }
     }
 
-    public class CustomResolver : IValueResolver<CategoryForAdd, Category, Guid?>
+    public class Sh
     {
-
-        private readonly CategoryActions _context;
-        public CustomResolver(ManagementSystemContext storage) { this._context = new(storage); }
-
-        public Guid? Resolve(CategoryForAdd source, Category destination, Guid? member, ResolutionContext context)
-        => _context.TryGetCategoryIdBySortSerial(source.ParentSortSerial);
-
+        public static Category? CreateObj(CategoryActions categoryActions, int sortSerial, CategoryForAddOrUpdate update)
+        {
+            var x = categoryActions.GetCategoryBySerial(sortSerial);
+            if (x is Category y)
+            {
+                y.CategoryName = update.CategoryName;
+                y.Remark = update.Remark;
+                y.ParentCategoryId = categoryActions.TryGetCategoryBySerial(update.ParentSortSerial)?.CategoryId;
+                return y;
+            }
+            return null;
+        }
     }
-
 }

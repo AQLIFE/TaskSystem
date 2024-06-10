@@ -20,10 +20,8 @@ namespace TaskManangerSystem.Services
     }
     public class BearerInfo
     {
-
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public BearerInfo() { }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+
         public BearerInfo(EmployeeAccount employeeAccount)
         {
             jwt = new(
@@ -72,7 +70,7 @@ namespace TaskManangerSystem.Services
                 int? accountPermission = HttpAction.GetClaim(context.Principal?.Claims, ClaimTypes.Role)?.Value.ToInt32();
                 const int roles = 1;// 设定一个固定的权限等级 Roles
                 // 如果 AccountPermission Claim 不存在或其值小于设定的 Roles，则拒绝访问
-                if (!accountPermission.HasValue || accountPermission.Value < roles)
+                if (accountPermission.HasValue && accountPermission.Value < roles || accountPermission==0)
                     context.Fail("全局规则:权限等级不足");
                 context.HttpContext.Items.Add("IsAdmin", accountPermission >= SystemInfo.adminRole);
                 context.HttpContext.Items.Add("HashId", HttpAction.GetClaim(context.Principal?.Claims, ClaimTypes.Authentication)?.Value);

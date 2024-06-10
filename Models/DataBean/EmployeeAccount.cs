@@ -14,16 +14,16 @@ namespace TaskManangerSystem.Models.DataBean
         public Guid EmployeeId { set; get; } = Guid.NewGuid();
 
         [Comment("加密ID")]
-        public string HashId { get; set; }
+        public string HashId { get; set; } = string.Empty;
 
-        [Comment("账户名称"), Required(ErrorMessage = "账户名不可为空"), ConcurrencyCheck, RegularExpression(@"^[\dA-Za-z]{5,16}$", ErrorMessage = "员工ID必须是普通字符[数字|字母(不区分大小写)]")]
+        [Comment("账户名称"), Required(ErrorMessage = "账户名不可为空"), ConcurrencyCheck, RegularExpression(@"^[\da-z]{5,16}$", ErrorMessage = "员工ID必须是普通字符[数字|字母(区分大小写)]")]
         public string EmployeeAlias { get; set; } = string.Empty;
 
         [Comment("账户密码"), Required(ErrorMessage = "密码不可为空"), ConcurrencyCheck, StringLength(128, MinimumLength = 16, ErrorMessage = "密码长度不足")]
         public string EmployeePwd { get; set; } = string.Empty;
 
         [Comment("账户权限"), Required(ErrorMessage = "权限级不能为空"), ConcurrencyCheck, DefaultValue(1), Range(0, 100, ErrorMessage = "权限不能低于0")]
-        public int AccountPermission { get; set; } = 0;
+        public int AccountPermission { get; set; } = 1;
         // 当权限为0时，视为封存账户
 
 
@@ -31,8 +31,9 @@ namespace TaskManangerSystem.Models.DataBean
 
         public EmployeeAccount()
         {
-            this.HashId = Guid.Empty.ToString();
+            SetHashId();
         }
+
         public EmployeeAccount(string name, string pwd, int ap = 1)
         {
             EmployeeAlias = name;

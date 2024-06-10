@@ -93,6 +93,8 @@ namespace TaskManangerSystem.Actions
             return new PageContext<T>(index: pageIndex, max: maxPage, count: count, info: await query.ToListAsync());
         }
 
+        
+
         public async Task<PageContext<T>?> SearchNotLimitAsync<TKey>(Expression<Func<T, TKey>> keySelector, Expression<Func<T, bool>>? predicate = null, bool isAsc = true)
         {
             IQueryable<T> queryable = AsEntity.AsQueryable().AsNoTracking();
@@ -222,6 +224,5 @@ namespace TaskManangerSystem.Actions
         public int MaxPage { set; get; } = max;
         public int Sum { set; get; } = count;
         public List<T> data { set; get; } = info;
-
     }
 }

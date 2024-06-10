@@ -26,7 +26,6 @@ namespace TaskManangerSystem.Models.SystemBean
         public static ObjectResult Cancelled = new Result<string>("你的账户不存在，请重新登录").ToObjectResult();
 
         public static ObjectResult NoAccess = new Result<string>("访问无效").ToObjectResult();
-        public static Result<string> NotAccess = new Result<string>("访问无效");
 
         public static Result<string> LimitedAuthority = new Result<string>("权限不足");
 
@@ -34,7 +33,8 @@ namespace TaskManangerSystem.Models.SystemBean
 
         public static ObjectResult PWDError = new Result<string>("旧密码错误").ToObjectResult();
         public static ObjectResult NotAdmin = new Result<string>("禁止修改管理员账户").ToObjectResult();
-        public static ObjectResult Forbidden = new Result<string>("验证失败").ToObjectResult();
+        public static Result<string> Forbidden = new Result<string>("验证失败");
+        public static Result<string> NotAccess = new Result<string>("访问无效");
 
     }
 }
