@@ -54,7 +54,7 @@ namespace TaskManangerSystem.Services
                         CategoryId = Guid.NewGuid(),
                         ParentCategoryId = categoryActions.TryGetCategoryIdBySortSerial(src.ParentSortSerial),
                         SortSerial = categoryActions.GetLastSerial() + 1,
-                        CategoryLevel = categoryActions.GetLevelBySerial(src.ParentSortSerial)+1
+                        CategoryLevel = categoryActions.GetLevelBySerial(src.ParentSortSerial) + 1
                     };
                 });
 
@@ -63,7 +63,7 @@ namespace TaskManangerSystem.Services
                 .ForMember(e => e.CustomerType, c => { c.PreCondition(src => src.Categories is Category); c.MapFrom(src => src.Categories!.CategoryName); });
 
             CreateMap<PageContext<Customer>, PageContext<CustomerForSelect>>()
-                .ConstructUsing((src, context) =>new PageContext<CustomerForSelect>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<CustomerForSelect>>(src.data)));
+                .ConstructUsing((src, context) => new PageContext<CustomerForSelect>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<CustomerForSelect>>(src.data)));
 
             CreateMap<CustomerForView, Customer>()
                 .ConstructUsing((src, context) =>
@@ -74,12 +74,12 @@ namespace TaskManangerSystem.Services
                     CategoryActions categoryActions = new(dbContext);
 
 
-                    return new Customer( src.CustomerType is string str  ? categoryActions.GetCategoryByName(str): categoryActions.GetCategoryBySerial(ser) );
-                    
+                    return new Customer(src.CustomerType is string str ? categoryActions.GetCategoryByName(str) : categoryActions.GetCategoryBySerial(ser));
+
                 });
 
 
-            CreateMap<InventoryForView, InventoryInfo>()
+                CreateMap<InventoryForView, InventoryInfo>()
                 .ConstructUsing((src, context) =>
                 {
                     var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
@@ -87,30 +87,18 @@ namespace TaskManangerSystem.Services
 
                     InventoryActions inventoryActions = new InventoryActions(dbContext);
                     CategoryActions categoryActions = new CategoryActions(dbContext);
+
+
+                    Guid guid = inventoryActions.ExistsInventoryByName(id) ? inventoryActions.GetInventoryByName(id)!.ProductId : Guid.NewGuid();
+                    Category? cate = src.ProductType is string s && src.ProductType != string.Empty ? categoryActions.TryGetCategoryByName(s) : categoryActions.GetCategoryBySerial(100);
+
+                    return new InventoryInfo(guid, src.ProductName, src.ProductPrice, src.ProductCost, src.ProductModel,cate);
                     
-                    Guid obj = Guid.Empty;
-                    if (id != string.Empty && id != null && inventoryActions.ExistsInventoryByName(id) && inventoryActions.GetInventoryByName(id) is InventoryInfo x)
-                        obj = x.ProductId;
-                    else if (inventoryActions.ExistsInventoryByName(src.ProductName) && inventoryActions.GetInventoryByName(src.ProductName) is InventoryInfo y)
-                        obj = y.ProductId;
-                    else obj = Guid.NewGuid();
-
-                    return new InventoryInfo()
-                    {
-                        ProductId =  obj,
-                        Categories = categoryActions.TryGetCategoryByName(src.ProductType),
-                        ProductType=categoryActions.TryGetCategoryByName(src.ProductType)?.CategoryId ?? Guid.Empty 
-                        
-                    };
                 })
+                .ForMember(dest => dest.ProductType, opt => opt.MapFrom((src, dest) => dest.Categories?.CategoryId))
                 .ReverseMap()
-                .ConstructUsing((src, context) =>
-                {
-                    var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
-                    InventoryActions inventoryActions = new InventoryActions(dbContext);
-
-                    return new InventoryForView() { ProductType = src.Categories?.CategoryName ?? string.Empty };
-                });
+                .ForMember(dest => dest.ProductType, opt => opt.MapFrom(sc => sc.Categories.CategoryName ?? string.Empty));
+                
 
             CreateMap<PageContext<InventoryInfo>, PageContext<InventoryForView>>()
                 .ConstructUsing((src, context) => new PageContext<InventoryForView>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<InventoryForView>>(src.data)));

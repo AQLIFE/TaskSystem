@@ -10,14 +10,14 @@ namespace TaskManangerSystem.Actions
 
     public class DBAction(ManagementSystemContext context)
     {
-        public async Task<int> AddAdminAccount()
+        public async Task<int> InitAdminAccount()
         {
             context.Entry<EmployeeAccount>(SystemInfo.admin).State = EntityState.Added;
             Console.WriteLine("添加角色");
             return await context.SaveChangesAsync();
         }
 
-        public async Task<int> AddCategory()
+        public async Task<int> InitCategory()
         {
             foreach (var item in SystemInfo.categories)
                 context.Entry<Category>(item).State = EntityState.Added;
@@ -25,7 +25,7 @@ namespace TaskManangerSystem.Actions
             return await context.SaveChangesAsync();
         }
 
-        public async Task<int> AddCustomer()
+        public async Task<int> InitCustomer()
         {
             CategoryActions actions = new(context);
             Category category;
@@ -264,7 +264,7 @@ namespace TaskManangerSystem.Actions
         public async Task<bool> ExistsInventoryByNameAsync(string name) => await ExistAsync(e => e.ProductName == name);
 
         public async Task<InventoryInfo?> GetInventoryAsync(Guid guid) => await GetInfoAsync(guid);
-        public async Task<InventoryInfo?> GetInventoryByNameAsync(string name) => await GetInfoAsync(e => e.ProductName == name);
+        public async Task<InventoryInfo?> GetInventoryByNameAsync(string name) => await GetInfoAsync(e => e.ProductName == name,e=>e.Categories);
 
         public async Task<InventoryInfo?> TryGetInventoryAsync(Guid guid) => await ExistsInventoryAsync(guid) ? await GetInfoAsync(guid) : null;
         public async Task<InventoryInfo?> TryGetInventoryByNameAsync(string name) => await ExistsInventoryByNameAsync(name) ? await GetInventoryByNameAsync(name) : null;

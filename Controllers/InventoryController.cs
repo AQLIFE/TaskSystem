@@ -4,6 +4,8 @@ using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models.SystemBean;
 using AutoMapper;
 using TaskManangerSystem.Models.DataBean;
+using System.Xml.Linq;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -23,12 +25,22 @@ namespace TaskManangerSystem.Controllers
 
         [HttpPost("info")]
         public async Task<bool> PostInventory(InventoryForView view)
-        => await inventoryActions.ExistsInventoryByNameAsync(view.ProductName) ? false : await inventoryActions.AddInfoAsync(mapper.Map<InventoryInfo>(await inventoryActions.GetInventoryByNameAsync(view.ProductName), opt => opt.Items["ManagementSystemContext"] = storage));
-
+        {
+            if (await inventoryActions.ExistsInventoryByNameAsync(view.ProductName))
+                return false;
+            else
+            {
+                InventoryInfo x = mapper.Map<InventoryInfo>(view, opt =>
+                {
+                    opt.Items["ManagementSystemContext"] = storage; opt.Items["name"] = view.ProductName;
+                });
+                return await inventoryActions.AddInfoAsync(x);
+            }
+        }
 
         [HttpPut("info")]
         public async Task<bool> PutInventory(string name, InventoryForView view)
-        => await inventoryActions.ExistsInventoryByNameAsync(view.ProductName) ? false : await inventoryActions.UpdateInfoAsync(mapper.Map<InventoryInfo>(view, opt => { opt.Items["ManagementSystemContext"] = storage; opt.Items["name"] = name; }));
+            => await inventoryActions.ExistsInventoryByNameAsync(view.ProductName) ? false : await inventoryActions.UpdateInfoAsync(mapper.Map<InventoryInfo>(view, opt => { opt.Items["ManagementSystemContext"] = storage; opt.Items["name"] = name; }));
 
 
         [HttpDelete("info")]

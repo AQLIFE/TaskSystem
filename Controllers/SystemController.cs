@@ -22,9 +22,9 @@ namespace TaskManangerSystem.Controllers
         [HttpPost("init")]
         public async Task<int> InitDb() => status switch
         {
-            DBStatus s when s.EmployeesStatus => await action.AddAdminAccount(),
-            DBStatus s when s.CatrgoryStatus => await action.AddCategory(),
-            DBStatus s when s.TaskCustomerStatus => await action.AddCustomer(),
+            DBStatus s when s.EmployeesStatus => await action.InitAdminAccount(),
+            DBStatus s when s.CatrgoryStatus => await action.InitCategory(),
+            DBStatus s when s.TaskCustomerStatus => await action.InitCustomer(),
             _ => 0
         };
     }

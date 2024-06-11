@@ -49,7 +49,7 @@ namespace TaskManangerSystem.Models.DataBean
 
 
     [Comment("库存信息")]
-    public class InventoryInfo() : IInventoryInfo
+    public class InventoryInfo : IInventoryInfo
     {
         [Key, Comment("产品ID")]
         public Guid ProductId { get; set; } = Guid.NewGuid();
@@ -64,11 +64,22 @@ namespace TaskManangerSystem.Models.DataBean
         [Required, Comment("产品型号")]
         public string ProductModel { get; set; } = string.Empty;
         [Comment("产品类型-使用分类ID"), ForeignKey("CategoryId")]
-        public Guid ProductType { get; set; }
+        public Guid? ProductType { get; set; }
 
         public Category? Categories { get; set; }
 
+        public InventoryInfo() { }
 
+        public InventoryInfo(Guid productId, string productName, decimal productPrice, decimal productCost, string productModel, Category? categories)
+        {
+            ProductId = productId;
+            ProductName = productName;
+            ProductPrice = productPrice;
+            ProductCost = productCost;
+            ProductModel = productModel;
+            Categories = categories;
+            ProductType = categories?.CategoryId;
+        }
     }
     [Comment("库存变动信息")]
     public class InOutStock

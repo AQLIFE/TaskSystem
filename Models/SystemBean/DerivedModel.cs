@@ -62,7 +62,7 @@ namespace TaskManangerSystem.Models.SystemBean
         
         public string ProductModel { get; set; } = string.Empty;
 
-        public string ProductType { get; set; } = string.Empty;
+        public string? ProductType { get; set; } = string.Empty;
 
     }
 

@@ -26,8 +26,8 @@ namespace TaskManangerSystem.Services
             }
             catch (Exception)
             {
-                action.Exception = null;
-                actionResult = GlobalResult.Message("程序错误，请联系授权");
+                //action.Exception = null;
+                actionResult =/* GlobalResult.Message("程序错误，请联系授权");*/GlobalResult.Message(action.Exception!.ToString());
             }
             finally
             {

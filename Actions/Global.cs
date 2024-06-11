@@ -27,6 +27,7 @@ namespace TaskManangerSystem.Actions
             new("库存分类",100,"用于对产品进行分类"),
             new("客户分类",101,"用于对客户进行分类"),
             new("任务分类",102,"用于对任务进行分类"),
+            new("分类垃圾桶",103,"用于存放标记为删除的分类信息")
         ];
         // public static readonly Category category = new("本公司", 103, "管理员所属公司", 2, actions.GetCategoryBySerial(101)?.CategoryId);
         public static Customer customers = new("管理员", Guid.NewGuid(), 1, "13212345678", "本公司");

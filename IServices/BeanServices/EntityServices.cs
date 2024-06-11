@@ -91,6 +91,6 @@ namespace TaskManangerSystem.IServices.BeanServices
     public interface IInventoryInfo : IInventory
     {
         public Guid ProductId { get; set; }
-        public Guid ProductType { get; set; }
+        public Guid? ProductType { get; set; }
     }
 }
