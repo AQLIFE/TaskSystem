@@ -1,6 +1,4 @@
-using TaskManangerSystem.Models.DataBean;
-
-namespace TaskManangerSystem.IServices.BeanServices
+namespace TaskManangerSystem.IServices
 {
 
     public interface IAlias
@@ -10,7 +8,7 @@ namespace TaskManangerSystem.IServices.BeanServices
 
     public class EAlias : IAlias
     {
-        public string EmployeeAlias { get; set; } = String.Empty;
+        public string EmployeeAlias { get; set; }
     }
     public interface IPart : IAlias
     {
@@ -78,7 +76,7 @@ namespace TaskManangerSystem.IServices.BeanServices
 
     public interface IInventory
     {
-        public string ProductName { get; set; } 
+        public string ProductName { get; set; }
 
         public decimal ProductPrice { get; set; }
 
@@ -93,4 +91,35 @@ namespace TaskManangerSystem.IServices.BeanServices
         public Guid ProductId { get; set; }
         public Guid? ProductType { get; set; }
     }
+
+
+    public interface ITaskAttair
+    {
+        public string Content { get; set; }
+        public decimal Cost { get; set; }
+    }
+
+    public interface ITaskAttairInfo : ITaskAttair
+    {
+        public int Serial { set; get; }
+        public DateTime Time { get; set; }
+        //public string? Content { get; set; } 
+        //public decimal Cost { get; set; } 
+    }
+
+    public interface ITaskAttairs : ITaskAttairInfo
+    {
+        public Guid TaskId { get; set; }
+        public Guid? TaskType { set; get; }
+        public Guid? CustomerId { get; set; }
+        public Guid? EmployeeId { get; set; }
+
+        //public int Serial { set; get; } 
+        //public DateTime Time { get; set; } 
+        //public string Content { get; set; } 
+        //public decimal Cost { get; set; } 
+
+
+    }
+
 }

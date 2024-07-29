@@ -1,69 +1,29 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper.Execution;
+using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.Cms;
 using System.Linq.Expressions;
+using TaskManangerSystem.IServices;
 using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Actions
 {
-    public interface IRepository<T> where T : class
+
+    public interface IUpdateable<TTarget>
     {
-        bool Exist(Expression<Func<T, bool>> keySelector);
-        Task<bool> ExistAsync(Expression<Func<T, bool>> keySelector);
-
-        Task<bool> AddInfoAsync(T info);
-        bool AddInfo(T info);
-
-        bool UpdateInfo(T info);
-        Task<bool> UpdateInfoAsync(T info);
-
-        bool DeleteInfo(Expression<Func<T, bool>> keySelector);
-        Task<bool> DeleteInfoAsync(Expression<Func<T, bool>> keySelector);
-
-        T? GetInfo(Guid id);
-        Task<T?> GetInfoAsync(Guid id);
-
-        T? GetInfo(Expression<Func<T, bool>> keySelector);
-        Task<T?> GetInfoAsync(Expression<Func<T, bool>> keySelector);
-
-        int Count(Expression<Func<T, bool>>? keySelector);
-        Task<int> CountAsync(Expression<Func<T, bool>>? keySelector);
-
-        Task<PageContext<T>?> SearchAsync<TKey>(int pageIndex, int pageSize, Expression<Func<T, TKey>> keySelector, Expression<Func<T, bool>>? predicate = null, bool isAsc = true);
+        void Update(TTarget newData);
     }
 
-    public class Repository<T>(ManagementSystemContext storage) : IRepository<T> where T : class
+    public class RepositoryAsync<TSource>(ManagementSystemContext storage) : IRepositoryAsync<TSource> where TSource : class
     {
-        public DbSet<T> AsEntity => storage.Set<T>();
+        public DbSet<TSource> AsEntity { set; get; } = storage.Set<TSource>();
 
-
-
-        public async Task<int> CountAsync(Expression<Func<T, bool>>? keySelector) => await (keySelector is null ? AsEntity.CountAsync() : AsEntity.Where(keySelector).CountAsync());
-        public int Count(Expression<Func<T, bool>>? keySelector) => keySelector is null ? AsEntity.Count() : AsEntity.Where(keySelector).Count();
-
-
-
-        public bool Exist(Expression<Func<T, bool>> keySelector) => AsEntity.Any(keySelector);
-        public async Task<bool> ExistAsync(Expression<Func<T, bool>> keySelector) => await AsEntity.AnyAsync(keySelector);
-
-
-
-        public T? GetInfo(Guid id) => AsEntity.Find(id);
-        public async Task<T?> GetInfoAsync(Guid id) => await AsEntity.FindAsync(id);
-
-        public T? GetInfo(Expression<Func<T, bool>> keySelector) => AsEntity.FirstOrDefault(keySelector);
-        public async Task<T?> GetInfoAsync(Expression<Func<T, bool>> keySelector) => await AsEntity.FirstOrDefaultAsync(keySelector);
-
-
-
-        public bool AddInfo(T info) { AsEntity.Add(info); return storage.SaveChanges() == 1; }
-        public async Task<bool> AddInfoAsync(T info) { await AsEntity.AddAsync(info); return await storage.SaveChangesAsync() == 1; }
-
-
-        public bool UpdateInfo(T info) { AsEntity.Update(info); return storage.SaveChanges() == 1; }
-        public async Task<bool> UpdateInfoAsync(T info) { await Task.Run(() => AsEntity.Update(info)); return await storage.SaveChangesAsync() == 1; }
-
-
-        public bool DeleteInfo(Expression<Func<T, bool>> keySelector) { AsEntity.Where(keySelector); return storage.SaveChanges() == 1; }
-        public async Task<bool> DeleteInfoAsync(Expression<Func<T, bool>> keySelector) { await Task.Run(() => AsEntity.Where(keySelector)); return await (storage.SaveChangesAsync()) == 1; }
+        public async Task<int> CountAsync(Expression<Func<TSource, bool>>? keySelector) => await (keySelector is null ? AsEntity.CountAsync() : AsEntity.Where(keySelector).CountAsync());
+        public async Task<bool> ExistAsync(Expression<Func<TSource, bool>> keySelector) => await AsEntity.AnyAsync(keySelector);
+        public async Task<TSource?> TryGetAsync(Guid id) => await AsEntity.FindAsync(id);
+        public async Task<TSource?> TryGetAsync(Expression<Func<TSource, bool>> keySelector) => await AsEntity.FirstOrDefaultAsync(keySelector);
+        public async Task<bool> AddAsync(TSource info) { await AsEntity.AddAsync(info); return await storage.SaveChangesAsync() == 1; }
+        public async Task<bool> UpdateAsync(TSource info) { await Task.Run(() => { AsEntity.Update(info); }); return await storage.SaveChangesAsync() == 1; }
+        public async Task<bool> DeleteAsync(Expression<Func<TSource, bool>> keySelector) { await Task.Run(() => AsEntity.Where(keySelector)); return await (storage.SaveChangesAsync()) == 1; }
 
 
         /// <summary>
@@ -76,153 +36,112 @@ namespace TaskManangerSystem.Actions
         /// <param name="keySelector">指定排序的字段</param>
         /// <param name="isAsc">排序方式</param>
         /// <returns></returns>
-        public async Task<PageContext<T>?> SearchAsync<TKey>(int pageIndex, int pageSize, Expression<Func<T, TKey>> keySelector, Expression<Func<T, bool>>? predicate = null, bool isAsc = true)
+        public async Task<PageContext<TSource>?> SearchAsync<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
         {
-            IQueryable<T> queryable = AsEntity.AsQueryable().AsNoTracking();
+            IQueryable<TSource> queryable = AsEntity.AsQueryable().AsNoTracking();
             if (predicate is not null)
                 queryable = queryable.Where(predicate);
 
             int count = await queryable.CountAsync();
 
-            IQueryable<T> query = isAsc ?
+            IQueryable<TSource> query = isAsc ?
                     queryable.OrderBy(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize) :
                     queryable.OrderByDescending(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize);
 
             int maxPage = (int)Math.Ceiling(count / (double)pageSize);
 
-            return new PageContext<T>(index: pageIndex, max: maxPage, count: count, info: await query.ToListAsync());
-        }
-
-        
-
-        public async Task<PageContext<T>?> SearchNotLimitAsync<TKey>(Expression<Func<T, TKey>> keySelector, Expression<Func<T, bool>>? predicate = null, bool isAsc = true)
-        {
-            IQueryable<T> queryable = AsEntity.AsQueryable().AsNoTracking();
-            if (predicate is not null)
-                queryable = queryable.Where(predicate);
-
-            int count = await queryable.CountAsync();
-
-            IQueryable<T> query = isAsc ?
-                    queryable.OrderBy(keySelector) :
-                    queryable.OrderByDescending(keySelector);
-
-            // int maxPage = (int)Math.Ceiling(count / (double)pageSize);
-
-            return new PageContext<T>(index: 1, max: 1, count: count, info: await query.ToListAsync());
+            return new PageContext<TSource>(index: pageIndex, max: maxPage, count: count, info: await query.ToListAsync());
         }
 
     }
 
-    public class IncludeRepository<T, Tflag>(ManagementSystemContext storage) : IRepository<T> where T : class
+    public class Repository<TSource>(ManagementSystemContext storage) : IRepository<TSource> where TSource : class
     {
-        public DbSet<T> AsEntity => storage.Set<T>();
+        public DbSet<TSource> AsEntity { set; get; } = storage.Set<TSource>();
 
+        public int Count(Expression<Func<TSource, bool>>? keySelector) => keySelector is null ? AsEntity.Count() : AsEntity.Where(keySelector).Count();
+        public bool Exist(Expression<Func<TSource, bool>> keySelector) => AsEntity.Any(keySelector);
+        public TSource? TryGet(Guid id) => AsEntity.Find(id);
+        public TSource? TryGet(Expression<Func<TSource, bool>> keySelector) => AsEntity.FirstOrDefault(keySelector);
+        public bool Add(TSource info) { AsEntity.Add(info); return storage.SaveChanges() == 1; }
+        public bool Update(TSource info) { AsEntity.Update(info); ; return storage.SaveChanges() == 1; }
+        public bool Delete(Expression<Func<TSource, bool>> keySelector) { AsEntity.Where(keySelector); return storage.SaveChanges() == 1; }
 
+        public PageContext<TSource>? Search<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
+        {
+            IQueryable<TSource> queryable = AsEntity.AsQueryable().AsNoTracking();
+            if (predicate is not null)
+                queryable = queryable.Where(predicate);
 
-        public int Count(Expression<Func<T, bool>>? keySelector) => keySelector is null ? AsEntity.Count() : AsEntity.Where(keySelector).Count();
-        public async Task<int> CountAsync(Expression<Func<T, bool>>? keySelector) => await (keySelector is null ? AsEntity.CountAsync() : AsEntity.Where(keySelector).CountAsync());
-        
+            int count = queryable.Count();
 
+            IQueryable<TSource> query = isAsc ?
+                    queryable.OrderBy(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize) :
+                    queryable.OrderByDescending(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize);
 
+            int maxPage = (int)Math.Ceiling(count / (double)pageSize);
 
-        public bool Exist(Expression<Func<T, bool>> keySelector) => AsEntity.Any(keySelector);
-        public async Task<bool> ExistAsync(Expression<Func<T, bool>> keySelector) => await AsEntity.AnyAsync(keySelector);
+            return new PageContext<TSource>(index: pageIndex, max: maxPage, count: count, info: query.ToList());
+        }
 
+    }
 
+    public class IncludeRepositoryAsync<TSource>(ManagementSystemContext storage, Expression<Func<TSource, object?>>[] attribute) : RepositoryAsync<TSource>(storage) where TSource : class
+    {
+        //private DbSet<TSource> _Entity = storage.Set<TSource>();
 
-        
-        public T? GetInfo(Guid id) => AsEntity.Find(id);
-        public async Task<T?> GetInfoAsync(Guid id) => await AsEntity.FindAsync(id);
-        public T? GetInfo(Expression<Func<T, bool>> keySelector) => AsEntity.FirstOrDefault(keySelector);
-        public T? GetInfo(Expression<Func<T, bool>> keySelector, Expression<Func<T, Tflag>> attribute) => AsEntity.Include(attribute).FirstOrDefault(keySelector);
-        public async Task<T?> GetInfoAsync(Expression<Func<T, bool>> keySelector) => await AsEntity.FirstOrDefaultAsync(keySelector);
+        //public new DbSet<TSource> AsEntity { set { foreach (var item in attribute) _Entity.Include(item); } get {  return _Entity; } }
 
-        public async Task<T?> GetInfoAsync(Expression<Func<T, bool>> keySelector, Expression<Func<T, Tflag>> attribute) => await AsEntity.Include(attribute).FirstOrDefaultAsync(keySelector);
-
-
-
-        public bool AddInfo(T info) { AsEntity.Add(info); return storage.SaveChanges() == 1; }
-        public async Task<bool> AddInfoAsync(T info) { await AsEntity.AddAsync(info); return await storage.SaveChangesAsync() == 1; }
-
-
-        public bool UpdateInfo(T info) { AsEntity.Update(info); return storage.SaveChanges() == 1; }
-        public async Task<bool> UpdateInfoAsync(T info) { await Task.Run(() => AsEntity.Update(info)); return await storage.SaveChangesAsync() == 1; }
-
-
-        public bool DeleteInfo(Expression<Func<T, bool>> keySelector) { AsEntity.Where(keySelector); return storage.SaveChanges() == 1; }
-        public async Task<bool> DeleteInfoAsync(Expression<Func<T, bool>> keySelector) { await Task.Run(() => AsEntity.Where(keySelector)); return await (storage.SaveChangesAsync()) == 1; }
+        public new async Task<TSource?> TryGetAsync(Expression<Func<TSource, bool>> keySelector)
+        {
+            var q=attribute.SelectMany(item => AsEntity.Include(item).AsQueryable()).AsQueryable<TSource>();
+            return await Task.FromResult(q.FirstOrDefault(keySelector));
+            //不支持FirstOrDefaultAsync
+        }
 
 
         /// <summary>
-        /// 通用复合查询
+        /// 失败的异步查询
         /// </summary>
-        /// <typeparam name="TKey">排序关键字段</typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="keySelector"></param>
         /// <param name="pageIndex"></param>
         /// <param name="pageSize"></param>
-        /// <param name="predicate">条件排序</param>
-        /// <param name="keySelector">指定排序的字段</param>
-        /// <param name="isAsc">排序方式</param>
+        /// <param name="predicate"></param>
+        /// <param name="isAsc"></param>
         /// <returns></returns>
-        public async Task<PageContext<T>?> SearchAsync<TKey>(int pageIndex, int pageSize, Expression<Func<T, TKey>> keySelector, Expression<Func<T, bool>>? predicate = null, bool isAsc = true)
+        public new async Task<PageContext<TSource>?> SearchAsync<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
         {
-            IQueryable<T> queryable = AsEntity.AsQueryable().AsNoTracking();
+            //IQueryable<TSource> queryable = AsEntity.AsQueryable().AsNoTracking();
+
+            IQueryable<TSource> queryable = attribute.SelectMany(item => AsEntity.Include(item).AsQueryable()).AsQueryable();
             if (predicate is not null)
                 queryable = queryable.Where(predicate);
 
-            int count = await queryable.CountAsync();
+            int count = await Task.FromResult(queryable.Count());
 
-            IQueryable<T> query = isAsc ?
+            IQueryable<TSource> query = isAsc ?
                     queryable.OrderBy(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize) :
                     queryable.OrderByDescending(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize);
 
             int maxPage = (int)Math.Ceiling(count / (double)pageSize);
 
-            return new PageContext<T>(index: pageIndex, max: maxPage, count: count, info: await query.ToListAsync());
+            return new PageContext<TSource>(index: pageIndex, max: maxPage, count: count, info: query.ToList());
         }
-
-        public async Task<PageContext<T>?> SearchNotLimitAsync<TKey>(Expression<Func<T, TKey>> keySelector, Expression<Func<T, bool>>? predicate = null, bool isAsc = true)
-        {
-            IQueryable<T> queryable = AsEntity.AsQueryable().AsNoTracking();
-            if (predicate is not null)
-                queryable = queryable.Where(predicate);
-
-            int count = await queryable.CountAsync();
-
-            IQueryable<T> query = isAsc ?
-                    queryable.OrderBy(keySelector) :
-                    queryable.OrderByDescending(keySelector);
-
-            // int maxPage = (int)Math.Ceiling(count / (double)pageSize);
-
-            return new PageContext<T>(index: 1, max: 1, count: count, info: await query.ToListAsync());
-        }
-
-
-        public async Task<PageContext<T>?> IncludeSearchAsync<TKey>(int pageIndex, int pageSize, Expression<Func<T, Tflag>> attribute, Expression<Func<T, TKey>> keySelector, Expression<Func<T, bool>>? predicate = null, bool isAsc = true)
-        {
-            IQueryable<T> queryable = AsEntity.AsQueryable().AsNoTracking();
-            if (predicate is not null)
-                queryable = queryable.Include(attribute).Where(predicate);
-
-            int count = await queryable.CountAsync();
-
-            IQueryable<T> query = isAsc ?
-                    queryable.Include(attribute).OrderBy(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize) :
-                    queryable.Include(attribute).OrderByDescending(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize);
-
-            int maxPage = (int)Math.Ceiling(count / (double)pageSize);
-
-            return new PageContext<T>(index: pageIndex, max: maxPage, count: count, info: await query.ToListAsync());
-        }
-
     }
 
-    public class PageContext<T>(int index, int max, int count, List<T> info)
+    public class IncludeRepository<TSource>(ManagementSystemContext storage, params Expression<Func<TSource, object?>>[] attribute) : Repository<TSource>(storage) where TSource : class
+    {
+        private DbSet<TSource> _Entity = storage.Set<TSource>();
+
+        public new DbSet<TSource> AsEntity { set { _Entity = value; } get { foreach (var item in attribute) _Entity.Include(item); return _Entity; } }
+    }
+
+    public class PageContext<TSource>(int index, int max, int count, List<TSource> info)
     {
         public int pageIndex { set; get; } = index;
         public int MaxPage { set; get; } = max;
         public int Sum { set; get; } = count;
-        public List<T> data { set; get; } = info;
+        public List<TSource> data { set; get; } = info;
     }
 }

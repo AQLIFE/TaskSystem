@@ -1,9 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
 using TaskManangerSystem.Services;
@@ -12,10 +10,42 @@ namespace TaskManangerSystem.Controllers
 {
 
     [ApiController, Authorize, Route("api/[controller]")]
-    public class TaskSystemController : ControllerBase
+    public class TaskSystemController(ManagementSystemContext storage, IMapper mapper) : ControllerBase
     {
+        private TaskAffairRepositoryAsync TRA = new(storage);
 
+        [HttpGet]
+        public async Task<PageContext<TaskAffairForView>> Gettasks(int index = 1, int size = 100)
+        => mapper.Map<PageContext<TaskAffairForView>>(await TRA.SearchAsync(index, size));
+
+        // GET: api/tasks/{id}
+        [HttpGet("{id}")]
+        public async Task<TaskAffairForView> GetTaskAffair(int serial)
+        => mapper.Map<TaskAffairForView>(await TRA.GetTaskAffairBySerial(serial));
+
+        // POST: api/tasks
+        [HttpPost]
+        public async Task<bool> CreateTaskAffair(TaskAffairForView taskAffair)
+        => await TRA.ExistsTaskAffairBySerialAsync(taskAffair.Serial) ? false : await TRA.AddAsync(mapper.Map<TaskAffair>(taskAffair, opt => opt.Items["ManagementSystemContext"] = storage));
+
+
+        // PUT: api/tasks/{id}
+        [HttpPut("{id}")]
+        public async Task<bool> UpdateTaskAffair(int serial, TaskAffairForUpdate updatedTaskAffair)
+        {
+            TaskAffair? af = await TRA.GetTaskAffairBySerial(serial);
+
+            return af is TaskAffair ? await TRA.UpdateAsync(af, updatedTaskAffair) : false;
+            // ���߿��Է���Ok(updatedTaskAffair)��ʾ�ɹ����²����ظ��º������
+        }
+
+        // DELETE: api/tasks/{id}
+        [HttpDelete("{id}")]
+        public async Task<bool> DeleteTaskAffair(int serial)
+        {
+            TaskAffair? taskAffair = await TRA.GetTaskAffairBySerial(serial);
+            return taskAffair is TaskAffair ag ? await TRA.DeleteAsync(ag) : false;
+
+        }
     }
-
-    
 }

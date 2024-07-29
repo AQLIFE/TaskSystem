@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.IServices.BeanServices;
+using TaskManangerSystem.IServices;
 
 namespace TaskManangerSystem.Models.DataBean
 {
@@ -41,6 +41,10 @@ namespace TaskManangerSystem.Models.DataBean
             AccountPermission = ap;
             SetHashId();
         }
+
+        public bool Update(int level) { this.AccountPermission = level == 0 ? 0 : (this.AccountPermission + level); return level == 0 ? false : true; }
+
+        public bool Update(string newPwd) { this.EmployeePwd = EmployeePwd != newPwd ? newPwd : EmployeePwd; return EmployeePwd != newPwd ? true : false; }
 
         public void SetHashId() { this.HashId = ShaHashExtensions.ComputeSHA512Hash(this.EmployeeId.ToString()); }
 

@@ -7,6 +7,16 @@ namespace TaskManangerSystem.Actions
 
     public static class SystemInfo
     {
+
+        public const int TRASH = 100;
+        public const int EMPLOYEE = 101;
+        public const int CATEGORY = 102;
+        public const int CUSTOMER = 103;
+
+        public const int DefaultRole = 1;//基础权限
+        public const int AdminRole = 90;//完整权限级别
+        public const int PageSize = 100;//单页最大数量
+
         private const string ValidChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
         public static string GenerateUniqueRandomName(int length)
@@ -20,17 +30,15 @@ namespace TaskManangerSystem.Actions
             }
         }
 
-        public const int adminRole = 90;
-        public const int pageSize = 120;
-        public static EmployeeAccount admin => new("admin", ShaHashExtensions.ComputeSHA512Hash("admin@123"), adminRole + 9);
+        public static EmployeeAccount admin => new("admin", ShaHashExtensions.ComputeSHA512Hash("admin@123"), AdminRole + 9);
         public static Category[] categories => [
-            new("库存分类",100,"用于对产品进行分类"),
-            new("客户分类",101,"用于对客户进行分类"),
-            new("任务分类",102,"用于对任务进行分类"),
-            new("分类垃圾桶",103,"用于存放标记为删除的分类信息")
+            new("分类垃圾桶",TRASH,"用于存放标记为删除的分类信息"),
+            new("库存分类",  CATEGORY,"用于对产品进行分类"),
+            new("客户分类",  CUSTOMER,"用于对客户进行分类"),
+            new("任务分类",  EMPLOYEE,"用于对任务进行分类")
         ];
         // public static readonly Category category = new("本公司", 103, "管理员所属公司", 2, actions.GetCategoryBySerial(101)?.CategoryId);
-        public static Customer customers = new("管理员", Guid.NewGuid(), 1, "13212345678", "本公司");
+        public static Customer customers = new("管理员", Guid.NewGuid(), DefaultRole, "10241024", "本公司");
 
 
         // public readonly static string DBLINK = Environment.GetEnvironmentVariable("DB_LINK") ?? throw new Exception("Program Error:Miss DB_LINK");

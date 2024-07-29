@@ -1,11 +1,9 @@
-﻿using TaskManangerSystem.Services;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.Models.SystemBean;
-using AutoMapper;
 using TaskManangerSystem.Models.DataBean;
-using System.Xml.Linq;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -13,20 +11,20 @@ namespace TaskManangerSystem.Controllers
     [ApiController]
     public class InventoryController(ManagementSystemContext storage, IMapper mapper) : ControllerBase
     {
-        private InventoryActions inventoryActions = new(storage);
+        private InventoryRepositoryAsync IRA = new(storage);
         [HttpGet]
-        public async Task<PageContext<InventoryForView>?> GetInventoryList(int pageIndex = 1, int pageSize = 100)
-        => mapper.Map<PageContext<InventoryForView>?>(await inventoryActions.SearchAsync(pageIndex, pageSize));
+        public async Task<PageContext<InventoryForAddOrUpdate>?> GetInventoryList(int pageIndex = 1, int pageSize = SystemInfo.PageSize)
+        => mapper.Map<PageContext<InventoryForAddOrUpdate>?>(await IRA.SearchAsync(pageIndex, pageSize));
 
         [HttpGet("info")]
-        public async Task<InventoryForView?> GetInventory(string name)
-        => await inventoryActions.ExistsInventoryByNameAsync(name) ? mapper.Map<InventoryForView>(await inventoryActions.GetInventoryByNameAsync(name)) : null;
+        public async Task<InventoryForAddOrUpdate?> GetInventory(string name)
+        => await IRA.ExistsInventoryByNameAsync(name) ? mapper.Map<InventoryForAddOrUpdate>(await IRA.GetInventoryByNameAsync(name)) : null;
 
 
         [HttpPost("info")]
-        public async Task<bool> PostInventory(InventoryForView view)
+        public async Task<bool> PostInventory(InventoryForAddOrUpdate view)
         {
-            if (await inventoryActions.ExistsInventoryByNameAsync(view.ProductName))
+            if (await IRA.ExistsInventoryByNameAsync(view.ProductName))
                 return false;
             else
             {
@@ -34,17 +32,17 @@ namespace TaskManangerSystem.Controllers
                 {
                     opt.Items["ManagementSystemContext"] = storage; opt.Items["name"] = view.ProductName;
                 });
-                return await inventoryActions.AddInfoAsync(x);
+                return await IRA.AddAsync(x);
             }
         }
 
         [HttpPut("info")]
-        public async Task<bool> PutInventory(string name, InventoryForView view)
-            => await inventoryActions.ExistsInventoryByNameAsync(view.ProductName) ? false : await inventoryActions.UpdateInfoAsync(mapper.Map<InventoryInfo>(view, opt => { opt.Items["ManagementSystemContext"] = storage; opt.Items["name"] = name; }));
+        public async Task<bool> PutInventory(string name, InventoryForAddOrUpdate view)
+            => await IRA.ExistsInventoryByNameAsync(view.ProductName) ? false : await IRA.UpdateAsync(mapper.Map<InventoryInfo>(view, opt => { opt.Items["ManagementSystemContext"] = storage; opt.Items["name"] = name; }));
 
 
         [HttpDelete("info")]
         public async Task<bool> DeleteInventory(string name)
-        => await inventoryActions.DeleteInfoAsync(e => e.ProductName == name);
+        => await IRA.DeleteAsync(e => e.ProductName == name);
     }
 }

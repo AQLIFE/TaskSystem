@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.IServices.BeanServices;
+using TaskManangerSystem.IServices;
 using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Models.DataBean
@@ -30,13 +29,16 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("客户添加时间")]
         public DateTime AddTime { get; set; } = DateTime.Now;
 
-        public Category? Categories { get; set; }
+        public virtual Category? Categories { get; set; }
 
         public Customer() { }
-        public Customer(Category? cateId)
+        public Customer(Category? cate/*,CustomerForAddOrUpdate info*/)
         {
-            Categories = cateId;
-            CustomerType = cateId?.CategoryId;
+            //CustomerName = info.CustomerName;
+            //CustomerAddress = info.CustomerAddress;
+            //CustomerContactWay = info.CustomerContactWay;
+            //Categories = cate;
+            CustomerType = cate?.CategoryId;
         }
 
         public Customer(string name, Guid cateId, int level = 1, string? conway = null, string? add = null)
@@ -51,33 +53,58 @@ namespace TaskManangerSystem.Models.DataBean
 
         }//init
 
-        //public void ToCustomerInfo(string customerType)
-        //=> new MiniCustomer(this, customerType);
     }
 
     [Comment("任务信息")]
-    public class TaskAffair
+    public class TaskAffair : ITaskAttair, IUpdateable<TaskAffairForUpdate>
     {
         [Key, Comment("任务ID")]
         public Guid TaskId { get; set; } = Guid.NewGuid();
+
+        public int Serial { set; get; } = 0;
         [Comment("任务创建时间")]
         public DateTime Time { get; set; } = DateTime.Now;
 
-        [Comment("客户ID")]
-        public Guid CustomerId { get; set; }
+
         [Comment("任务描述"), Required]
         public string Content { get; set; } = string.Empty;
-        [Comment("任务类型")]
-        public Guid TaskType { set; get; }
+
         [Range(0.0, 3000.0, ErrorMessage = "任务花费必须在0-3000之间")]
         public decimal Cost { get; set; } = 0.0M;
-        [Comment("发布者-员工ID")]
-        public Guid EmployeeId { get; set; }
 
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-        public Customer Customer { get; set; }
-        public EmployeeAccount EmployeeAccount { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+        [Comment("任务类型")]
+        public Guid? TaskType { set; get; }
+
+        [Comment("客户ID")]
+        public Guid? CustomerId { get; set; }
+
+        [Comment("发布者-员工ID")]
+        public Guid? EmployeeId { get; set; }
+
+        public virtual Customer? Customers { get; set; }
+        public virtual Category? Categorys { get; set; }
+        public virtual EmployeeAccount? EmployeeAccounts { get; set; }
+
+        public TaskAffair(Category? taskCategory, Customer? customer, EmployeeAccount? employee)
+        {
+            Categorys = taskCategory;
+            TaskType = taskCategory?.CategoryId;
+            Customers = customer;
+            CustomerId = customer?.CustomerId;
+            EmployeeAccounts = employee;
+            EmployeeId = employee?.EmployeeId;
+        }
+
+        public void Update(TaskAffairForUpdate af)
+        {
+            this.Cost = af.Cost;
+            this.Content = af.Content;
+            //return true;
+
+        }
+
+        public TaskAffair() { }
+
     }
 
     [Comment("任务跟踪情况")]
@@ -96,10 +123,8 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("备注")]
         public string? Remark { get; set; }
 
+        public virtual TaskAffair? Tasks { get; set; }
+        public virtual EmployeeAccount? EmployeeAccounts { get; set; }
 
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-        public TaskAffair Task { get; set; }
-        public EmployeeAccount EmployeeAccount { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
     }
 }

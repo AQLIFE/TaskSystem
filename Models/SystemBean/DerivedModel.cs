@@ -1,8 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using TaskManangerSystem.IServices.BeanServices;
-using TaskManangerSystem.Models.DataBean;
+using TaskManangerSystem.IServices;
 
 namespace TaskManangerSystem.Models.SystemBean
 {
@@ -38,7 +34,7 @@ namespace TaskManangerSystem.Models.SystemBean
         public string? Remark { get; set; }
     }
 
-    public class CustomerForView() : ICustomerInfo
+    public class CustomerForAddOrUpdate() : ICustomerInfo
     {
         public virtual string CustomerName { get; set; } = string.Empty;
         public virtual string? CustomerContactWay { get; set; }
@@ -46,23 +42,51 @@ namespace TaskManangerSystem.Models.SystemBean
         public virtual string? CustomerType { get; set; } = string.Empty;
     }
 
-    public class CustomerForSelect() : CustomerForView
+    public class CustomerForSelect() : CustomerForAddOrUpdate
     {
         public int ClientGrade { get; set; }
         public DateTime AddTime { get; set; }
     }
 
-    public class InventoryForView() : IInventory
-    {       
+    public class InventoryForAddOrUpdate() : IInventory
+    {
         public string ProductName { get; set; } = string.Empty;
-        
+
         public decimal ProductPrice { get; set; }
 
         public decimal ProductCost { get; set; }
-        
+
         public string ProductModel { get; set; } = string.Empty;
 
         public string? ProductType { get; set; } = string.Empty;
+
+    }
+
+
+    public class TaskAffairForView : TaskAffairForUpdate
+    {
+        public int Serial { set; get; }
+        public DateTime Time { get; set; }
+        //public string? Content { get; set; } = string.Empty;
+        //public decimal Cost { get; set; }
+
+        public string? TaskType { get; set; } = string.Empty;
+        public string? CustomerName { set; get; } = string.Empty;
+        public string? EmployeeName { set; get; } = string.Empty;
+
+        public TaskAffairForView() { }
+        public TaskAffairForView(string? type, string? cu, string? em)
+        {
+            TaskType = type;
+            CustomerName = cu;
+            EmployeeName = em;
+        }
+    }
+
+    public class TaskAffairForUpdate : ITaskAttair
+    {
+        public string Content { get; set; } = string.Empty;
+        public decimal Cost { get; set; }
 
     }
 

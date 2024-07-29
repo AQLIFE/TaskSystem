@@ -45,13 +45,15 @@ namespace TaskManangerSystem.Services
 
             modelBuilder.Entity<TaskAffair>(e =>
             {
-                e.HasOne(i => i.EmployeeAccount).WithMany().HasForeignKey(e => e.EmployeeId);
-                e.HasOne(i => i.Customer).WithMany().HasForeignKey(e => e.CustomerId);
+                e.HasOne(i => i.EmployeeAccounts).WithMany().HasForeignKey(e => e.EmployeeId);
+                e.HasOne(i => i.Customers).WithMany().HasForeignKey(e => e.CustomerId);
+                e.HasOne(i => i.Categorys).WithMany().HasForeignKey(e => e.TaskType);
+                e.HasIndex(i => i.Serial).IsUnique();
             });
             modelBuilder.Entity<TaskStatusTrack>(e =>
             {
-                e.HasOne(i => i.EmployeeAccount).WithMany().HasForeignKey(e => e.EmployeeId);
-                e.HasOne(i => i.Task).WithMany().HasForeignKey(e => e.TaskId);
+                e.HasOne(i => i.EmployeeAccounts).WithMany().HasForeignKey(e => e.EmployeeId);
+                e.HasOne(i => i.Tasks).WithMany().HasForeignKey(e => e.TaskId);
                 e.HasIndex(e => new { e.TaskId, e.EmployeeId, e.TaskStatus }).IsUnique();
             });
 

@@ -1,4 +1,4 @@
-using TaskManangerSystem.IServices.BeanServices;
+using TaskManangerSystem.IServices;
 
 namespace TaskManangerSystem.Models.SystemBean
 {

@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models.DataBean;
 using TaskManangerSystem.Models.SystemBean;
@@ -40,23 +38,7 @@ namespace TaskManangerSystem.Services
                  );
 
 
-            CreateMap<CategoryForAddOrUpdate, Category>()
-                .ConstructUsing((src, context) =>
-                {
-                    var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
-                    var sortSerial = (int)context.Items["Serial"];
-                    CategoryActions categoryActions = new(dbContext);
-
-                    if (sortSerial != 0 && Sh.CreateObj(categoryActions, sortSerial, src) is Category obj)
-                        return obj;
-                    else return new Category
-                    {
-                        CategoryId = Guid.NewGuid(),
-                        ParentCategoryId = categoryActions.TryGetCategoryIdBySortSerial(src.ParentSortSerial),
-                        SortSerial = categoryActions.GetLastSerial() + 1,
-                        CategoryLevel = categoryActions.GetLevelBySerial(src.ParentSortSerial) + 1
-                    };
-                });
+            CreateMap<CategoryForAddOrUpdate, Category>().ConvertUsing<CategoryForAddOrUpdateToCategoryConverter>();
 
 
             CreateMap<Customer, CustomerForSelect>()
@@ -65,57 +47,100 @@ namespace TaskManangerSystem.Services
             CreateMap<PageContext<Customer>, PageContext<CustomerForSelect>>()
                 .ConstructUsing((src, context) => new PageContext<CustomerForSelect>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<CustomerForSelect>>(src.data)));
 
-            CreateMap<CustomerForView, Customer>()
+            CreateMap<CustomerForAddOrUpdate, Customer>()
+                .ForMember(e => e.CustomerType, opt => opt.ConvertUsing(new CategoryNameToGuidConverter()));
+
+
+
+            CreateMap<InventoryForAddOrUpdate, InventoryInfo>()
+            .ConstructUsing((src, context) =>
+            {
+                var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
+                var id = (string)context.Items["name"];
+
+                InventoryRepository IRA = new(dbContext);
+                CategoryRepository CRA = new(dbContext);
+
+
+                Guid guid = IRA.ExistsInventoryByName(id) && IRA.TryGetInventoryByName(id) is InventoryInfo i ? i.ProductId : Guid.NewGuid();
+                Category? cate = src.ProductType is string s && src.ProductType != string.Empty ? CRA.TryGetCategoryByName(s) : CRA.TryGetCategoryBySerial(101);
+
+                return new InventoryInfo(guid, src.ProductName, src.ProductPrice, src.ProductCost, src.ProductModel, cate);
+
+            })
+            .ForMember(dest => dest.ProductType, opt => opt.MapFrom((src, dest) => dest.Categories?.CategoryId))
+            .ReverseMap()
+            .ForMember(dest => dest.ProductType, opt => opt.MapFrom(sc => sc.Categories.CategoryName??string.Empty));
+
+
+            CreateMap<PageContext<InventoryInfo>, PageContext<InventoryForAddOrUpdate>>()
+                .ConstructUsing((src, context) => new PageContext<InventoryForAddOrUpdate>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<InventoryForAddOrUpdate>>(src.data)));
+
+
+
+            CreateMap<TaskAffair, TaskAffairForView>()
                 .ConstructUsing((src, context) =>
                 {
-                    var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
-                    var ser = (int)context.Items["Serial"];
-                    CustomerActions customerActions = new(dbContext);
-                    CategoryActions categoryActions = new(dbContext);
+                    return new TaskAffairForView(src.Categorys?.CategoryName, src.Customers?.CustomerName, src.EmployeeAccounts?.EmployeeAlias);
+                })
+                .ReverseMap()
+                .ConstructUsing((src, context) =>
+                {
+                    var storage = (ManagementSystemContext)context.Items["ManagementSystemContext"];
+                    CategoryRepository CRA = new(storage);
+                    EmployeeRepository ERA = new(storage);
+                    CustomerRepository CuRA = new(storage);
 
-
-                    return new Customer(src.CustomerType is string str ? categoryActions.GetCategoryByName(str) : categoryActions.GetCategoryBySerial(ser));
-
+                    Category? category = CRA.TryGetCategoryByName(src.TaskType ?? string.Empty);
+                    Customer? customer = CuRA.TryGetCustomerByName(src.CustomerName ?? string.Empty);
+                    EmployeeAccount? employee = ERA.TryGetEmployeeByName(src.EmployeeName ?? string.Empty);
+                    return new TaskAffair(category, customer, employee);
                 });
 
-
-                CreateMap<InventoryForView, InventoryInfo>()
-                .ConstructUsing((src, context) =>
-                {
-                    var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
-                    var id = (string)context.Items["name"];
-
-                    InventoryActions inventoryActions = new InventoryActions(dbContext);
-                    CategoryActions categoryActions = new CategoryActions(dbContext);
-
-
-                    Guid guid = inventoryActions.ExistsInventoryByName(id) ? inventoryActions.GetInventoryByName(id)!.ProductId : Guid.NewGuid();
-                    Category? cate = src.ProductType is string s && src.ProductType != string.Empty ? categoryActions.TryGetCategoryByName(s) : categoryActions.GetCategoryBySerial(100);
-
-                    return new InventoryInfo(guid, src.ProductName, src.ProductPrice, src.ProductCost, src.ProductModel,cate);
-                    
-                })
-                .ForMember(dest => dest.ProductType, opt => opt.MapFrom((src, dest) => dest.Categories?.CategoryId))
-                .ReverseMap()
-                .ForMember(dest => dest.ProductType, opt => opt.MapFrom(sc => sc.Categories.CategoryName ?? string.Empty));
-                
-
-            CreateMap<PageContext<InventoryInfo>, PageContext<InventoryForView>>()
-                .ConstructUsing((src, context) => new PageContext<InventoryForView>(src.pageIndex, src.MaxPage, src.Sum, context.Mapper.Map<List<InventoryForView>>(src.data)));
+            CreateMap<PageContext<TaskAffair>, PageContext<TaskAffairForView>>();
 
         }
     }
 
-    public class Sh
+
+    public class CategoryNameToGuidConverter : IValueConverter<string, Guid?>
     {
-        public static Category? CreateObj(CategoryActions categoryActions, int sortSerial, CategoryForAddOrUpdate update)
+        public Guid? Convert(string source, ResolutionContext context)
         {
-            var x = categoryActions.GetCategoryBySerial(sortSerial);
-            if (x is Category y)
+            var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
+            var ser = (int)context.Items["Serial"];
+            CategoryRepository CRA = new(dbContext);
+
+            return (ser != SystemInfo.CATEGORY ? CRA.TryGetCategoryByName(source) : CRA.TryGetCategoryBySerial(SystemInfo.CATEGORY))?.CategoryId;
+        }
+    }
+
+    public class CategoryForAddOrUpdateToCategoryConverter : ITypeConverter<CategoryForAddOrUpdate, Category>
+    {
+        public Category Convert(CategoryForAddOrUpdate source, Category opt, ResolutionContext context)
+        {
+            var dbContext = (ManagementSystemContext)context.Items["ManagementSystemContext"];
+            var sortSerial = (int)context.Items["Serial"];
+            CategoryRepository CRA = new(dbContext);
+
+            if (sortSerial != 0 && CreateObj(CRA, sortSerial, source) is Category obj)
+                return obj;
+            else return new Category
+            {
+                CategoryId = Guid.NewGuid(),
+                ParentCategoryId = CRA.TryGetCategoryBySerial(source.ParentSortSerial)?.CategoryId,
+                SortSerial = CRA.GetLastSerial() + 1,
+                CategoryLevel = CRA.GetLevelBySerial(source.ParentSortSerial) + 1
+            };
+        }
+
+        private static Category? CreateObj(CategoryRepository CRA, int sortSerial, CategoryForAddOrUpdate update)
+        {
+            if (CRA.TryGetCategoryBySerial(sortSerial) is Category y)
             {
                 y.CategoryName = update.CategoryName;
                 y.Remark = update.Remark;
-                y.ParentCategoryId = categoryActions.TryGetCategoryBySerial(update.ParentSortSerial)?.CategoryId;
+                y.ParentCategoryId = CRA.TryGetCategoryBySerial(update.ParentSortSerial)?.CategoryId;
                 return y;
             }
             return null;

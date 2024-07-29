@@ -3,8 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TaskManangerSystem.IServices.BeanServices;
-using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.IServices;
 
 namespace TaskManangerSystem.Models.DataBean
 {
@@ -27,13 +26,14 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("备注")]
         public string? Remark { get; set; }
 
-        public Category? ParentCategory { get; set; }
+        public virtual Category? ParentCategory { get; set; }
 
         public Category() { }
 
-        
+        //public void Update() { }
 
-        
+
+
 
 
         // 用于系统初始化
@@ -66,7 +66,7 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("产品类型-使用分类ID"), ForeignKey("CategoryId")]
         public Guid? ProductType { get; set; }
 
-        public Category? Categories { get; set; }
+        public virtual Category? Categories { get; set; }
 
         public InventoryInfo() { }
 
@@ -81,6 +81,7 @@ namespace TaskManangerSystem.Models.DataBean
             ProductType = categories?.CategoryId;
         }
     }
+
     [Comment("库存变动信息")]
     public class InOutStock
     {
@@ -98,16 +99,16 @@ namespace TaskManangerSystem.Models.DataBean
 
 
         [Comment("任务ID")]
-        public Guid TaskId { get; set; }
-
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-        public TaskAffair Task { get; set; }
+        public Guid? TaskId { get; set; }
 
 
-        public InventoryInfo InventoryInfo { get; set; }
+        public virtual TaskAffair? Task { get; set; }
+
+
+        public virtual InventoryInfo? InventoryInfo { get; set; }
 
         [Comment("产品ID")]
-        public Guid ProductId { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+        public Guid? ProductId { get; set; }
+
     }
 }

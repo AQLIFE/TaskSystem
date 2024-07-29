@@ -40,7 +40,7 @@ namespace TaskManangerSystem.Services
 
     public class CustomRequirement : IAuthorizationRequirement
     {
-        public int Roles => SystemInfo.adminRole;
+        public int Roles => SystemInfo.AdminRole;
     }
 
     public class CustomHandler(ILogger<CustomHandler> logger, LogInfo log) : AuthorizationHandler<CustomRequirement>
