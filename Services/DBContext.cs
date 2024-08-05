@@ -4,7 +4,7 @@ using TaskManangerSystem.Models.DataBean;
 namespace TaskManangerSystem.Services
 {
 
-    public class ManagementSystemContext : DbContext
+    public class ManagementSystemContext(DbContextOptions<ManagementSystemContext> options) : DbContext(options)
     {
         public DbSet<EmployeeAccount> employees { get; set; }
         public DbSet<EmployeeInfo> realInfos { get; set; }
@@ -15,7 +15,7 @@ namespace TaskManangerSystem.Services
         public DbSet<TaskStatusTrack> tracks { get; set; }
         public DbSet<InOutStock> inOutStocks { get; set; }
 
-        public ManagementSystemContext(DbContextOptions<ManagementSystemContext> options) : base(options) { }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

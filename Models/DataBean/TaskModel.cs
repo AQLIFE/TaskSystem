@@ -14,8 +14,7 @@ namespace TaskManangerSystem.Models.DataBean
         [Comment("客户名称"), Required]
         public string CustomerName { get; set; } = string.Empty;
 
-        //[NotMapped]
-        //public string HashName => ShaHashExtensions.ComputeSHA256Hash(CustomerName);
+
         [Comment("客户联系方式")]
         public string? CustomerContactWay { get; set; }
         [Comment("客户地址")]
@@ -85,8 +84,12 @@ namespace TaskManangerSystem.Models.DataBean
         public virtual Category? Categorys { get; set; }
         public virtual EmployeeAccount? EmployeeAccounts { get; set; }
 
-        public TaskAffair(Category? taskCategory, Customer? customer, EmployeeAccount? employee)
+        public TaskAffair(TaskAffairForAdd add, Category? taskCategory, Customer? customer, EmployeeAccount? employee, int serial = 0)
         {
+            Content = add.Content;
+            Cost = add.Cost;
+            this.Serial = serial;
+
             Categorys = taskCategory;
             TaskType = taskCategory?.CategoryId;
             Customers = customer;

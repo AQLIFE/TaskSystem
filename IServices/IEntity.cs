@@ -8,7 +8,7 @@ namespace TaskManangerSystem.IServices
 
     public class EAlias : IAlias
     {
-        public string EmployeeAlias { get; set; }
+        public string EmployeeAlias { get; set; } = string.Empty;
     }
     public interface IPart : IAlias
     {
@@ -45,14 +45,6 @@ namespace TaskManangerSystem.IServices
     {
         public Guid CategoryId { get; set; }
         public Guid? ParentCategoryId { get; set; }
-
-        // public int SortSerial { set; get; }
-
-        // public string CategoryName { get; set; }
-
-        // public int CategoryLevel { get; set; }
-
-        // public string? Remark { get; set; }
     }
 
     public interface ICustomerInfo

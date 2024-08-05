@@ -7,15 +7,15 @@ using TaskManangerSystem.Services;
 
 namespace TaskManangerSystem.Actions
 {
-    public class DelegateExpressionTree
+    public static class DelegateExpressionTree
     {
-        public static Expression<Func<Category, object?>> paCategory = ex => ex.ParentCategory;
+        public readonly static Expression<Func<Category, object?>> paCategory = ex => ex.ParentCategory;
 
-        public static Expression<Func<Customer, object?>> customer = ex => ex.Categories;
+        public readonly static Expression<Func<Customer, object?>> customer = ex => ex.Categories;
 
-        public static Expression<Func<InventoryInfo, object?>> inventory = ex => ex.Categories;
+        public readonly static Expression<Func<InventoryInfo, object?>> inventory = ex => ex.Categories;
 
-        public static Expression<Func<TaskAffair, object?>>[] task =
+        public readonly static Expression<Func<TaskAffair, object?>>[] task =
             [
             e=>e.Customers,
             e=>e.Categorys,
@@ -36,6 +36,8 @@ namespace TaskManangerSystem.Actions
         {
             foreach (var item in SystemInfo.categories)
                 context.Entry<Category>(item).State = EntityState.Added;
+            foreach (var item in SystemInfo.customer)
+                context.Entry<Category>(item).State = EntityState.Added;
             Console.WriteLine("添加分类");
             return await context.SaveChangesAsync();
         }
@@ -44,13 +46,14 @@ namespace TaskManangerSystem.Actions
         {
             CategoryRepositoryAsync CRA = new(context);
             Category? category;
-            if (!await CRA.ExistsCategoryBySerialAsync(103))
+            if (!await CRA.ExistsCategoryBySerialAsync(SystemInfo.CUSTOMER))
             {
-                category = new("本公司", 103, "管理员所属公司", 2, (await CRA.GetCategoryBySerialAsync(101))?.CategoryId);
+                category = new("本公司", SystemInfo.CUSTOMER, "管理员所属公司", 2, (await CRA.GetCategoryBySerialAsync(SystemInfo.EMPLOYEE))?.CategoryId);
+
                 context.Entry<Category>(category).State = EntityState.Added;
                 context.SaveChanges();
             }
-            else category = await CRA.GetCategoryBySerialAsync(103);
+            else category = await CRA.GetCategoryBySerialAsync(SystemInfo.CUSTOMER);
 
             SystemInfo.customers.CustomerType = category?.CategoryId;
 
@@ -74,18 +77,16 @@ namespace TaskManangerSystem.Actions
 
         public async Task<EmployeeAccount?> TryGetEmployeeByNameAsync(string name) => await TryGetAsync(e => e.EmployeeAlias == name);
         public async Task<EmployeeAccount?> TryGetEmployeeByHashIdAsync(string hashId) => await TryGetAsync(e => e.HashId == hashId);
-           
+
 
         public async Task<bool> UpdatePwdAsync(EmployeeAccount obj, string newPwd, string oldPwd)
-        {
-            if (obj.EmployeePwd == ShaHashExtensions.ComputeSHA512Hash(oldPwd))
-            {
-                obj.Update(ShaHashExtensions.ComputeSHA512Hash(newPwd));
-                return await UpdateAsync(obj);
+        => await obj.ConditionalCheckAsync(e => e.EmployeePwd == oldPwd.ComputeSHA512Hash(),
+                async c =>
+                {
+                    _ = obj.Update(newPwd.ComputeSHA512Hash());
+                    return await UpdateAsync(obj);
+                }, false);
 
-            }
-            return false;
-        }
         public async Task<bool> UpdateLevelAsync(EmployeeAccount obj, int level = 1)
         {
             obj.Update(level);
@@ -95,19 +96,9 @@ namespace TaskManangerSystem.Actions
         public async Task<bool> DisabledAsync(EmployeeAccount obj)
         => await UpdateLevelAsync(obj, 0);
 
-        public async Task<PageContext<EmployeeAccount>?> SearchAsync(int page, int pageContext, bool isUp)
-        {
-            PageContext<EmployeeAccount>? x = await base.SearchAsync(e => e.EmployeeId, page, pageContext);
+        public async Task<PageContent<EmployeeAccount>?> SearchAsync(int page, int PageContent, bool isUp)
+        => await base.SearchAsync(e => e.EmployeeId, page, PageContent, c => c.AccountPermission >= 1, isUp);
 
-            if (x is null) return null;
-            if (isUp)
-            {
-                var t = x.data.Where(e => e.AccountPermission >= 1).ToList();
-                x.data = t;
-                x.Sum = t.Count();
-            }
-            return x;
-        }
     }
 
     [Obsolete("该类不具有封装意义")]
@@ -115,6 +106,7 @@ namespace TaskManangerSystem.Actions
     {
         public EmployeeAccount? TryGetEmployeeByName(string name) => TryGet(e => e.EmployeeAlias == name);
     }
+
 
     public class CategoryRepositoryAsync(ManagementSystemContext storage) : IncludeRepositoryAsync<Category>(storage, [DelegateExpressionTree.paCategory])
     {
@@ -146,7 +138,7 @@ namespace TaskManangerSystem.Actions
         public async Task<List<Category>?> GetCategoryListByParentSerial(int parSerial)
         => await ExistsCategoryBySerialAsync(parSerial)
             && await GetCategoryBySerialAsync(parSerial) is Category s
-            && (await SearchAsync(keySelector: e => e.CategoryLevel, predicate: t => t.ParentCategoryId == s.CategoryId))?.data is List<Category> b ? b : null;
+            && (await SearchAsync(keySelector: e => e.CategoryLevel, predicate: t => t.ParentCategoryId == s.CategoryId))?.PageData is List<Category> b ? b : null;
 
 
         ///<summary>
@@ -161,18 +153,18 @@ namespace TaskManangerSystem.Actions
         public async Task<int> GetSerialById(Guid id)
             => !await ExistsCategoryAsync(id) ? (await GetCategoryAsync(id))!.SortSerial : 0;
 
-        ///<summary>
-        /// 低级封装 ： 根据ID 返回分类等级
-        ///</summary>
-        public async Task<int> GetLevelByIdAsync(Guid? parId)
-        {
-            var obj = await GetCategoryAsync(parId);
-            if (obj != null)
-                return !await ExistsCategoryAsync(obj.ParentCategoryId)
-                ? obj!.CategoryLevel
-                : await GetLevelByIdAsync(obj!.ParentCategoryId) + 1;
-            else return 1;
-        }
+        /////<summary>
+        ///// 低级封装 ： 根据ID 返回分类等级
+        /////</summary>
+        //public async Task<int> GetLevelByIdAsync(Guid? parId)
+        //{
+        //    var obj = await GetCategoryAsync(parId);
+        //    if (obj != null)
+        //        return !await ExistsCategoryAsync(obj.ParentCategoryId)
+        //        ? obj!.CategoryLevel
+        //        : await GetLevelByIdAsync(obj!.ParentCategoryId) + 1;
+        //    else return 1;
+        //}
 
 
 
@@ -183,13 +175,7 @@ namespace TaskManangerSystem.Actions
         /// <returns>level</returns>
         public async Task<int> GetLevelBySerialAsync(int parSerial)
             => await ExistsCategoryBySerialAsync(parSerial) && await GetCategoryBySerialAsync(parSerial) is Category b ? b.CategoryLevel : 1;
-        //? await GetLevelByIdAsync(b.ParentCategoryId) + 1
-        //: 1;
 
-        // public int GetLevelBySerial(int parSerial)
-        //     => ExistAsyncsCategoryBySerial(parSerial) && GetCategoryBySerial(parSerial) is Category b ? b.CategoryLevel : 1;
-        //? GetLevelById(b.ParentCategoryId) + 1
-        //: 1;
 
         /// <summary>
         /// 获取最后一个Serial
@@ -215,20 +201,20 @@ namespace TaskManangerSystem.Actions
 
 
 
-        public async Task<PageContext<Category>?> GetCategoryListAsync(int page = 1, int pageSize = 100)
+        public async Task<PageContent<Category>?> GetCategoryListAsync(int page = 1, int pageSize = 100)
         {
             return await SearchAsync(e => e.SortSerial, page, pageSize, s => s.CategoryLevel >= 1);
         }
 
 
-        public async Task<PageContext<Category>?> GetCategoryListByLevelAsync(int level = 1, int page = 1, int pageSize = 100)
+        public async Task<PageContent<Category>?> GetCategoryListByLevelAsync(int level = 1, int page = 1, int pageSize = 100)
 
         {
             return await SearchAsync(e => e.CategoryLevel, page, pageSize, s => s.CategoryLevel == level);
         }
 
 
-        public async Task<PageContext<Category>?> GetCategoryListByParIdAsync(int parId = 100, int page = 1, int pageSize = 120)
+        public async Task<PageContent<Category>?> GetCategoryListByParIdAsync(int parId = 100, int page = 1, int pageSize = 120)
 
         {
             return await ExistsCategoryBySerialAsync(parId) && await GetCategoryBySerialAsync(parId) is Category c
@@ -248,13 +234,13 @@ namespace TaskManangerSystem.Actions
         public int GetLevelBySerial(int parSerial) => ExistsCategoryBySerial(parSerial) && TryGetCategoryBySerial(parSerial) is Category b ? b.CategoryLevel : 1;
     }
 
-    public class CustomerRepositoryAsync(ManagementSystemContext storage) : IncludeRepositoryAsync<Customer>(storage,[DelegateExpressionTree.customer])
+    public class CustomerRepositoryAsync(ManagementSystemContext storage) : IncludeRepositoryAsync<Customer>(storage, [DelegateExpressionTree.customer])
     {
         public async Task<bool> ExistsCustomerByNameAsync(string Hashname) => await ExistAsync(e => e.CustomerName == Hashname);
 
         public Customer? GetCustomerByName(string HashName) => AsEntity.Where(e => e.CustomerName == HashName).FirstOrDefault();
-     
-        public async Task<PageContext<Customer>?> SearchAsync(int pageIndex, int pageSize)
+
+        public async Task<PageContent<Customer>?> SearchAsync(int pageIndex, int pageSize)
         => await base.SearchAsync(t => t.AddTime, pageIndex, pageSize, c => c.ClientGrade >= 1);
     }
 
@@ -263,7 +249,8 @@ namespace TaskManangerSystem.Actions
         public Customer? TryGetCustomerByName(string name) => TryGet(e => e.CustomerName == name);
     }
 
-    public class InventoryRepositoryAsync(ManagementSystemContext storage) : IncludeRepositoryAsync<InventoryInfo>(storage, [DelegateExpressionTree.inventory] )
+
+    public class InventoryRepositoryAsync(ManagementSystemContext storage) : IncludeRepositoryAsync<InventoryInfo>(storage, [DelegateExpressionTree.inventory])
     {
         public async Task<bool> ExistsInventoryAsync(Guid guid) => await ExistAsync(e => e.ProductId == guid);
         public async Task<bool> ExistsInventoryByNameAsync(string name) => await ExistAsync(e => e.ProductName == name);
@@ -273,10 +260,8 @@ namespace TaskManangerSystem.Actions
 
         public async Task<InventoryInfo?> TryGetInventoryAsync(Guid guid) => await ExistsInventoryAsync(guid) ? await TryGetAsync(guid) : null;
         public async Task<InventoryInfo?> TryGetInventoryByNameAsync(string name) => await ExistsInventoryByNameAsync(name) ? await GetInventoryByNameAsync(name) : null;
-        public async Task<PageContext<InventoryInfo>?> SearchAsync(int pageIndex, int pageSize)
+        public async Task<PageContent<InventoryInfo>?> SearchAsync(int pageIndex, int pageSize)
             => await base.SearchAsync(c => c.ProductName, pageIndex, pageSize);
-
-        
     }
 
     [Obsolete("该封装过于简略")]
@@ -306,8 +291,13 @@ namespace TaskManangerSystem.Actions
             return true;
         }
 
-        public async Task<PageContext<TaskAffair>?> SearchAsync(int index, int size)
+        public async Task<PageContent<TaskAffair>?> SearchAsync(int index, int size)
             => await base.SearchAsync(e => e.Serial, index, size);
+    }
+
+    public class TaskAffairRepository(ManagementSystemContext storage) : IncludeRepository<TaskAffair>(storage, DelegateExpressionTree.task)
+    {
+        public int GetLastSerial() => AsEntity.OrderBy(e => e.Serial).LastOrDefault()?.Serial ?? 0;
     }
 
     public class ErrorActions : IAPIRequest<string>

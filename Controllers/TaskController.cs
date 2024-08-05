@@ -15,18 +15,18 @@ namespace TaskManangerSystem.Controllers
         private TaskAffairRepositoryAsync TRA = new(storage);
 
         [HttpGet]
-        public async Task<PageContext<TaskAffairForView>> Gettasks(int index = 1, int size = 100)
-        => mapper.Map<PageContext<TaskAffairForView>>(await TRA.SearchAsync(index, size));
+        public async Task<PageContent<TaskAffairForSelect>> Gettasks(int index = 1, int size = 100)
+        => mapper.Map<PageContent<TaskAffairForSelect>>(await TRA.SearchAsync(index, size));
 
         // GET: api/tasks/{id}
         [HttpGet("{id}")]
-        public async Task<TaskAffairForView> GetTaskAffair(int serial)
-        => mapper.Map<TaskAffairForView>(await TRA.GetTaskAffairBySerial(serial));
+        public async Task<TaskAffairForSelect> GetTaskAffair(int serial)
+        => mapper.Map<TaskAffairForSelect>(await TRA.GetTaskAffairBySerial(serial));
 
         // POST: api/tasks
         [HttpPost]
-        public async Task<bool> CreateTaskAffair(TaskAffairForView taskAffair)
-        => await TRA.ExistsTaskAffairBySerialAsync(taskAffair.Serial) ? false : await TRA.AddAsync(mapper.Map<TaskAffair>(taskAffair, opt => opt.Items["ManagementSystemContext"] = storage));
+        public async Task<bool> CreateTaskAffair(TaskAffairForAdd taskAffair)
+        => await TRA.AddAsync(mapper.Map<TaskAffair>(taskAffair, opt => opt.Items["ManagementSystemContext"] = storage));
 
 
         // PUT: api/tasks/{id}

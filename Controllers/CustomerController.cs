@@ -17,8 +17,8 @@ namespace TaskManangerSystem.Controllers
 
 
         [HttpGet]
-        public async Task<PageContext<CustomerForSelect>?> GetCustomers(int page = 1, int pageSize = SystemInfo.PageSize)
-            => mapper.Map<PageContext<CustomerForSelect>>(await CuRA.SearchAsync(page, pageSize));
+        public async Task<PageContent<CustomerForSelect>?> GetCustomers(int page = 1, int pageSize = SystemInfo.PageSize)
+            => mapper.Map<PageContent<CustomerForSelect>>(await CuRA.SearchAsync(page, pageSize));
 
         [HttpGet("{hashName}")]
         public async Task<CustomerForSelect?> GetCustomerByName(string hashName)

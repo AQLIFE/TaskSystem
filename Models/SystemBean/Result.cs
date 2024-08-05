@@ -11,30 +11,21 @@ namespace TaskManangerSystem.Models.SystemBean
         [JsonInclude]
         public T? Data = data;
 
-        public ObjectResult ToObjectResult() => new ObjectResult(this);
+        public static implicit operator ObjectResult(Result<T> result) => new(result);
     }
 
     public static class GlobalResult
     {
-        public static ObjectResult Message(string ms) => new Result<string>(ms).ToObjectResult();
-        public static ObjectResult InvalidParameter = new Result<string>("仅允许你自己的信息").ToObjectResult();//无效参数
+        public static readonly Result<string> Cancelled = new("你的账户不存在，请重新登录");
+        public static readonly Result<string> PWDError = new("旧密码错误");
+        public static readonly Result<string> NotAdmin = new("禁止修改管理员账户");
+        public static readonly Result<string> InvalidParameter = new("无效数据");
+        public static readonly Result<string> Forbidden = new("验证失败");
+        public static readonly Result<string> NotAccess = new("无权访问");
 
-        public static ObjectResult NoData = new Result<string>("信息不合法或不存在").ToObjectResult();
-        // public static ObjectResult Data = new Result<string>("信息重复").ToObjectResult();
-        public static ObjectResult Repetition(string name) => new Result<string>(name + "重复").ToObjectResult();
-
-        public static ObjectResult Cancelled = new Result<string>("你的账户不存在，请重新登录").ToObjectResult();
-
-        public static ObjectResult NoAccess = new Result<string>("访问无效").ToObjectResult();
-
-        public static Result<string> LimitedAuthority = new Result<string>("权限不足");
-
-        public static ObjectResult LimitAuth = new Result<string>("权限不足").ToObjectResult();
-
-        public static ObjectResult PWDError = new Result<string>("旧密码错误").ToObjectResult();
-        public static ObjectResult NotAdmin = new Result<string>("禁止修改管理员账户").ToObjectResult();
-        public static Result<string> Forbidden = new Result<string>("验证失败");
-        public static Result<string> NotAccess = new Result<string>("访问无效");
+        public static Result<string> Message(string ms) => new(ms);
+        public static Result<string> Repetition(string name) => new(name + "重复");
+        public static Result<object?> Succeed(object? obj) => new(obj, obj is not null);
 
     }
 }

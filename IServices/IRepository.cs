@@ -17,7 +17,7 @@ namespace TaskManangerSystem.IServices
         TSource? TryGet(Expression<Func<TSource, bool>> keySelector);
         int Count(Expression<Func<TSource, bool>>? keySelector);
 
-        PageContext<TSource>? Search<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true);
+        PageContent<TSource>? Search<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true);
 
     }
 
@@ -36,8 +36,18 @@ namespace TaskManangerSystem.IServices
 
         Task<int> CountAsync(Expression<Func<TSource, bool>>? keySelector);
 
-        //限数搜索
-        Task<PageContext<TSource>?> SearchAsync<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true);
+
+        /// <summary>
+        /// 复合查询
+        /// </summary>
+        /// <typeparam name="TKey">排序关键字段类型</typeparam>
+        /// <param name="keySelector">排序关键字</param>
+        /// <param name="pageIndex">搜索数据起始位</param>
+        /// <param name="pageSize">单页数据量</param>
+        /// <param name="predicate">搜索条件</param>
+        /// <param name="isAsc">升序Or降序(默认升序)</param>
+        /// <returns></returns>
+        Task<PageContent<TSource>?> SearchAsync<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true);
 
     }
 }

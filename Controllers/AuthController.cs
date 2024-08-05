@@ -29,8 +29,8 @@ namespace TaskManangerSystem.Controllers
 
 
         [HttpGet("list"), Authorize(Policy = "admin")]
-        public async Task<PageContext<EmployeeAccountForSelectOrUpdate>?> GetAuthList([FromHeader] bool isUp = true, int page = 1, int pageContext = SystemInfo.PageSize)
-        => mapper.Map<PageContext<EmployeeAccountForSelectOrUpdate>>(await ERA.SearchAsync(page, pageContext, isUp));
+        public async Task<PageContent<EmployeeAccountForSelectOrUpdate>?> GetAuthList([FromHeader] bool isUp = true, int page = 1, int PageContent = SystemInfo.PageSize)
+        => mapper.Map<PageContent<EmployeeAccountForSelectOrUpdate>>(await ERA.SearchAsync(page, PageContent, isUp));
 
 
 
@@ -47,8 +47,7 @@ namespace TaskManangerSystem.Controllers
 
         [HttpPost("register"), AllowAnonymous]//增加
         public async Task<bool> PostRegister(EmployeeAccountForLoginOrAdd info)
-            => await ERA.ExistsEmployeeByNameAsync(info.EmployeeAlias) ? false :
-             await ERA.AddAsync(mapper.Map<EmployeeAccount>(info));
+            => !await ERA.ExistsEmployeeByNameAsync(info.EmployeeAlias) && await ERA.AddAsync(mapper.Map<EmployeeAccount>(info));
 
 
 
@@ -59,14 +58,14 @@ namespace TaskManangerSystem.Controllers
         public async Task<bool> Uplevel(string hashId = "")
         {
             EmployeeAccount? employeeAccount = await ERA.TryGetEmployeeByHashIdAsync(hashId == "" ? HashId : hashId);
-            return employeeAccount is EmployeeAccount ? await ERA.UpdateLevelAsync(employeeAccount) : false;
+            return employeeAccount is not null && await ERA.UpdateLevelAsync(employeeAccount);
         }
 
         [HttpPut("secret")]//修改密码
         public async Task<bool> PutSecret(string pwd, string oldPwd, string hashId = "")
         {
             EmployeeAccount? employeeAccount = await ERA.TryGetEmployeeByHashIdAsync(hashId == "" ? HashId : hashId);
-            return employeeAccount is EmployeeAccount x ? await ERA.UpdatePwdAsync(x, pwd, oldPwd) : false;
+            return employeeAccount is EmployeeAccount x && await ERA.UpdatePwdAsync(x, pwd, oldPwd);
         }
 
 
@@ -76,8 +75,9 @@ namespace TaskManangerSystem.Controllers
         {
             var a = await ERA.TryGetEmployeeByHashIdAsync(hashId == "" ? HashId : hashId);
 
-            return a is not null ? await ERA.DisabledAsync(a) : false;
+            return a is not null && await ERA.DisabledAsync(a);
         }
     }
 
 }
+

@@ -1,6 +1,4 @@
-﻿using AutoMapper.Execution;
-using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.Cms;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TaskManangerSystem.IServices;
 using TaskManangerSystem.Services;
@@ -36,7 +34,7 @@ namespace TaskManangerSystem.Actions
         /// <param name="keySelector">指定排序的字段</param>
         /// <param name="isAsc">排序方式</param>
         /// <returns></returns>
-        public async Task<PageContext<TSource>?> SearchAsync<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
+        public async Task<PageContent<TSource>?> SearchAsync<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
         {
             IQueryable<TSource> queryable = AsEntity.AsQueryable().AsNoTracking();
             if (predicate is not null)
@@ -50,7 +48,7 @@ namespace TaskManangerSystem.Actions
 
             int maxPage = (int)Math.Ceiling(count / (double)pageSize);
 
-            return new PageContext<TSource>(index: pageIndex, max: maxPage, count: count, info: await query.ToListAsync());
+            return new PageContent<TSource>(index: pageIndex, max: maxPage, count: count, info: await query.ToListAsync());
         }
 
     }
@@ -67,7 +65,7 @@ namespace TaskManangerSystem.Actions
         public bool Update(TSource info) { AsEntity.Update(info); ; return storage.SaveChanges() == 1; }
         public bool Delete(Expression<Func<TSource, bool>> keySelector) { AsEntity.Where(keySelector); return storage.SaveChanges() == 1; }
 
-        public PageContext<TSource>? Search<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
+        public PageContent<TSource>? Search<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
         {
             IQueryable<TSource> queryable = AsEntity.AsQueryable().AsNoTracking();
             if (predicate is not null)
@@ -81,22 +79,20 @@ namespace TaskManangerSystem.Actions
 
             int maxPage = (int)Math.Ceiling(count / (double)pageSize);
 
-            return new PageContext<TSource>(index: pageIndex, max: maxPage, count: count, info: query.ToList());
+            return new PageContent<TSource>(index: pageIndex, max: maxPage, count: count, info: [.. query]);
         }
 
     }
 
     public class IncludeRepositoryAsync<TSource>(ManagementSystemContext storage, Expression<Func<TSource, object?>>[] attribute) : RepositoryAsync<TSource>(storage) where TSource : class
     {
-        //private DbSet<TSource> _Entity = storage.Set<TSource>();
-
-        //public new DbSet<TSource> AsEntity { set { foreach (var item in attribute) _Entity.Include(item); } get {  return _Entity; } }
-
         public new async Task<TSource?> TryGetAsync(Expression<Func<TSource, bool>> keySelector)
         {
-            var q=attribute.SelectMany(item => AsEntity.Include(item).AsQueryable()).AsQueryable<TSource>();
-            return await Task.FromResult(q.FirstOrDefault(keySelector));
-            //不支持FirstOrDefaultAsync
+            IQueryable<TSource> queryable = AsEntity;
+            foreach (var item in attribute) queryable = queryable.Include(item);
+
+            return await queryable.FirstOrDefaultAsync(keySelector);
+
         }
 
 
@@ -110,15 +106,15 @@ namespace TaskManangerSystem.Actions
         /// <param name="predicate"></param>
         /// <param name="isAsc"></param>
         /// <returns></returns>
-        public new async Task<PageContext<TSource>?> SearchAsync<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
+        public new async Task<PageContent<TSource>?> SearchAsync<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
         {
-            //IQueryable<TSource> queryable = AsEntity.AsQueryable().AsNoTracking();
+            IQueryable<TSource> queryable = AsEntity;
+            foreach (var item in attribute) queryable = queryable.Include(item);
 
-            IQueryable<TSource> queryable = attribute.SelectMany(item => AsEntity.Include(item).AsQueryable()).AsQueryable();
             if (predicate is not null)
                 queryable = queryable.Where(predicate);
 
-            int count = await Task.FromResult(queryable.Count());
+            int count = await queryable.CountAsync();
 
             IQueryable<TSource> query = isAsc ?
                     queryable.OrderBy(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize) :
@@ -126,22 +122,58 @@ namespace TaskManangerSystem.Actions
 
             int maxPage = (int)Math.Ceiling(count / (double)pageSize);
 
-            return new PageContext<TSource>(index: pageIndex, max: maxPage, count: count, info: query.ToList());
+            return new PageContent<TSource>(index: pageIndex, max: maxPage, count: count, info: [.. query]);
         }
+
     }
 
     public class IncludeRepository<TSource>(ManagementSystemContext storage, params Expression<Func<TSource, object?>>[] attribute) : Repository<TSource>(storage) where TSource : class
     {
-        private DbSet<TSource> _Entity = storage.Set<TSource>();
+        public new TSource? TryGet(Expression<Func<TSource, bool>> keySelector)
+        {
+            IQueryable<TSource> queryable = AsEntity;
+            foreach (var item in attribute) queryable = queryable.Include(item);
+            return queryable.FirstOrDefault(keySelector);
 
-        public new DbSet<TSource> AsEntity { set { _Entity = value; } get { foreach (var item in attribute) _Entity.Include(item); return _Entity; } }
+        }
+
+
+        /// <summary>
+        /// 异步查询
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="keySelector"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="predicate"></param>
+        /// <param name="isAsc"></param>
+        /// <returns></returns>
+        public new PageContent<TSource>? Search<TKey>(Expression<Func<TSource, TKey>> keySelector, int pageIndex = 1, int pageSize = int.MaxValue, Expression<Func<TSource, bool>>? predicate = null, bool isAsc = true)
+        {
+            IQueryable<TSource> queryable = AsEntity;
+            foreach (var item in attribute) queryable = queryable.Include(item);
+
+            if (predicate is not null)
+                queryable = queryable.Where(predicate);
+
+            int count = queryable.Count();
+
+            IQueryable<TSource> query = isAsc ?
+                    queryable.OrderBy(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize) :
+                    queryable.OrderByDescending(keySelector).Skip((pageIndex - 1) * pageSize).Take(pageSize);
+
+            int maxPage = (int)Math.Ceiling(count / (double)pageSize);
+
+            return new PageContent<TSource>(index: pageIndex, max: maxPage, count: count, info: [.. query]);
+        }
+
     }
 
-    public class PageContext<TSource>(int index, int max, int count, List<TSource> info)
+    public class PageContent<TSource>(int index, int max, int count, List<TSource> info)
     {
-        public int pageIndex { set; get; } = index;
+        public int PageIndex { set; get; } = index;
         public int MaxPage { set; get; } = max;
         public int Sum { set; get; } = count;
-        public List<TSource> data { set; get; } = info;
+        public List<TSource> PageData { set; get; } = info;
     }
 }

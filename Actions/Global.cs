@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using TaskManangerSystem.Models.DataBean;
+using TaskManangerSystem.Models.SystemBean;
 
 namespace TaskManangerSystem.Actions
 {
@@ -30,61 +31,123 @@ namespace TaskManangerSystem.Actions
             }
         }
 
-        public static EmployeeAccount admin => new("admin", ShaHashExtensions.ComputeSHA512Hash("admin@123"), AdminRole + 9);
+        public static EmployeeAccount admin => new("admin", "admin@123".ComputeSHA512Hash(), AdminRole + 9);
         public static Category[] categories => [
             new("分类垃圾桶",TRASH,"用于存放标记为删除的分类信息"),
             new("库存分类",  CATEGORY,"用于对产品进行分类"),
             new("客户分类",  CUSTOMER,"用于对客户进行分类"),
             new("任务分类",  EMPLOYEE,"用于对任务进行分类")
+
+        ];
+
+        public static Category[] customer => [
+            new("普通客户", CUSTOMER+2,level:2,parId:categories[2].CategoryId),
+            new("特级客户", CUSTOMER+3,level:2,parId:categories[2].CategoryId),
+            new("机密客户", CUSTOMER+4,level:2,parId:categories[2].CategoryId)
         ];
         // public static readonly Category category = new("本公司", 103, "管理员所属公司", 2, actions.GetCategoryBySerial(101)?.CategoryId);
         public static Customer customers = new("管理员", Guid.NewGuid(), DefaultRole, "10241024", "本公司");
 
 
         // public readonly static string DBLINK = Environment.GetEnvironmentVariable("DB_LINK") ?? throw new Exception("Program Error:Miss DB_LINK");
-        private readonly static string DB_NAME = Environment.GetEnvironmentVariable("DB_NAME") ?? throw new Exception("Program Error:Miss DB_NAME");
-        private readonly static string DB_HOST_NAME = Environment.GetEnvironmentVariable("DB_HOST_NAME") ?? throw new Exception("Program Error:Miss DB_HOST_NAME");
-        private readonly static string DB_PART_NAME = Environment.GetEnvironmentVariable("DB_PART_NAME") ?? throw new Exception("Program Error:Miss DB_PART_NAME");
-        private readonly static string DB_HOST_PASS = Environment.GetEnvironmentVariable("DB_HOST_PASS") ?? throw new Exception("Program Error:Miss DB_HOST_PASS");
+        private readonly static string DB_NAME = Environment.GetEnvironmentVariable("DB_NAME") ?? throw new Exception(ErrorMessage.MISS_DBNAME);
+        private readonly static string DB_HOST_NAME = Environment.GetEnvironmentVariable("DB_HOST_NAME") ?? throw new Exception(ErrorMessage.MISS_DBHOST);
+        private readonly static string DB_HOST_PASS = Environment.GetEnvironmentVariable("DB_HOST_PASS") ?? throw new Exception(ErrorMessage.MISS_DBPASS);
+        private readonly static string DB_PART_NAME = Environment.GetEnvironmentVariable("DB_PART_NAME") ?? throw new Exception(ErrorMessage.MISS_DBPART);
 
         public static string DB_LINK => $"server={SystemInfo.DB_HOST_NAME};port=3306;database={SystemInfo.DB_NAME};user={SystemInfo.DB_PART_NAME};password={DB_HOST_PASS};";
 
-        public readonly static string ISSUER = Environment.GetEnvironmentVariable("ISSUER") ?? throw new Exception("Program Error:Misssing ISSUER");
-        public readonly static string AUDIENCE = Environment.GetEnvironmentVariable("AUDIENCE") ?? throw new Exception("Program Error:Misssing AUDIENCE");
-        public readonly static string SECURITYKEY = Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception("Program Error:Missing API_KEY");
-        public readonly static string CERTPATH = Environment.GetEnvironmentVariable("RSA_CERT_PATH") ?? throw new Exception("Program Error:Miss RSA_CERT_PATH");
+        public readonly static string ISSUER = Environment.GetEnvironmentVariable("ISSUER") ?? throw new Exception(ErrorMessage.MISS_JWT_ISSUER);
+        public readonly static string AUDIENCE = Environment.GetEnvironmentVariable("AUDIENCE") ?? throw new Exception(ErrorMessage.MISS_JWT_AUDIENCE);
+        public readonly static string SECURITYKEY = Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception(ErrorMessage.MISS_JWT_KEY);
+        public readonly static string CERTPATH = Environment.GetEnvironmentVariable("RSA_CERT_PATH") ?? throw new Exception(ErrorMessage.MISS_JWT_RSA_CERT);
         // 假设私钥存储在环境变量中，需要根据实际情况调整
 
     }
 
 
 
-    public static class CustomOperators
+    public static class ConditionalCheckOperators
     {
-        //截断，但无法设置返回值
+        /// <summary>
+        /// 方法A
+        /// 支持Lambda 表达式的方式去检查对象<T>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj">检查对象</param>
+        /// <param name="condition">检查条件</param>
+        /// <returns>符合条件则返回obj，反之返回default<T></returns>
         public static T? ConditionalCheck<T>(this T obj, Func<T, bool> condition) where T : class
             => obj is not null && condition(obj) ? obj : default;
 
-        //截断，允许设置成功返回值
+
+
+        /// <summary>
+        /// 方法B
+        /// 支持Lambda 表达式的方式去检查对象<T>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="obj">检查对象</param>
+        /// <param name="condition">检查条件</param>
+        /// <param name="succeed">成功时的操作</param>
+        /// <returns>符合条件则返回succeed(obj)，反之返回default</returns>
         public static TResult? ConditionalCheck<T, TResult>(this T obj, Func<T, bool> condition, Func<T, TResult> succeed) where T : class
             => obj is not null && condition(obj) ? succeed(obj) : default;
 
-        public static async Task<TResult?> ConditionalCheckAsync<T, TResult>(this T obj, Func<T, bool> condition, Func<T, Task<TResult>> succeed) where T : class
-            => obj is not null && condition(obj) ? await succeed(obj) : default;
 
-        //截断 ，不返回
-        public static void ConditionalCheck<T>(this T obj, Func<T, bool> condition, Action<T> succeed) where T : class
-        { if (obj is not null && condition(obj)) succeed(obj); }
+        /// <summary>
+        /// 方法B 的异步
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="condition"></param>
+        /// <param name="succeed"></param>
+        /// <returns></returns>
+        public static async Task<TResult?> ConditionalCheckAsync<T, TResult>(this T obj, Func<T, Task<bool>> condition, Func<T, Task<TResult>> succeed) where T : class
+            => obj is not null && await condition(obj) ? await succeed(obj) : default;
 
-        public static void ConditionalCheck<T>(this T obj, Func<T, bool> condition, Action<T> succeed, Action<T> fail) where T : class
-        { if (obj is not null && condition(obj)) succeed(obj); }
+        public static async Task<TResult?> ConditionalCheckAsync<T, TResult>(this T obj, Func<T, bool> condition, Func<T, Task<TResult>> succeed, TResult fail) where T : class
+            => obj is not null && condition(obj) ? await succeed(obj) : fail;
 
-        //非截断，允许设置双向返回值
+        public static async Task<TResult?> ConditionalCheckAsync<T, TResult>(this T obj, bool condition, Func<T, Task<TResult>> succeed, TResult fail) where T : class
+            => obj is not null && condition ? await succeed(obj) : fail;
+
+
+        /// <summary>
+        /// 方法C
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="obj">检查对象</param>
+        /// <param name="condition">检查条件</param>
+        /// <param name="succeed">成功时的操作</param>
+        /// <param name="fail">失败时的操作</param>
+        /// <returns>succeed(obj) Or fail(obj)</returns>
+        /// <exception cref="Exception">若检查对象为null，则会产生报错</exception>
         public static TResult ConditionalCheck<T, TResult>(this T obj, Func<T, bool> condition, Func<T, TResult> succeed, Func<T, TResult> fail) where T : class
-            => obj is not null ? (condition(obj) ? succeed(obj) : fail(obj)) : throw new Exception("Obj is null!!!");
+            => obj is not null ? (condition(obj) ? succeed(obj) : fail(obj)) : throw new Exception("obj is null,Cannot execute.");
 
+        /// <summary>
+        /// 方法C 的变体，在失败时返回一个自定义值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TResult">自定义值</typeparam>
+        /// <param name="obj">检查对象</param>
+        /// <param name="condition">检查条件</param>
+        /// <param name="succeed">成功时的操作</param>
+        /// <param name="fail">失败的值</param>
+        /// <returns>succeed(obj) Or fail</returns>
         public static TResult ConditionalCheck<T, TResult>(this T? obj, Func<T?, bool> condition, Func<T?, TResult> succeed, TResult fail) where T : class
         => condition(obj) ? succeed(obj) : fail;
+
+        //不返回值,但可能会修改obj
+        public static void ConditionalCheck<T>(this T obj, Func<T, bool> condition, Action<T> succeed) where T : class
+        { if (obj is not null && condition(obj)) succeed(obj); }
+        //不返回值，但可能会修改obj
+        public static void ConditionalCheck<T>(this T obj, Func<T, bool> condition, Action<T> succeed, Action<T> fail) where T : class
+        { if (obj is not null) { if (condition(obj)) succeed(obj); else fail(obj); } else throw new Exception("obj is null,Cannot execute."); }
     }
 
     /// <summary>

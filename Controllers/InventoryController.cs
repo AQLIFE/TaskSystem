@@ -13,8 +13,8 @@ namespace TaskManangerSystem.Controllers
     {
         private InventoryRepositoryAsync IRA = new(storage);
         [HttpGet]
-        public async Task<PageContext<InventoryForAddOrUpdate>?> GetInventoryList(int pageIndex = 1, int pageSize = SystemInfo.PageSize)
-        => mapper.Map<PageContext<InventoryForAddOrUpdate>?>(await IRA.SearchAsync(pageIndex, pageSize));
+        public async Task<PageContent<InventoryForAddOrUpdate>?> GetInventoryList(int pageIndex = 1, int pageSize = SystemInfo.PageSize)
+        => mapper.Map<PageContent<InventoryForAddOrUpdate>?>(await IRA.SearchAsync(pageIndex, pageSize));
 
         [HttpGet("info")]
         public async Task<InventoryForAddOrUpdate?> GetInventory(string name)

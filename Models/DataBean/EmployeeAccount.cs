@@ -10,7 +10,7 @@ namespace TaskManangerSystem.Models.DataBean
     [Comment("员工账户信息"), Index(nameof(EmployeeAlias), IsUnique = true)]
     public class EmployeeAccount : IEmployee
     {
-        [Key, Comment("GUID"), Required(ErrorMessage = "员工电子账户ID不能为空")]
+        [Key, Comment("GUID")]
         public Guid EmployeeId { set; get; } = Guid.NewGuid();
 
         [Comment("加密ID")]
@@ -42,11 +42,11 @@ namespace TaskManangerSystem.Models.DataBean
             SetHashId();
         }
 
-        public bool Update(int level) { this.AccountPermission = level == 0 ? 0 : (this.AccountPermission + level); return level == 0 ? false : true; }
+        public bool Update(int level) { this.AccountPermission = level == 0 ? 0 : (this.AccountPermission + level); return level != 0; }
 
-        public bool Update(string newPwd) { this.EmployeePwd = EmployeePwd != newPwd ? newPwd : EmployeePwd; return EmployeePwd != newPwd ? true : false; }
+        public bool Update(string newPwd) { this.EmployeePwd = EmployeePwd != newPwd ? newPwd : EmployeePwd; return EmployeePwd != newPwd; }
 
-        public void SetHashId() { this.HashId = ShaHashExtensions.ComputeSHA512Hash(this.EmployeeId.ToString()); }
+        public void SetHashId() { this.HashId = this.EmployeeId.ToString().ComputeSHA512Hash(); }
 
     }
 
@@ -57,16 +57,17 @@ namespace TaskManangerSystem.Models.DataBean
         public Guid EmployeeId { get; set; }
 
         [NotMapped]
-        public string HashId => ShaHashExtensions.ComputeSHA512Hash(EmployeeId.ToString());
+        public string HashId => EmployeeId.ToString().ComputeSHA512Hash();
 
         [MinLength(2, ErrorMessage = "姓名长度必须大于等于2"), Comment("员工姓名")]
         public string? EmployeeName { get; set; }
+
         [MinLength(11, ErrorMessage = "手机号长度必须大于等于11"), Comment("员工联系方式")]
         public string? EmployeeContactWay { get; set; }
 
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+
         [ForeignKey("EmployeeId"), Column("EmployeeId")]
-        public EmployeeAccount EmployeeSystemAccount { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+        public EmployeeAccount? EmployeeSystemAccount { get; set; }
+
     }
 }

@@ -20,7 +20,7 @@ namespace TaskManangerSystem.Controllers
 
 
         [HttpGet, Authorize(policy: "Admin")]
-        public async Task<PageContext<CategoryForSelect>?> GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = SystemInfo.PageSize)
+        public async Task<PageContent<CategoryForSelect>?> GetCategorys(CategoryType select = 0, int obj = 1, int page = 1, int pageSize = SystemInfo.PageSize)
         {
             var x = select switch
             {
@@ -31,7 +31,7 @@ namespace TaskManangerSystem.Controllers
             };
 
             return x is not null ?
-                 mapper.Map<PageContext<Category>, PageContext<CategoryForSelect>>(x)
+                 mapper.Map<PageContent<Category>, PageContent<CategoryForSelect>>(x)
             : null;
         }
 

@@ -18,11 +18,13 @@ namespace TaskManangerSystem.Services
             else return null;
         }
     }
+
     public class BearerInfo
     {
-        public BearerInfo() { }
 
-        private JwtSecurityToken jwt;
+        private readonly JwtSecurityToken jwt = new();
+
+        public BearerInfo() { }
         public BearerInfo(EmployeeAccount employeeAccount)
         {
             jwt = new(
@@ -30,26 +32,26 @@ namespace TaskManangerSystem.Services
                 audience: SystemInfo.AUDIENCE,
                 claims:
                 [
-                    new(ClaimTypes.Authentication,ShaHashExtensions.ComputeSHA512Hash(employeeAccount.EmployeeId.ToString())),
+                    new(ClaimTypes.Authentication,employeeAccount.EmployeeId.ToString().ComputeSHA512Hash()),
                     new(ClaimTypes.Role,          employeeAccount.AccountPermission.ToString())
                 ],
                 expires: DateTime.UtcNow.AddDays(7),
-                signingCredentials: KeyManager.SigningCredentials);
+                signingCredentials: CryptoManager.SigningCredentials);
         }
 
         public string CreateJWT()
             => new JwtSecurityTokenHandler().WriteToken(jwt);// 创建JwtSecurityToken
 
         public string CreateToken()
-            => JWT.Encode(payload: CreateJWT(), key: KeyManager.rsaEncryptor.Rsa, alg: JweAlgorithm.RSA_OAEP_256, enc: JweEncryption.A256CBC_HS512);
+            => JWT.Encode(payload: CreateJWT(), key: CryptoManager.rsaEncryptor.Rsa, alg: JweAlgorithm.RSA_OAEP_256, enc: JweEncryption.A256CBC_HS512);
         // 使用Jose库创建加密的JWE
 
     }
 
     public class BearerConfig
     {
-        public JwtBearerEvents bearerEvents = new();
-        public TokenValidationParameters tokenValidation;
+        public readonly JwtBearerEvents bearerEvents = new();
+        public readonly TokenValidationParameters tokenValidation;
 
         public BearerConfig()
         {
@@ -61,7 +63,7 @@ namespace TaskManangerSystem.Services
                 ValidAudience = SystemInfo.AUDIENCE,
                 ValidateLifetime = true,//验证失效时间
                 ValidateIssuerSigningKey = true,//验证公钥
-                IssuerSigningKey = KeyManager.SigningCredentials.Key
+                IssuerSigningKey = CryptoManager.SigningCredentials.Key
 
             };
 
@@ -74,39 +76,45 @@ namespace TaskManangerSystem.Services
                     context.Fail("全局规则:权限等级不足");
                 context.HttpContext.Items.Add("IsAdmin", accountPermission >= SystemInfo.AdminRole);
                 context.HttpContext.Items.Add("HashId", HttpAction.GetClaim(context.Principal?.Claims, ClaimTypes.Authentication)?.Value);
-
+                
                 await Task.CompletedTask;
             };
 
-            bearerEvents.OnChallenge = context =>
+            bearerEvents.OnChallenge = async (context) =>
             {
                 context.HandleResponse();
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                context.Response.WriteAsJsonAsync(GlobalResult.NotAccess);
-                return Task.FromResult(0);
+                await context.Response.WriteAsJsonAsync(GlobalResult.NotAccess);
             };
 
-            bearerEvents.OnForbidden = context =>
+            bearerEvents.OnForbidden = async (context) =>
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                context.Response.WriteAsJsonAsync(GlobalResult.Forbidden);
-                return Task.FromResult(0);
+                await context.Response.WriteAsJsonAsync(GlobalResult.Forbidden);
             };
-            bearerEvents.OnMessageReceived = context =>
-            {
 
-                var authorizationHeader = context.Request.Headers["Authorization"];
+            bearerEvents.OnMessageReceived = async (context) =>
+            {
+                var authorizationHeader = context.Request.Headers.Authorization;
+
+
                 if (!authorizationHeader.IsNullOrEmpty())
                 {
-
-                    string deJwt = JWT.Decode(authorizationHeader.ToString().Replace("Bearer ", ""), key: KeyManager.rsaDecryptor.Rsa, alg: JweAlgorithm.RSA_OAEP_256, enc: JweEncryption.A256CBC_HS512);
-                    context.Token = deJwt;
-                    return Task.FromResult(0);
-
+                    //string deJwt = 
+                    context.Token = JWT.Decode(
+                        authorizationHeader.ToString().Replace("Bearer ", ""),
+                        key: CryptoManager.rsaDecryptor.Rsa,
+                        alg: JweAlgorithm.RSA_OAEP_256,
+                        enc: JweEncryption.A256CBC_HS512
+                        );
+                    context.Options.SaveToken = true;
                 }
-
-                context.Fail("全局规则:token无效");
-                return Task.CompletedTask;
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    context.Fail("全局规则:token无效");
+                }
+                await Task.CompletedTask;
             };
         }
     }

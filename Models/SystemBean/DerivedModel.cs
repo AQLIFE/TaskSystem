@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using TaskManangerSystem.IServices;
 
 namespace TaskManangerSystem.Models.SystemBean
@@ -7,7 +8,9 @@ namespace TaskManangerSystem.Models.SystemBean
     /// </summary>
     public class EmployeeAccountForLoginOrAdd() : IPart
     {
+        [RegularExpression(@"^[a-z\d]{5,16}$", ErrorMessage = "账户ID必须是普通字符[数字|小写字母]{5-16位}")]
         public string EmployeeAlias { get; set; } = string.Empty;
+        [RegularExpression(@"^[\dA-Za-z]{8,128}$", ErrorMessage = "账户密码必须是普通字符[数字|字母]{8-128位}")]
         public string EmployeePwd { get; set; } = string.Empty;
     }
 
@@ -63,24 +66,19 @@ namespace TaskManangerSystem.Models.SystemBean
     }
 
 
-    public class TaskAffairForView : TaskAffairForUpdate
+    public class TaskAffairForSelect : TaskAffairForAdd
     {
         public int Serial { set; get; }
         public DateTime Time { get; set; }
         //public string? Content { get; set; } = string.Empty;
         //public decimal Cost { get; set; }
 
-        public string? TaskType { get; set; } = string.Empty;
-        public string? CustomerName { set; get; } = string.Empty;
-        public string? EmployeeName { set; get; } = string.Empty;
+        //public string? TaskType { get; set; } = string.Empty;
+        //public string? CustomerName { set; get; } = string.Empty;
+        //public string? EmployeeName { set; get; } = string.Empty;
 
-        public TaskAffairForView() { }
-        public TaskAffairForView(string? type, string? cu, string? em)
-        {
-            TaskType = type;
-            CustomerName = cu;
-            EmployeeName = em;
-        }
+        public TaskAffairForSelect() { }
+        public TaskAffairForSelect(string? type, string? cu, string? em) : base(type, cu, em) { }
     }
 
     public class TaskAffairForUpdate : ITaskAttair
@@ -88,6 +86,22 @@ namespace TaskManangerSystem.Models.SystemBean
         public string Content { get; set; } = string.Empty;
         public decimal Cost { get; set; }
 
+    }
+
+    public class TaskAffairForAdd : TaskAffairForUpdate
+    {
+        public string? TaskType { get; set; } = string.Empty;
+        public string? CustomerName { set; get; } = string.Empty;
+        public string? EmployeeName { set; get; } = string.Empty;
+
+        public TaskAffairForAdd() { }
+
+        public TaskAffairForAdd(string? type, string? cu, string? em)
+        {
+            TaskType = type;
+            CustomerName = cu;
+            EmployeeName = em;
+        }
     }
 
 }

@@ -24,17 +24,21 @@ builder
     .AddAutoMapper(Assembly.GetExecutingAssembly())
     .AddSingleton<IAuthorizationHandler, CustomHandler>()
     .AddSingleton<BearerInfo>()
-    .AddSingleton<LogInfo>()
+    .AddSingleton<APILog>()
+    .AddSingleton<DBLinkExcption>()
     .AddDbContext<ManagementSystemContext>(p => p.UseMySQL(SystemInfo.DB_LINK))
-    .AddControllers(options => options.Filters.Add<AppFilter>());
+    .AddControllers(options =>
+    {
+        options.Filters.Add<APIExceptionFilter>();
+        options.Filters.Add<APIActionFilter>();
+    });
 
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.ConditionalCheck(e => e.Environment.IsDevelopment(),
-                     e => e.UseSwaggerUI().UseSwagger(),
-                     e => e)
+                     e => e.UseSwaggerUI().UseSwagger(), e => e)
     .UseAuthentication()
     .UseAuthorization();
 
