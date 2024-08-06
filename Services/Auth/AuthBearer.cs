@@ -1,24 +1,16 @@
 ﻿using Jose;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.Models.DataBean;
-using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.Models;
+using TaskManangerSystem.Services.Crypto;
+using TaskManangerSystem.Services.Info;
 
-namespace TaskManangerSystem.Services
+namespace TaskManangerSystem.Services.Auth
 {
-
-    public static class StringExtensions
-    {
-        public static int? ToInt32(this string? value)
-        {
-            if (int.TryParse(value, out int result)) return result;
-            else return null;
-        }
-    }
-
     public class BearerInfo
     {
 
@@ -67,40 +59,40 @@ namespace TaskManangerSystem.Services
 
             };
 
-            bearerEvents.OnTokenValidated = async (context) =>
+            bearerEvents.OnTokenValidated = async context =>
             {
-                int? accountPermission = HttpAction.GetClaim(context.Principal?.Claims, ClaimTypes.Role)?.Value.ToInt32();
+                int? accountPermission = (context.Principal?.Claims).GetClaim(ClaimTypes.Role)?.Value.ToInt32();
                 const int roles = 1;// 设定一个固定的权限等级 Roles
                 // 如果 AccountPermission Claim 不存在或其值小于设定的 Roles，则拒绝访问
                 if (accountPermission.HasValue && accountPermission.Value < roles || accountPermission == 0)
                     context.Fail("全局规则:权限等级不足");
                 context.HttpContext.Items.Add("IsAdmin", accountPermission >= SystemInfo.AdminRole);
-                context.HttpContext.Items.Add("HashId", HttpAction.GetClaim(context.Principal?.Claims, ClaimTypes.Authentication)?.Value);
-                
+                context.HttpContext.Items.Add("HashId", (context.Principal?.Claims).GetClaim(ClaimTypes.Authentication)?.Value);
+
                 await Task.CompletedTask;
             };
 
-            bearerEvents.OnChallenge = async (context) =>
+            bearerEvents.OnChallenge = async context =>
             {
                 context.HandleResponse();
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 await context.Response.WriteAsJsonAsync(GlobalResult.NotAccess);
             };
 
-            bearerEvents.OnForbidden = async (context) =>
+            bearerEvents.OnForbidden = async context =>
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await context.Response.WriteAsJsonAsync(GlobalResult.Forbidden);
             };
 
-            bearerEvents.OnMessageReceived = async (context) =>
+            bearerEvents.OnMessageReceived = context =>
             {
+                var allowAnonymous = context.HttpContext.GetEndpoint()
+                    ?.Metadata.GetMetadata<IAllowAnonymous>();
                 var authorizationHeader = context.Request.Headers.Authorization;
 
-
-                if (!authorizationHeader.IsNullOrEmpty())
+                if (allowAnonymous is null && !authorizationHeader.IsNullOrEmpty())
                 {
-                    //string deJwt = 
                     context.Token = JWT.Decode(
                         authorizationHeader.ToString().Replace("Bearer ", ""),
                         key: CryptoManager.rsaDecryptor.Rsa,
@@ -109,12 +101,7 @@ namespace TaskManangerSystem.Services
                         );
                     context.Options.SaveToken = true;
                 }
-                else
-                {
-                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                    context.Fail("全局规则:token无效");
-                }
-                await Task.CompletedTask;
+                return Task.CompletedTask;
             };
         }
     }

@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-//using TaskManangerSystem.IServices.BeanServices;
-using TaskManangerSystem.Models.DataBean;
-using TaskManangerSystem.Models.SystemBean;
-using TaskManangerSystem.Services;
+using TaskManangerSystem.Actions;
+using TaskManangerSystem.Models;
 
-namespace TaskManangerSystem.Actions
+//using TaskManangerSystem.IServices.BeanServices;
+using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Tool;
+
+namespace TaskManangerSystem.Services.Repository
 {
     public static class DelegateExpressionTree
     {
@@ -27,7 +29,7 @@ namespace TaskManangerSystem.Actions
     {
         public async Task<int> InitAdminAccount()
         {
-            context.Entry<EmployeeAccount>(SystemInfo.admin).State = EntityState.Added;
+            context.Entry(SystemInfo.admin).State = EntityState.Added;
             Console.WriteLine("添加角色");
             return await context.SaveChangesAsync();
         }
@@ -35,9 +37,9 @@ namespace TaskManangerSystem.Actions
         public async Task<int> InitCategory()
         {
             foreach (var item in SystemInfo.categories)
-                context.Entry<Category>(item).State = EntityState.Added;
+                context.Entry(item).State = EntityState.Added;
             foreach (var item in SystemInfo.customer)
-                context.Entry<Category>(item).State = EntityState.Added;
+                context.Entry(item).State = EntityState.Added;
             Console.WriteLine("添加分类");
             return await context.SaveChangesAsync();
         }
@@ -50,14 +52,14 @@ namespace TaskManangerSystem.Actions
             {
                 category = new("本公司", SystemInfo.CUSTOMER, "管理员所属公司", 2, (await CRA.GetCategoryBySerialAsync(SystemInfo.EMPLOYEE))?.CategoryId);
 
-                context.Entry<Category>(category).State = EntityState.Added;
+                context.Entry(category).State = EntityState.Added;
                 context.SaveChanges();
             }
             else category = await CRA.GetCategoryBySerialAsync(SystemInfo.CUSTOMER);
 
             SystemInfo.customers.CustomerType = category?.CategoryId;
 
-            context.Entry<Customer>(SystemInfo.customers).State = EntityState.Added;
+            context.Entry(SystemInfo.customers).State = EntityState.Added;
             Console.WriteLine("添加客户");
             return context.SaveChanges();
         }
@@ -97,7 +99,7 @@ namespace TaskManangerSystem.Actions
         => await UpdateLevelAsync(obj, 0);
 
         public async Task<PageContent<EmployeeAccount>?> SearchAsync(int page, int PageContent, bool isUp)
-        => await base.SearchAsync(e => e.EmployeeId, page, PageContent, c => c.AccountPermission >= 1, isUp);
+        => await SearchAsync(e => e.EmployeeId, page, PageContent, c => c.AccountPermission >= 1, isUp);
 
     }
 
@@ -241,7 +243,7 @@ namespace TaskManangerSystem.Actions
         public Customer? GetCustomerByName(string HashName) => AsEntity.Where(e => e.CustomerName == HashName).FirstOrDefault();
 
         public async Task<PageContent<Customer>?> SearchAsync(int pageIndex, int pageSize)
-        => await base.SearchAsync(t => t.AddTime, pageIndex, pageSize, c => c.ClientGrade >= 1);
+        => await SearchAsync(t => t.AddTime, pageIndex, pageSize, c => c.ClientGrade >= 1);
     }
 
     public class CustomerRepository(ManagementSystemContext storage) : IncludeRepository<Customer>(storage, DelegateExpressionTree.customer)
@@ -261,7 +263,7 @@ namespace TaskManangerSystem.Actions
         public async Task<InventoryInfo?> TryGetInventoryAsync(Guid guid) => await ExistsInventoryAsync(guid) ? await TryGetAsync(guid) : null;
         public async Task<InventoryInfo?> TryGetInventoryByNameAsync(string name) => await ExistsInventoryByNameAsync(name) ? await GetInventoryByNameAsync(name) : null;
         public async Task<PageContent<InventoryInfo>?> SearchAsync(int pageIndex, int pageSize)
-            => await base.SearchAsync(c => c.ProductName, pageIndex, pageSize);
+            => await SearchAsync(c => c.ProductName, pageIndex, pageSize);
     }
 
     [Obsolete("该封装过于简略")]
@@ -282,7 +284,7 @@ namespace TaskManangerSystem.Actions
         public async Task<bool> UpdateAsync(TaskAffair af, TaskAffairForUpdate afUp)
         {
             af.Update(afUp);
-            return await base.UpdateAsync(af);
+            return await UpdateAsync(af);
         }
 
         public async Task<bool> DeleteAsync(TaskAffair affair)
@@ -292,7 +294,7 @@ namespace TaskManangerSystem.Actions
         }
 
         public async Task<PageContent<TaskAffair>?> SearchAsync(int index, int size)
-            => await base.SearchAsync(e => e.Serial, index, size);
+            => await SearchAsync(e => e.Serial, index, size);
     }
 
     public class TaskAffairRepository(ManagementSystemContext storage) : IncludeRepository<TaskAffair>(storage, DelegateExpressionTree.task)

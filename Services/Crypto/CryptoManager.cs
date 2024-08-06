@@ -2,7 +2,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography.X509Certificates;
 using TaskManangerSystem.Actions;
 
-namespace TaskManangerSystem.Services
+namespace TaskManangerSystem.Services.Crypto
 {
     public static class CryptoManager
     {

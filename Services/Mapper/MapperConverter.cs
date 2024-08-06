@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.Models.DataBean;
-using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.Models;
+using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Services.Repository;
+using TaskManangerSystem.Tool;
 
-namespace TaskManangerSystem.Services
+namespace TaskManangerSystem.Services.Mapper
 {
     /// <summary>
     /// 此转换器专用于新增

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TaskManangerSystem.IServices;
-using TaskManangerSystem.Services;
+using TaskManangerSystem.Tool;
 
-namespace TaskManangerSystem.Actions
+namespace TaskManangerSystem.Services.Repository
 {
 
     public interface IUpdateable<TTarget>
@@ -21,7 +21,7 @@ namespace TaskManangerSystem.Actions
         public async Task<TSource?> TryGetAsync(Expression<Func<TSource, bool>> keySelector) => await AsEntity.FirstOrDefaultAsync(keySelector);
         public async Task<bool> AddAsync(TSource info) { await AsEntity.AddAsync(info); return await storage.SaveChangesAsync() == 1; }
         public async Task<bool> UpdateAsync(TSource info) { await Task.Run(() => { AsEntity.Update(info); }); return await storage.SaveChangesAsync() == 1; }
-        public async Task<bool> DeleteAsync(Expression<Func<TSource, bool>> keySelector) { await Task.Run(() => AsEntity.Where(keySelector)); return await (storage.SaveChangesAsync()) == 1; }
+        public async Task<bool> DeleteAsync(Expression<Func<TSource, bool>> keySelector) { await Task.Run(() => AsEntity.Where(keySelector)); return await storage.SaveChangesAsync() == 1; }
 
 
         /// <summary>

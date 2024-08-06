@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.Models.DataBean;
-using TaskManangerSystem.Models.SystemBean;
-using TaskManangerSystem.Services;
+using TaskManangerSystem.Models;
+using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Services.Repository;
+using TaskManangerSystem.Tool;
 
 namespace TaskManangerSystem.Controllers
 {

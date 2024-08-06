@@ -1,16 +1,16 @@
-using System.ComponentModel.DataAnnotations;
 using TaskManangerSystem.IServices;
+using TaskManangerSystem.Services.Attriabute;
 
-namespace TaskManangerSystem.Models.SystemBean
+namespace TaskManangerSystem.Services.Info
 {
     /// <summary>
     /// 用于返回脱敏数据
     /// </summary>
     public class EmployeeAccountForLoginOrAdd() : IPart
     {
-        [RegularExpression(@"^[a-z\d]{5,16}$", ErrorMessage = "账户ID必须是普通字符[数字|小写字母]{5-16位}")]
+        [APIRegularExpression(pattern: @"^[a-z\d]{5,16}$", ErrorMessage = "账户ID必须是普通字符[数字|小写字母]{5-16位}")]
         public string EmployeeAlias { get; set; } = string.Empty;
-        [RegularExpression(@"^[\dA-Za-z]{8,128}$", ErrorMessage = "账户密码必须是普通字符[数字|字母]{8-128位}")]
+        [APIRegularExpression(pattern: @"^[\dA-Za-z]{8,128}$", ErrorMessage = "账户密码必须是普通字符[数字|字母]{8-128位}")]
         public string EmployeePwd { get; set; } = string.Empty;
     }
 

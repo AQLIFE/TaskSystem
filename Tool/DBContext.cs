@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TaskManangerSystem.Models.DataBean;
+using TaskManangerSystem.Models;
 
-namespace TaskManangerSystem.Services
+namespace TaskManangerSystem.Tool
 {
 
     public class ManagementSystemContext(DbContextOptions<ManagementSystemContext> options) : DbContext(options)

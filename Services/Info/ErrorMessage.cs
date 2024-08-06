@@ -1,4 +1,4 @@
-﻿namespace TaskManangerSystem.Models.SystemBean
+﻿namespace TaskManangerSystem.Services.Info
 {
     public static class ErrorMessage
     {

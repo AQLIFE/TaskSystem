@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TaskManangerSystem.IServices;
 
-namespace TaskManangerSystem.Models.DataBean
+namespace TaskManangerSystem.Models
 {
     [Comment("分类信息")]
     public class Category : ICategory

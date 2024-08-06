@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.Services.Info;
 
-namespace TaskManangerSystem.Services
+namespace TaskManangerSystem.Services.Filter
 {
     partial class APIActionFilter(ILogger<APIActionFilter> logger, APILog log) : IAsyncActionFilter
     {

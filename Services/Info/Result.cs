@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 
-namespace TaskManangerSystem.Models.SystemBean
+namespace TaskManangerSystem.Services.Info
 {
 
     public class Result<T>(T? data, bool status = false)

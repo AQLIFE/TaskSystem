@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using TaskManangerSystem.Actions;
-using TaskManangerSystem.Models.DataBean;
-using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.Models;
+using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Services.Repository;
 
-namespace TaskManangerSystem.Services
+namespace TaskManangerSystem.Services.Mapper
 {
     public class EntityMapper : Profile
     {

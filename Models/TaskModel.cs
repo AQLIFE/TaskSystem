@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices;
-using TaskManangerSystem.Models.SystemBean;
+using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Services.Repository;
 
-namespace TaskManangerSystem.Models.DataBean
+namespace TaskManangerSystem.Models
 {
     [Comment("任务信息")]
     public class Customer : ICustomer
@@ -88,7 +88,7 @@ namespace TaskManangerSystem.Models.DataBean
         {
             Content = add.Content;
             Cost = add.Cost;
-            this.Serial = serial;
+            Serial = serial;
 
             Categorys = taskCategory;
             TaskType = taskCategory?.CategoryId;
@@ -100,8 +100,8 @@ namespace TaskManangerSystem.Models.DataBean
 
         public void Update(TaskAffairForUpdate af)
         {
-            this.Cost = af.Cost;
-            this.Content = af.Content;
+            Cost = af.Cost;
+            Content = af.Content;
             //return true;
 
         }

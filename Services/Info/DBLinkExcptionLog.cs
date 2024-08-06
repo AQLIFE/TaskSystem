@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using TaskManangerSystem.Actions;
 
-namespace TaskManangerSystem.Services
+namespace TaskManangerSystem.Services.Info
 {
 
     public class BaseExcption<TSource>() : APILog
@@ -18,7 +18,7 @@ namespace TaskManangerSystem.Services
         public override string APIMessage => "\tSorceID > {0};\n\tContrlller > {1};\n\tAction > {2};\n\tRoute > {3};\n\tTime > {4};\n\tInfo > {5};";
 
     }
-    public class DBLinkExcption() : BaseExcption<MySqlException>
+    public class DBLinkExcptionLog() : BaseExcption<MySqlException>
     {
         public void SetMessage(MySqlException ex, HttpContext http)
         {

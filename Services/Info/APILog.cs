@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
 using TaskManangerSystem.Actions;
 
-namespace TaskManangerSystem.Services
+namespace TaskManangerSystem.Services.Info
 {
     public class APILog()
     {

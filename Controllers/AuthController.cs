@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.Models.DataBean;
-using TaskManangerSystem.Models.SystemBean;
-using TaskManangerSystem.Services;
+using TaskManangerSystem.Models;
+using TaskManangerSystem.Services.Auth;
+using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Services.Repository;
+using TaskManangerSystem.Tool;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -36,7 +38,7 @@ namespace TaskManangerSystem.Controllers
 
 
 
-        [HttpPost("login"), AllowAnonymous]//登录
+        [AllowAnonymous, HttpPost("login")]//登录
         public async Task<string?> PostLogin(EmployeeAccountForLoginOrAdd account)
                 => await ERA.LoginCheckAsync(account) ?
                 new BearerInfo((await ERA.TryGetEmployeeByNameAsync(account.EmployeeAlias))!).CreateToken() :
@@ -45,7 +47,7 @@ namespace TaskManangerSystem.Controllers
 
 
 
-        [HttpPost("register"), AllowAnonymous]//增加
+        [AllowAnonymous, HttpPost("register")]//增加
         public async Task<bool> PostRegister(EmployeeAccountForLoginOrAdd info)
             => !await ERA.ExistsEmployeeByNameAsync(info.EmployeeAlias) && await ERA.AddAsync(mapper.Map<EmployeeAccount>(info));
 

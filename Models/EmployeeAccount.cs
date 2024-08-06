@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using TaskManangerSystem.Actions;
 using TaskManangerSystem.IServices;
 
-namespace TaskManangerSystem.Models.DataBean
+namespace TaskManangerSystem.Models
 {
     [Comment("员工账户信息"), Index(nameof(EmployeeAlias), IsUnique = true)]
     public class EmployeeAccount : IEmployee
@@ -42,11 +42,11 @@ namespace TaskManangerSystem.Models.DataBean
             SetHashId();
         }
 
-        public bool Update(int level) { this.AccountPermission = level == 0 ? 0 : (this.AccountPermission + level); return level != 0; }
+        public bool Update(int level) { AccountPermission = level == 0 ? 0 : AccountPermission + level; return level != 0; }
 
-        public bool Update(string newPwd) { this.EmployeePwd = EmployeePwd != newPwd ? newPwd : EmployeePwd; return EmployeePwd != newPwd; }
+        public bool Update(string newPwd) { EmployeePwd = EmployeePwd != newPwd ? newPwd : EmployeePwd; return EmployeePwd != newPwd; }
 
-        public void SetHashId() { this.HashId = this.EmployeeId.ToString().ComputeSHA512Hash(); }
+        public void SetHashId() { HashId = EmployeeId.ToString().ComputeSHA512Hash(); }
 
     }
 

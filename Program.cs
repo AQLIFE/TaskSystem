@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using TaskManangerSystem.Actions;
-using TaskManangerSystem.Services;
+using TaskManangerSystem.Services.Auth;
+using TaskManangerSystem.Services.Filter;
+using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Tool;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,12 +28,12 @@ builder
     .AddSingleton<IAuthorizationHandler, CustomHandler>()
     .AddSingleton<BearerInfo>()
     .AddSingleton<APILog>()
-    .AddSingleton<DBLinkExcption>()
+    .AddSingleton<DBLinkExcptionLog>()
     .AddDbContext<ManagementSystemContext>(p => p.UseMySQL(SystemInfo.DB_LINK))
     .AddControllers(options =>
     {
-        options.Filters.Add<APIExceptionFilter>();
         options.Filters.Add<APIActionFilter>();
+        options.Filters.Add<APIExceptionFilter>();
     });
 
 
