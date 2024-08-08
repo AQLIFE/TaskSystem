@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManangerSystem.Models;
 using TaskManangerSystem.Services.Info;
 using TaskManangerSystem.Services.Repository;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Controllers
 {

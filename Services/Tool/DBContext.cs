@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using TaskManangerSystem.Models;
 
-namespace TaskManangerSystem.Tool
+namespace TaskManangerSystem.Services.Tool
 {
 
     public class ManagementSystemContext(DbContextOptions<ManagementSystemContext> options) : DbContext(options)
     {
-        public DbSet<EmployeeAccount> employees { get; set; }
+        public DbSet<Employee> employees { get; set; }
         public DbSet<EmployeeInfo> realInfos { get; set; }
         public DbSet<Category> categories { get; set; }
         public DbSet<InventoryInfo> inventoryInfos { get; set; }
@@ -19,7 +19,7 @@ namespace TaskManangerSystem.Tool
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<EmployeeAccount>().HasIndex(e => e.EmployeeAlias).IsUnique();
+            modelBuilder.Entity<Employee>().HasIndex(e => e.EmployeeAlias).IsUnique();
 
             modelBuilder.Entity<InventoryInfo>(e =>
             {
@@ -49,6 +49,7 @@ namespace TaskManangerSystem.Tool
                 e.HasOne(i => i.Customers).WithMany().HasForeignKey(e => e.CustomerId);
                 e.HasOne(i => i.Categorys).WithMany().HasForeignKey(e => e.TaskType);
                 e.HasIndex(i => i.Serial).IsUnique();
+                e.HasIndex(i => new { i.TaskType, i.CustomerId, i.EmployeeId }).IsUnique();
             });
             modelBuilder.Entity<TaskStatusTrack>(e =>
             {

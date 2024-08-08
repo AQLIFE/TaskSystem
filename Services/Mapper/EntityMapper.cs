@@ -11,14 +11,14 @@ namespace TaskManangerSystem.Services.Mapper
         {
 
             #region Employee
-            CreateMap<EmployeeAccountForLoginOrAdd, EmployeeAccount>()
+            CreateMap<EmployeeAccountForLoginOrAdd, Employee>()
                 .ConvertUsing<ToEmployeeConverter>();
 
 
-            CreateMap<EmployeeAccount, EmployeeAccountForSelectOrUpdate>();
+            CreateMap<Employee, EmployeeAccountForSelectOrUpdate>();
 
-            CreateMap<PageContent<EmployeeAccount>, PageContent<EmployeeAccountForSelectOrUpdate>>()
-                .ConvertUsing<ToPageContentConverter<EmployeeAccount, EmployeeAccountForSelectOrUpdate>>();
+            CreateMap<PageContent<Employee>, PageContent<EmployeeAccountForSelectOrUpdate>>()
+                .ConvertUsing<ToPageContentConverter<Employee, EmployeeAccountForSelectOrUpdate>>();
             #endregion
 
 

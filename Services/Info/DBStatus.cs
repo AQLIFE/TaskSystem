@@ -1,5 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Models.SystemBean
 {

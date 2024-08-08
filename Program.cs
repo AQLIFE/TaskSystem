@@ -2,11 +2,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.Services.Auth;
 using TaskManangerSystem.Services.Filter;
 using TaskManangerSystem.Services.Info;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 var builder = WebApplication.CreateBuilder(args);
 

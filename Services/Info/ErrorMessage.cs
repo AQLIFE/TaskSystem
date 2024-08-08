@@ -2,6 +2,7 @@
 {
     public static class ErrorMessage
     {
+        public static readonly string UnknownOrError = "登录校验不通过或者账号不存在";
         public static readonly string NOT_NULL = "输入不能为空或含有空格";
 
         public static readonly string NON_COMPLIACE = "不符内容规范";

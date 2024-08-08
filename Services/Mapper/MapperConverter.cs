@@ -1,19 +1,19 @@
 ﻿using AutoMapper;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models;
+using TaskManangerSystem.Services.Crypto;
 using TaskManangerSystem.Services.Info;
 using TaskManangerSystem.Services.Repository;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Services.Mapper
 {
     /// <summary>
     /// 此转换器专用于新增
     /// </summary>
-    public class ToEmployeeConverter : ITypeConverter<EmployeeAccountForLoginOrAdd, EmployeeAccount>
+    public class ToEmployeeConverter : ITypeConverter<EmployeeAccountForLoginOrAdd, Employee>
     {
-        public EmployeeAccount Convert(EmployeeAccountForLoginOrAdd source, EmployeeAccount opt, ResolutionContext context)
-        => new EmployeeAccount(source.EmployeeAlias, source.EmployeePwd);
+        public Employee Convert(EmployeeAccountForLoginOrAdd source, Employee opt, ResolutionContext context)
+        => new Employee(source.EmployeeAlias, source.EmployeePwd.ComputeSHA512Hash());
     }
 
     public class ToCategoryConverter : ITypeConverter<CategoryForAddOrUpdate, Category>
@@ -24,18 +24,18 @@ namespace TaskManangerSystem.Services.Mapper
             var sortSerial = (int)context.Items["Serial"];
             CategoryRepository CRA = new(dbContext);
 
-            if (sortSerial != 0 && CreateObj(CRA, sortSerial, source) is Category obj)
+            if (sortSerial != 0 && TryUpdateCategoryBySeria(CRA, sortSerial, source) is Category obj)
                 return obj;
-            else return new Category
-            {
-                CategoryId = Guid.NewGuid(),
-                ParentCategoryId = CRA.TryGetCategoryBySerial(source.ParentSortSerial)?.CategoryId,
-                SortSerial = CRA.GetLastSerial() + 1,
-                CategoryLevel = CRA.GetLevelBySerial(source.ParentSortSerial) + 1
-            };
+            else return new Category(
+                name: source.CategoryName,
+                serial: CRA.GetLastSerial() + 1,
+                remark: source.Remark,
+                level: CRA.GetLevelBySerial(source.ParentSortSerial) + 1,
+                parId: CRA.TryGetCategoryBySerial(source.ParentSortSerial)?.CategoryId);
+
         }
 
-        private static Category? CreateObj(CategoryRepository CRA, int sortSerial, CategoryForAddOrUpdate update)
+        private static Category? TryUpdateCategoryBySeria(CategoryRepository CRA, int sortSerial, CategoryForAddOrUpdate update)
         {
             if (CRA.TryGetCategoryBySerial(sortSerial) is Category y)
             {
@@ -79,7 +79,11 @@ namespace TaskManangerSystem.Services.Mapper
 
             Category? category = CRA.TryGetCategoryByName(source.TaskType ?? string.Empty);
             Customer? customer = CuRA.TryGetCustomerByName(source.CustomerName ?? string.Empty);
-            EmployeeAccount? employee = ERA.TryGetEmployeeByName(source.EmployeeName ?? string.Empty);
+            Employee? employee = ERA.TryGetEmployeeByName(source.EmployeeName ?? string.Empty);
+
+
+            if (category is null || customer is null || employee is null) throw new Exception("信息缺失，请联系管理员");
+
             return new TaskAffair(source, category, customer, employee, TRA.GetLastSerial() + 1);
         }
     }

@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models;
 using TaskManangerSystem.Services.Auth;
 using TaskManangerSystem.Services.Info;
 using TaskManangerSystem.Services.Repository;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -42,14 +41,14 @@ namespace TaskManangerSystem.Controllers
         public async Task<string?> PostLogin(EmployeeAccountForLoginOrAdd account)
                 => await ERA.LoginCheckAsync(account) ?
                 new BearerInfo((await ERA.TryGetEmployeeByNameAsync(account.EmployeeAlias))!).CreateToken() :
-                "登录校验不通过或者账号不存在";
+                ErrorMessage.UnknownOrError;
 
 
 
 
         [AllowAnonymous, HttpPost("register")]//增加
         public async Task<bool> PostRegister(EmployeeAccountForLoginOrAdd info)
-            => !await ERA.ExistsEmployeeByNameAsync(info.EmployeeAlias) && await ERA.AddAsync(mapper.Map<EmployeeAccount>(info));
+            => !await ERA.ExistsEmployeeByNameAsync(info.EmployeeAlias) && await ERA.AddAsync(mapper.Map<Employee>(info));
 
 
 
@@ -59,15 +58,15 @@ namespace TaskManangerSystem.Controllers
         [HttpPut("uplevel")]
         public async Task<bool> Uplevel(string hashId = "")
         {
-            EmployeeAccount? employeeAccount = await ERA.TryGetEmployeeByHashIdAsync(hashId == "" ? HashId : hashId);
+            Employee? employeeAccount = await ERA.TryGetEmployeeByHashIdAsync(hashId == "" ? HashId : hashId);
             return employeeAccount is not null && await ERA.UpdateLevelAsync(employeeAccount);
         }
 
         [HttpPut("secret")]//修改密码
         public async Task<bool> PutSecret(string pwd, string oldPwd, string hashId = "")
         {
-            EmployeeAccount? employeeAccount = await ERA.TryGetEmployeeByHashIdAsync(hashId == "" ? HashId : hashId);
-            return employeeAccount is EmployeeAccount x && await ERA.UpdatePwdAsync(x, pwd, oldPwd);
+            Employee? employeeAccount = await ERA.TryGetEmployeeByHashIdAsync(hashId == "" ? HashId : hashId);
+            return employeeAccount is Employee x && await ERA.UpdatePwdAsync(x, pwd, oldPwd);
         }
 
 

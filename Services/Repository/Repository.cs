@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TaskManangerSystem.IServices;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Services.Repository
 {

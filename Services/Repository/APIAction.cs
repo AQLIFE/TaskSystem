@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models;
+using TaskManangerSystem.Services.Crypto;
+
 
 //using TaskManangerSystem.IServices.BeanServices;
 using TaskManangerSystem.Services.Info;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Services.Repository
 {
@@ -27,45 +28,59 @@ namespace TaskManangerSystem.Services.Repository
 
     public class DBAction(ManagementSystemContext context)
     {
+        private Category? customer;
         public async Task<int> InitAdminAccount()
         {
-            context.Entry(SystemInfo.admin).State = EntityState.Added;
-            Console.WriteLine("添加角色");
+            //logger.LogInformation("初始化账户信息: {0}...{1}", SystemInfo.admin[0].EmployeeAlias, SystemInfo.admin[SystemInfo.admin.Length - 1].EmployeeAlias);
+            
+            foreach (var item in SystemInfo.admin)
+                context.Entry(item).State = EntityState.Added;
             return await context.SaveChangesAsync();
         }
 
         public async Task<int> InitCategory()
         {
+            //logger.LogInformation("初始化分类信息: {0}...{1}", SystemInfo.categories[0].CategoryName, SystemInfo.categories[SystemInfo.categories.Length - 1].CategoryName);
             foreach (var item in SystemInfo.categories)
-                context.Entry(item).State = EntityState.Added;
-            foreach (var item in SystemInfo.customer)
-                context.Entry(item).State = EntityState.Added;
-            Console.WriteLine("添加分类");
+            {
+                await context.AddAsync(item);
+                await context.SaveChangesAsync();
+            }
+
+            customer = await context.categories.FirstOrDefaultAsync(e => e.SortSerial == SystemInfo.CUSTOMER);
+            if (customer is Category)
+            {
+                foreach(Category item in SystemInfo.customer)
+                {
+                    item.ParentCategoryId = customer.CategoryId;
+                    context.Entry(item).State = EntityState.Added;
+                }
+
+            }
             return await context.SaveChangesAsync();
         }
 
         public async Task<int> InitCustomer()
         {
+            //logger.LogInformation("初始化客户信息: {0}...{1}", SystemInfo.customer[0].CategoryName, SystemInfo.customer[SystemInfo.customer.Length - 1].CategoryName);
             CategoryRepositoryAsync CRA = new(context);
-            Category? category;
+
             if (!await CRA.ExistsCategoryBySerialAsync(SystemInfo.CUSTOMER))
             {
-                category = new("本公司", SystemInfo.CUSTOMER, "管理员所属公司", 2, (await CRA.GetCategoryBySerialAsync(SystemInfo.EMPLOYEE))?.CategoryId);
-
-                context.Entry(category).State = EntityState.Added;
-                context.SaveChanges();
+                _ = await InitCategory();
             }
-            else category = await CRA.GetCategoryBySerialAsync(SystemInfo.CUSTOMER);
-
-            SystemInfo.customers.CustomerType = category?.CategoryId;
-
-            context.Entry(SystemInfo.customers).State = EntityState.Added;
-            Console.WriteLine("添加客户");
+            customer = await context.categories.FirstOrDefaultAsync(e => e.SortSerial == SystemInfo.CUSTOMER);
+            if(customer is Category e)
+            foreach (Customer item in SystemInfo.customers)
+            {
+                item.CustomerType = e.CategoryId;
+                context.Entry(item).State = EntityState.Added;
+            }
             return context.SaveChanges();
         }
     }
 
-    public class EmployeeRepositoryAsync(ManagementSystemContext storage) : RepositoryAsync<EmployeeAccount>(storage)
+    public class EmployeeRepositoryAsync(ManagementSystemContext storage) : RepositoryAsync<Employee>(storage)
     {
         public async Task<bool> LoginCheckAsync(EmployeeAccountForLoginOrAdd account)
             => await ExistAsync(e => e.AccountPermission >= 1 && e.AccountPermission <= 255 && e.EmployeeAlias == account.EmployeeAlias && account.EmployeePwd == e.EmployeePwd);
@@ -77,11 +92,11 @@ namespace TaskManangerSystem.Services.Repository
         public async Task<bool> ExistsEmployeeByNameAsync(string name) => await ExistAsync(e => e.EmployeeAlias == name);
         public async Task<bool> ExistsEmployeeByHashIdAsync(string hashId) => await ExistAsync(c => c.HashId == hashId);
 
-        public async Task<EmployeeAccount?> TryGetEmployeeByNameAsync(string name) => await TryGetAsync(e => e.EmployeeAlias == name);
-        public async Task<EmployeeAccount?> TryGetEmployeeByHashIdAsync(string hashId) => await TryGetAsync(e => e.HashId == hashId);
+        public async Task<Employee?> TryGetEmployeeByNameAsync(string name) => await TryGetAsync(e => e.EmployeeAlias == name);
+        public async Task<Employee?> TryGetEmployeeByHashIdAsync(string hashId) => await TryGetAsync(e => e.HashId == hashId);
 
 
-        public async Task<bool> UpdatePwdAsync(EmployeeAccount obj, string newPwd, string oldPwd)
+        public async Task<bool> UpdatePwdAsync(Employee obj, string newPwd, string oldPwd)
         => await obj.ConditionalCheckAsync(e => e.EmployeePwd == oldPwd.ComputeSHA512Hash(),
                 async c =>
                 {
@@ -89,24 +104,24 @@ namespace TaskManangerSystem.Services.Repository
                     return await UpdateAsync(obj);
                 }, false);
 
-        public async Task<bool> UpdateLevelAsync(EmployeeAccount obj, int level = 1)
+        public async Task<bool> UpdateLevelAsync(Employee obj, int level = 1)
         {
             obj.Update(level);
             return await UpdateAsync(obj);
         }
 
-        public async Task<bool> DisabledAsync(EmployeeAccount obj)
+        public async Task<bool> DisabledAsync(Employee obj)
         => await UpdateLevelAsync(obj, 0);
 
-        public async Task<PageContent<EmployeeAccount>?> SearchAsync(int page, int PageContent, bool isUp)
+        public async Task<PageContent<Employee>?> SearchAsync(int page, int PageContent, bool isUp)
         => await SearchAsync(e => e.EmployeeId, page, PageContent, c => c.AccountPermission >= 1, isUp);
 
     }
 
     [Obsolete("该类不具有封装意义")]
-    public class EmployeeRepository(ManagementSystemContext storage) : Repository<EmployeeAccount>(storage)
+    public class EmployeeRepository(ManagementSystemContext storage) : Repository<Employee>(storage)
     {
-        public EmployeeAccount? TryGetEmployeeByName(string name) => TryGet(e => e.EmployeeAlias == name);
+        public Employee? TryGetEmployeeByName(string name) => TryGet(e => e.EmployeeAlias == name);
     }
 
 

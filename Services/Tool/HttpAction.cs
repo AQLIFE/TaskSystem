@@ -1,23 +1,8 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
-namespace TaskManangerSystem.Actions
+namespace TaskManangerSystem.Services.Tool
 {
-    //public enum ParameterName { id, info, SortSerial };
-
-    //public class HttpLog<T, TResult> where T : FilterContext
-    //{
-    //    public TResult InitLog(T context, Func<T, TResult> edge)
-    //    {
-    //        Claim? ob = context.HttpContext.User.Claims.GetClaim(ClaimTypes.Authentication);
-    //        ControllerActionDescriptor? oj = context.ActionDescriptor as ControllerActionDescriptor;
-
-    //        return edge(context);
-    //    }
-    //    public bool status = false;
-
-    //}
-
     public static class HttpAction
     {
         public static Claim? GetClaim(this IEnumerable<Claim>? claims, string source)

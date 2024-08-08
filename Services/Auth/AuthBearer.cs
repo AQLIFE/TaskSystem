@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models;
 using TaskManangerSystem.Services.Crypto;
 using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Services.Auth
 {
@@ -17,7 +17,7 @@ namespace TaskManangerSystem.Services.Auth
         private readonly JwtSecurityToken jwt = new();
 
         public BearerInfo() { }
-        public BearerInfo(EmployeeAccount employeeAccount)
+        public BearerInfo(Employee employeeAccount)
         {
             jwt = new(
                 issuer: SystemInfo.ISSUER,
@@ -85,13 +85,11 @@ namespace TaskManangerSystem.Services.Auth
                 await context.Response.WriteAsJsonAsync(GlobalResult.Forbidden);
             };
 
-            bearerEvents.OnMessageReceived = context =>
+            bearerEvents.OnMessageReceived = async context =>
             {
-                var allowAnonymous = context.HttpContext.GetEndpoint()
-                    ?.Metadata.GetMetadata<IAllowAnonymous>();
                 var authorizationHeader = context.Request.Headers.Authorization;
 
-                if (allowAnonymous is null && !authorizationHeader.IsNullOrEmpty())
+                if ( !authorizationHeader.IsNullOrEmpty())
                 {
                     context.Token = JWT.Decode(
                         authorizationHeader.ToString().Replace("Bearer ", ""),
@@ -101,7 +99,7 @@ namespace TaskManangerSystem.Services.Auth
                         );
                     context.Options.SaveToken = true;
                 }
-                return Task.CompletedTask;
+                await Task.CompletedTask;
             };
         }
     }

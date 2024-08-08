@@ -28,11 +28,12 @@ namespace TaskManangerSystem.Services.Filter
                 logger.LogCritical(log.APIMessage, log.SourceID, log.SourceController, log.SourceAction, log.SourceRoute, log.TriggerTime, log.ExceptionInfo);
                 context.Result = (ObjectResult)GlobalResult.Message(log.ExceptionFeedback);
             }
-            else if(context.Exception is APIRegexException et)
+            else if (context.Exception is APIRegexException et)
             {
                 logger.LogWarning("[ {0} ]: {1}", et.GetType().Name, et.Message);
                 context.Result = (ObjectResult)GlobalResult.Message(et.Message);
             }
+
             else
             {
                 //log.SetMessage()

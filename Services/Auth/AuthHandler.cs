@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.Services.Info;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Services.Auth
 {
@@ -21,7 +21,7 @@ namespace TaskManangerSystem.Services.Auth
             {
                 context.Succeed(requirement);
                 log.SetMessage(context);
-                logger.LogInformation(log.APIMessage);
+                logger.LogInformation(log.APIMessage, log.SourceID, log.SourceController, log.SourceAction, log.SourceRoute, log.TriggerTime);
             }
             await Task.CompletedTask;
         }

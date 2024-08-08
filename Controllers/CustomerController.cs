@@ -1,11 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models;
 using TaskManangerSystem.Services.Info;
 using TaskManangerSystem.Services.Repository;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -26,7 +25,7 @@ namespace TaskManangerSystem.Controllers
         => await CuRA.ExistsCustomerByNameAsync(hashName) ? mapper.Map<CustomerForSelect>(await CuRA.TryGetAsync(e => e.CustomerName == hashName)) : null;
 
         [HttpPost]
-        public async Task<bool> PostCustomer(CustomerForAddOrUpdate info, int serial = 102)
+        public async Task<bool> PostCustomer(CustomerForAddOrUpdate info, int serial = SystemInfo.CUSTOMER)
             => !await CuRA.ExistsCustomerByNameAsync(info.CustomerName) && await CRA.ExistsCategoryBySerialAsync(serial)
                 ? await CuRA.AddAsync(mapper.Map<Customer>(info, opt => { opt.Items["Serial"] = serial; opt.Items["ManagementSystemContext"] = context; })) : false;
 
@@ -34,7 +33,7 @@ namespace TaskManangerSystem.Controllers
 
         // 更新客户信息，接受name
         [HttpPut("{hashName}")]
-        public async Task<bool> UpdateCustomer(string hashName, CustomerForAddOrUpdate info, int serial = 101)
+        public async Task<bool> UpdateCustomer(string hashName, CustomerForAddOrUpdate info, int serial = SystemInfo.CUSTOMER)
             => hashName == info.CustomerName && await CuRA.ExistsCustomerByNameAsync(hashName) && !await CRA.ExistAsync(e => e.CategoryName == hashName)
                 ? false : await CuRA.UpdateAsync(mapper.Map<Customer>(info, opt => { opt.Items["Serial"] = serial; opt.Items["ManagementSystemContext"] = context; }));
 

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using TaskManangerSystem.IServices;
 using TaskManangerSystem.Services.Attriabute;
 
@@ -8,9 +9,10 @@ namespace TaskManangerSystem.Services.Info
     /// </summary>
     public class EmployeeAccountForLoginOrAdd() : IPart
     {
-        [APIRegularExpression(pattern: @"^[a-z\d]{5,16}$", ErrorMessage = "账户ID必须是普通字符[数字|小写字母]{5-16位}")]
+        [EntityValidator(alias:nameof(EmployeeAlias),pattern: @"^[a-z\d]{5,16}$", errorMessage: "账户ID必须是普通字符[数字|小写字母]{5-16位}")]
         public string EmployeeAlias { get; set; } = string.Empty;
-        [APIRegularExpression(pattern: @"^[\dA-Za-z]{8,128}$", ErrorMessage = "账户密码必须是普通字符[数字|字母]{8-128位}")]
+
+        [EntityValidator(alias:nameof(EmployeePwd),pattern: @"^[\dA-Za-z]{8,128}$", errorMessage:"账户密码必须是普通字符[数字|字母]{8-128位}")]
         public string EmployeePwd { get; set; } = string.Empty;
     }
 
@@ -30,7 +32,7 @@ namespace TaskManangerSystem.Services.Info
         public string? Remark { get; set; }
     }
 
-    public class CategoryForAddOrUpdate
+    public class CategoryForAddOrUpdate()
     {
         public int ParentSortSerial { set; get; }// 子类自定义
         public string CategoryName { get; set; } = string.Empty;
@@ -90,9 +92,14 @@ namespace TaskManangerSystem.Services.Info
 
     public class TaskAffairForAdd : TaskAffairForUpdate
     {
-        public string? TaskType { get; set; } = string.Empty;
-        public string? CustomerName { set; get; } = string.Empty;
-        public string? EmployeeName { set; get; } = string.Empty;
+        [EntityValidator(nameof(TaskType),required:true)]
+        public string TaskType { get; set; } = string.Empty;
+
+        [EntityValidator(nameof(CustomerName), required: true)]
+        public string CustomerName { set; get; } = string.Empty;
+
+        [EntityValidator(nameof(EmployeeName), required: true)]
+        public string EmployeeName { set; get; } = string.Empty;
 
         public TaskAffairForAdd() { }
 

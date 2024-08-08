@@ -1,11 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManangerSystem.Actions;
 using TaskManangerSystem.Models;
 using TaskManangerSystem.Services.Info;
 using TaskManangerSystem.Services.Repository;
-using TaskManangerSystem.Tool;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Controllers
 {
@@ -45,8 +44,7 @@ namespace TaskManangerSystem.Controllers
 
         [HttpPost]
         public async Task<bool> PostCategory(CategoryForAddOrUpdate add)
-            => await CRA.AddCheckAsync(add) ? false
-            : await CRA.AddAsync(mapper.Map<Category>(add, opt => { opt.Items["Serial"] = DEFAULT_ADD; opt.Items["ManagementSystemContext"] = storage; }));
+            => !await CRA.AddCheckAsync(add) && await CRA.AddAsync(mapper.Map<Category>(add, opt => { opt.Items["Serial"] = DEFAULT_ADD; opt.Items["ManagementSystemContext"] = storage; }));
 
 
 
