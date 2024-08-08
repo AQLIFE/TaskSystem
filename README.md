@@ -10,8 +10,9 @@ This is a cross-platform project that is intended to be designed to integrate wi
 
 ## The next goal of the project
 
-- Add GlobbalErrorCapture
-- Introduce AutoMapper to my project
+- Add GlobbalErrorCapture => Modified to add exception filter √
+- Introduce AutoMapper to my project √
+- Add model validation exceptions for all apis
 
 ### Requirements for the project development environment
 
