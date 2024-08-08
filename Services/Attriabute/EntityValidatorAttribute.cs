@@ -1,8 +1,6 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using TaskManangerSystem.IServices;
 
 namespace TaskManangerSystem.Services.Attriabute
 {
@@ -16,24 +14,46 @@ namespace TaskManangerSystem.Services.Attriabute
     /// <param name="lenRange"></param>
     /// <param name="numRange"></param>
     [AttributeUsage(AttributeTargets.Property)]
-    public class EntityValidatorAttribute(string? errorMessage =null,string alias = "ProertyAlias", [StringSyntax(StringSyntaxAttribute.Regex)] string? pattern = null, bool required = false, int min = 0, int max = int.MaxValue) : ValidationAttribute
+    public class EntityValidatorAttribute(string alias, string? errorMessage) : ValidationAttribute
     {
+        public EntityValidatorAttribute([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, string alias = "ProertyAlias", string? errorMessage = null) :this(alias,errorMessage)
+        {
+            Required = true;
+            Pattern = pattern;
+        }
+
+        public EntityValidatorAttribute(bool required, string alias = "ProertyAlias", string? errorMessage = null) : this(alias, errorMessage)
+        {
+            Required = required;
+        }
+
+        public EntityValidatorAttribute(int min = 0, int max = 0, string alias = "ProertyAlias", string? errorMessage = null) : this(alias, errorMessage)
+        {
+            if (min == max) Range = null;
+            else {
+                Required = true;
+                Range = new Range(min, max);
+            }
+        }
+
         public string PropertyAlias { set; get; } = alias;
 
-        public string? Pattern { get; set; } = pattern;
+        public new string ErrorMessage { get; set; } = errorMessage ?? "验证失败";
 
-        public bool Required { get; set; } = required;
+        public string? Pattern { get; set; } = null;
 
-        public Range? Range { get; set; } = new(min, max);
+        public bool Required { get; set; } = false;
+
+        public Range? Range { get; set; } = null;
 
 
-        public new string ErrorMessage { get; set; } = errorMessage??"验证失败";
 
         public override bool IsValid(object? value)
         {
             if (value is string e)
             {
                 return IsMatch(e) && InLen(e);
+                // when IsMatch need 'Required' is true,IsMatch return true,ignore
             }
             else if (value is int q)
             {
@@ -41,37 +61,34 @@ namespace TaskManangerSystem.Services.Attriabute
             }
             else return IsRequired(value);
 
-
-        }
-
-        private bool InRange(int value)
-        {
-            if (Range is not null && Range.Min <= value && value <= Range.Max)
-                throw new EntityException(EntityExceptionType.RangeException,ErrorMessage,PropertyAlias,value.ToString());
-            else return true;
-        }
-        private bool IsMatch(string value)
-        {
-            Required = true;
-            if (IsRequired(value) && Pattern is not null && !new Regex(Pattern).IsMatch(value))
-                throw new EntityException(EntityExceptionType.RegexException, ErrorMessage, PropertyAlias, value);
-            else return true;
-        }
-
-
-        private bool InLen(string value)
-        {
-            Required = true;
-            if (IsRequired(value) && Range is not null && Range.Min <= value.Length && value.Length <= Range.Max)
-                throw new EntityException(EntityExceptionType.StrLenException, ErrorMessage, PropertyAlias, value);
-            else return true;
         }
 
         private bool IsRequired(object? value)
         {
-            if (Required && value is null) throw new EntityException(EntityExceptionType.RequiredException, ErrorMessage, PropertyAlias, string.Empty);
-            else return true;
+            if (!Required || (Required && value is not null)) return true;
+            throw new EntityException(EntityExceptionType.RequiredException, ErrorMessage, PropertyAlias, string.Empty);
         }
+        private bool IsMatch(string value)
+        {
+            Required = true;
+            if (Pattern is null || (IsRequired(value) && Pattern is not null && new Regex(Pattern).IsMatch(value)))
+                return true;
+            throw new EntityException(EntityExceptionType.RegexException, ErrorMessage, PropertyAlias, value);
+        }
+        private bool InRange(int value)
+        {
+            if (Range is null || (Range is not null && Range.Min <= value && value <= Range.Max))
+                return true;
+            throw new EntityException(EntityExceptionType.RangeException, ErrorMessage, PropertyAlias, value.ToString());
+        }
+        private bool InLen(string value)
+        {
+            Required = true;
+            if (Range is null || (IsRequired(value) && Range is not null && Range.Min <= value.Length && value.Length <= Range.Max))
+                return true;
+            throw new EntityException(EntityExceptionType.StrLenException, ErrorMessage, PropertyAlias, value);
+        }
+
     }
 
     public class Range(int min, int max)
@@ -87,14 +104,7 @@ namespace TaskManangerSystem.Services.Attriabute
 
     public class EntityException(EntityExceptionType exceptionType, string message, string key, string value) : Exception(message)
     {
-        public override string Message => base.Message;
-
-        public EntityExceptionType EType { set; get; } = exceptionType;
-
-        private string ErrorKey { set; get; } = key;
-        private string ErrorValue { set; get; } = value;
-
-        public string ShowException = $"[ {exceptionType.ToString()} ] {key}.{value} {message}";
+        public string ShowException = $"[ {exceptionType} ] {key}=>{value} {message}";
     }
 
 }

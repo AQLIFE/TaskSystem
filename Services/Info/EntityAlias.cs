@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using TaskManangerSystem.IServices;
 using TaskManangerSystem.Services.Attriabute;
+using TaskManangerSystem.Services.Tool;
 
 namespace TaskManangerSystem.Services.Info
 {
@@ -9,10 +9,10 @@ namespace TaskManangerSystem.Services.Info
     /// </summary>
     public class EmployeeAccountForLoginOrAdd() : IPart
     {
-        [EntityValidator(alias:nameof(EmployeeAlias),pattern: @"^[a-z\d]{5,16}$", errorMessage: "账户ID必须是普通字符[数字|小写字母]{5-16位}")]
+        [EntityValidator(EntityRule.Alias,nameof(EmployeeAlias), ErrorMessage.IdMessage)]
         public string EmployeeAlias { get; set; } = string.Empty;
 
-        [EntityValidator(alias:nameof(EmployeePwd),pattern: @"^[\dA-Za-z]{8,128}$", errorMessage:"账户密码必须是普通字符[数字|字母]{8-128位}")]
+        [EntityValidator(EntityRule.PassWord,nameof(EmployeePwd),ErrorMessage.PWDMessage)]
         public string EmployeePwd { get; set; } = string.Empty;
     }
 
@@ -92,13 +92,13 @@ namespace TaskManangerSystem.Services.Info
 
     public class TaskAffairForAdd : TaskAffairForUpdate
     {
-        [EntityValidator(nameof(TaskType),required:true)]
+        [EntityValidator(true,nameof(TaskType))]
         public string TaskType { get; set; } = string.Empty;
 
-        [EntityValidator(nameof(CustomerName), required: true)]
+        [EntityValidator(true,nameof(CustomerName))]
         public string CustomerName { set; get; } = string.Empty;
 
-        [EntityValidator(nameof(EmployeeName), required: true)]
+        [EntityValidator(true,nameof(EmployeeName))]
         public string EmployeeName { set; get; } = string.Empty;
 
         public TaskAffairForAdd() { }

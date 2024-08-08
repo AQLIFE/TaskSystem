@@ -1,4 +1,3 @@
-using TaskManangerSystem.IServices;
 using TaskManangerSystem.Models;
 using TaskManangerSystem.Services.Crypto;
 using TaskManangerSystem.Services.Info;
@@ -49,7 +48,7 @@ namespace TaskManangerSystem.Services.Tool
             new("普通客户", CUSTOMER+2,level:2,parId:customerId),
             new("机密客户", CUSTOMER+4,level:2,parId:customerId)
         ];
-        
+
         public static Customer[] customers => [
             new("管理员", customerId, DefaultRole, "10241024", "King"),
             new("测试技员",customerId,DefaultRole,"5125121512","Product")

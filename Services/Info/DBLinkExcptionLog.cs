@@ -12,8 +12,8 @@ namespace TaskManangerSystem.Services.Info
         public override string? SourceAction { set; get; }
         public override string? SourceRoute { set; get; }
 
-        public virtual string ExceptionFeedback { set; get; } = "WEB API 返回信息";
-        public virtual string ExceptionInfo { set; get; } = "控制台信息-错误";
+        public virtual string ExceptionFeedback { set; get; } = ErrorMessage.FeedBack;
+        public virtual string ExceptionInfo { set; get; } = ErrorMessage.ConsoleExceptionInfo;
 
         public override string APIMessage => "\tSorceID > {0};\n\tContrlller > {1};\n\tAction > {2};\n\tRoute > {3};\n\tTime > {4};\n\tInfo > {5};";
 
@@ -27,8 +27,8 @@ namespace TaskManangerSystem.Services.Info
             SourceID = http.User.Claims.GetClaim(ClaimTypes.Authentication.ToString())?.Value.ToString();
             SourceRoute = SourceRoute = $"{http.Request.Method} {http.Request.Scheme} {http.Request.Host} {http.Request.Path}";
 
-            ExceptionFeedback = "连接失败，稍后再试";
-            ExceptionInfo = "数据库未连接";
+            ExceptionFeedback =base.ExceptionFeedback;
+            ExceptionInfo =ErrorMessage.DBUnLink;
         }
     }
 }

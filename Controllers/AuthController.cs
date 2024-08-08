@@ -41,7 +41,7 @@ namespace TaskManangerSystem.Controllers
         public async Task<string?> PostLogin(EmployeeAccountForLoginOrAdd account)
                 => await ERA.LoginCheckAsync(account) ?
                 new BearerInfo((await ERA.TryGetEmployeeByNameAsync(account.EmployeeAlias))!).CreateToken() :
-                ErrorMessage.UnknownOrError;
+                ErrorMessage.UnFindOrError;
 
 
 

@@ -32,7 +32,7 @@ namespace TaskManangerSystem.Services.Repository
         public async Task<int> InitAdminAccount()
         {
             //logger.LogInformation("初始化账户信息: {0}...{1}", SystemInfo.admin[0].EmployeeAlias, SystemInfo.admin[SystemInfo.admin.Length - 1].EmployeeAlias);
-            
+
             foreach (var item in SystemInfo.admin)
                 context.Entry(item).State = EntityState.Added;
             return await context.SaveChangesAsync();
@@ -50,7 +50,7 @@ namespace TaskManangerSystem.Services.Repository
             customer = await context.categories.FirstOrDefaultAsync(e => e.SortSerial == SystemInfo.CUSTOMER);
             if (customer is Category)
             {
-                foreach(Category item in SystemInfo.customer)
+                foreach (Category item in SystemInfo.customer)
                 {
                     item.ParentCategoryId = customer.CategoryId;
                     context.Entry(item).State = EntityState.Added;
@@ -70,12 +70,12 @@ namespace TaskManangerSystem.Services.Repository
                 _ = await InitCategory();
             }
             customer = await context.categories.FirstOrDefaultAsync(e => e.SortSerial == SystemInfo.CUSTOMER);
-            if(customer is Category e)
-            foreach (Customer item in SystemInfo.customers)
-            {
-                item.CustomerType = e.CategoryId;
-                context.Entry(item).State = EntityState.Added;
-            }
+            if (customer is Category e)
+                foreach (Customer item in SystemInfo.customers)
+                {
+                    item.CustomerType = e.CategoryId;
+                    context.Entry(item).State = EntityState.Added;
+                }
             return context.SaveChanges();
         }
     }

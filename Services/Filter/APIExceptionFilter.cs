@@ -13,32 +13,25 @@ namespace TaskManangerSystem.Services.Filter
             if (!context.ModelState.IsValid)
             {
                 var x = context.ModelState.Values.First().Errors.First().ErrorMessage;
-                logger.LogWarning("[ 模型验证失败 ] : {0}", x);
-                context.Result = (ObjectResult)GlobalResult.Message("模型验证不通过");
-            }
-            else if (context.Exception is FormatException ex)
-            {
-                logger.LogWarning("{0} : {1}", ex.GetType().Name, ex.Message);
-                context.Result = (ObjectResult)GlobalResult.Message(ex.Message);
-            }
+                logger.LogWarning($"[ {ErrorMessage.FailData} ] : {x}");
+                context.Result = (ObjectResult)GlobalResult.Message(ErrorMessage.FailData);
+            }            
             else if (context.Exception is MySqlException e)
             {
                 log.SetMessage(e, context.HttpContext);
 
                 logger.LogCritical(log.APIMessage, log.SourceID, log.SourceController, log.SourceAction, log.SourceRoute, log.TriggerTime, log.ExceptionInfo);
                 context.Result = (ObjectResult)GlobalResult.Message(log.ExceptionFeedback);
-            }
-            else if (context.Exception is APIRegexException et)
+            }           
+            else if (context.Exception is EntityException entity)
             {
-                logger.LogWarning("[ {0} ]: {1}", et.GetType().Name, et.Message);
-                context.Result = (ObjectResult)GlobalResult.Message(et.Message);
+                logger.LogWarning(entity.ShowException);
+                context.Result = (ObjectResult)GlobalResult.Message(entity.Message);
             }
-
             else
             {
-                //log.SetMessage()
-                logger.LogError("Other Exception {0} : {1}", context.Exception.GetType().Name, context.Exception.Message);
-                context.Result = (ObjectResult)GlobalResult.Message("未知错误，稍后再试");
+                logger.LogError($"Other Exception {context.Exception.GetType().Name} : {context.Exception.Message}");
+                context.Result = (ObjectResult)GlobalResult.Message(ErrorMessage.UnknowError);
             }
             context.ExceptionHandled = true;
             await Task.CompletedTask;

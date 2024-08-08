@@ -8,10 +8,6 @@ namespace TaskManangerSystem.Services.Filter
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-
-            if (!context.ModelState.IsValid)
-                context.Result = new BadRequestObjectResult("输入信息不符规范");
-
             ActionExecutedContext edContext = await next();
 
             ObjectResult? item = edContext.Result as ObjectResult;

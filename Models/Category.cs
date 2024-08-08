@@ -23,7 +23,7 @@ namespace TaskManangerSystem.Models
 
         [Comment("分类等级")]
         public int CategoryLevel { get; set; }
-        
+
         [Comment("备注")]
         public string? Remark { get; set; }
 

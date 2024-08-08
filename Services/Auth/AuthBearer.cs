@@ -1,6 +1,5 @@
 ﻿using Jose;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -65,7 +64,7 @@ namespace TaskManangerSystem.Services.Auth
                 const int roles = 1;// 设定一个固定的权限等级 Roles
                 // 如果 AccountPermission Claim 不存在或其值小于设定的 Roles，则拒绝访问
                 if (accountPermission.HasValue && accountPermission.Value < roles || accountPermission == 0)
-                    context.Fail("全局规则:权限等级不足");
+                    context.Fail(ErrorMessage.NoPermission);
                 context.HttpContext.Items.Add("IsAdmin", accountPermission >= SystemInfo.AdminRole);
                 context.HttpContext.Items.Add("HashId", (context.Principal?.Claims).GetClaim(ClaimTypes.Authentication)?.Value);
 
@@ -89,7 +88,7 @@ namespace TaskManangerSystem.Services.Auth
             {
                 var authorizationHeader = context.Request.Headers.Authorization;
 
-                if ( !authorizationHeader.IsNullOrEmpty())
+                if (!authorizationHeader.IsNullOrEmpty())
                 {
                     context.Token = JWT.Decode(
                         authorizationHeader.ToString().Replace("Bearer ", ""),
